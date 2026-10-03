@@ -1,12 +1,15 @@
+<!--
 <p align="center">
-  <a href="https://getpapercss.com">
-    <img src="https://raw.githubusercontent.com/papercss/papercss/master/docs/static/favicon.ico?raw=true" alt="PaperCSS logo">
+  <a href="https://papercss.r15cookie.com">
+    <img src="https://raw.githubusercontent.com/ssmiller25/papercss/main/docs/static/favicon.ico?raw=true" alt="PaperCSS logo">
   </a>
-
+-->
   <h3 align="center">PaperCSS</h3>
 
   <p align="center">The less formal CSS framework, with a quick and easy integration.</p>
 </p>
+
+A copy maintained by [ssmiller25](https://r15cookie.com) or the original [PaperCSS Framework](https://www.getpapercss.com) and [Source](https://github.com/papercss/papercss)
 
 ## Table of contents
 
@@ -24,13 +27,10 @@
 
 There are several options available:
 
-- You can [download the latest release](https://github.com/papercss/papercss/releases).
-- Clone the repo: `git clone https://github.com/papercss/papercss.git`
+- You can [download the latest release](https://github.com/ssmiller25/papercss/releases).
+- Clone the repo: `git clone https://github.com/ssmiller25/papercss.git`
 - Install with npm: `npm install papercss`
 - Install with yarn: `yarn add papercss`
-- Import it using a CDN (it will automatically download the latest version):
-  - `https://unpkg.com/papercss/dist/paper.min.css`
-  - `https://unpkg.com/papercss/dist/paper.css`
 
 ## Content of the framework
 
