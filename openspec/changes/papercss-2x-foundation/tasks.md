@@ -52,7 +52,13 @@
 
 *3.2 verified by diffing the built stylesheet before and after: exactly one line changed, `padding: none` → `padding: 0`. No other declaration moved.*
 
-- [ ] 3.3 Decide whether `_reset.scss`'s `-webkit-text-decoration-skip: objects` should be modernized, dropped as obsolete, or kept as-is, and record the decision
+- [x] 3.3 Decide whether `_reset.scss`'s `-webkit-text-decoration-skip: objects` should be modernized, dropped as obsolete, or kept as-is, and record the decision
+
+*3.3 decided: **dropped as obsolete**, with the reasoning recorded at the declaration. `objects` skips ink over glyph descenders but not spaces, which is what `text-decoration-skip: auto` does — and `auto` is already the initial value, so browsers skip descenders by default. In a *reset* the job is to undo a browser default, not restate one, so the declaration was doing nothing observable. It also cannot be carried unprefixed: CSS Text Decoration Level 4 narrowed `text-decoration-skip` to `none | auto`, so `objects` was only ever valid on the prefixed property.*
+
+*Verified rather than assumed. `declaration-property-value-no-unknown` now runs **unmodified** — the `propertiesSyntax` override in `.stylelint-dist.cjs` is deleted, and stylelint 17.16.0 exits 0 against both built stylesheets. Confirmed the rule was not neutered in the process by injecting `padding: none` and `color: notacolour` into a copy: both are reported. Confirmed by diff that exactly one declaration left `dist/paper.css`, with `dist/paper.min.css` moving by the corresponding single line.*
+
+*One landed note is now superseded, and it is worth recording rather than quietly editing. Section 2 recorded the `propertiesSyntax` deprecation warning as "expected and unavoidable", because stylelint rejects the `languageOptions` spelling it points at. That was true while the override was needed. It is no longer needed, so the warning is gone: re-running with the old override reproduces the warning, and the committed config emits none. The override existed only to keep this one declaration checkable, so retiring the declaration retired the workaround with it — which leaves stylelint 17 running this ruleset clean.*
 
 ## 4. Build Toolchain Replacement
 

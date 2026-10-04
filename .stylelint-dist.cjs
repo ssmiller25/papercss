@@ -29,35 +29,17 @@ module.exports = {
     // deleting the framework's theming mechanism.
     'declaration-block-no-duplicate-properties': null,
 
-    // The one finding this ruleset produced on its first run, and it is a false
-    // positive worth keeping a record of.
+    // The first run of this ruleset produced exactly one finding, and it was a
+    // false positive: `_reset.scss` set `-webkit-text-decoration-skip: objects`,
+    // a Level 3 value the rule rejected because it validates against Level 4,
+    // where the unprefixed property was narrowed to `none | auto`. It was
+    // muted with a `propertiesSyntax` override that kept the property checked.
     //
-    // `_reset.scss` sets `-webkit-text-decoration-skip: objects`. `objects` is
-    // not a typo. It was a value of `text-decoration-skip` in CSS Text
-    // Decoration Level 3 (`none | objects | spaces | ink | edges |
-    // box-decoration`) and is still the initial value of
-    // `text-decoration-skip-self` in Level 4. Level 4 narrowed the unprefixed
-    // property to `none | auto`, and the rule validates against the current
-    // definition, so it rejects a declaration the prefixed property accepts.
-    //
-    // Correcting the value set rather than muting the property is deliberate:
-    // the property is still checked, and a genuinely unknown value on it would
-    // still be caught.
-    //
-    // Note: stylelint deprecates `propertiesSyntax` in favour of
-    // `languageOptions`, but this rule rejects `languageOptions` as an invalid
-    // option name in both 16.26.1 and 17.16.0, and its `ignoreProperties`
-    // option is likewise rejected in both. The deprecation warning this emits
-    // on every run is therefore expected and unavoidable; it points at an
-    // alternative the rule does not actually accept.
-    'declaration-property-value-no-unknown': [
-      true,
-      {
-        propertiesSyntax: {
-          'text-decoration-skip':
-            'none | auto | objects | spaces | ink | edges | box-decoration',
-        },
-      },
-    ],
+    // That override has since been removed, because the declaration it existed
+    // to excuse was itself dropped as obsolete (openspec task 3.3). The rule
+    // now runs unmodified. Nothing here should be re-added to silence this
+    // property again - if it ever returns, it should return without a value
+    // the current specification rejects.
+    'declaration-property-value-no-unknown': true,
   },
 };

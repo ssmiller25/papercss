@@ -40,7 +40,19 @@ pre {
 }
 a {
   background-color: transparent;
-  -webkit-text-decoration-skip: objects
+  // Was `-webkit-text-decoration-skip: objects`, dropped as obsolete.
+  //
+  // `objects` skips ink over glyph descenders but not spaces, which is what
+  // `text-decoration-skip: auto` does - and `auto` is already the initial
+  // value, so browsers skip descenders by default. In a reset the job is to
+  // undo a browser default, not to restate one, so the declaration was doing
+  // nothing observable. It also cannot be carried unprefixed: CSS Text
+  // Decoration Level 4 narrowed `text-decoration-skip` to `none | auto`, so
+  // `objects` is only ever valid on the prefixed property.
+  //
+  // Dropping it retired the `propertiesSyntax` override in
+  // .stylelint-dist.cjs, which existed only to keep this one declaration
+  // checkable. See openspec task 3.3.
 }
 abbr[title] {
   border-bottom: none;
