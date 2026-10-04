@@ -1,0 +1,195 @@
+# Tasks
+
+## 1. Documentation Toolchain
+
+*Capability: `build-verification`. Prerequisite for everything else: until this lands, no supported Hugo can build the docs, so there is nothing to validate.* **Landed.**
+
+- [x] 1.1 Replace `defaultMarkdownHandler = "blackfriday"` and the `[markup.blackFriday]` block in `docs/config.toml` with a goldmark configuration, and verify the docs build on a current Hugo
+- [x] 1.2 Verify the build produces every page the previous toolchain produced, and record any page-count difference with its cause
+- [x] 1.3 Confirm `markup.goldmark.renderer.unsafe = true` is required by the component demos, and record that requirement in a comment at the setting rather than leaving it looking incidental
+- [x] 1.4 Remove `hugo-bin` from `devDependencies`, and verify `npm install` no longer depends on an install script that a current npm refuses to run
+
+*1.1–1.3 landed. The `[markup]` block became goldmark with `renderer.unsafe = true` and a comment stating that the component demos are raw HTML in Markdown and are the reason it is required. Verified the docs build on Hugo 0.131 with **no** warnings. The superseded top-level `pygments*` keys were removed as well, with `[markup.highlight]` replacing them; removing them was verified to leave the built output **byte-identical**, so the two spellings were confirmed equivalent rather than assumed to be.*
+
+*1.4 also removed `pre-commit` — same class of problem: an abandoned package whose install script current npm refuses to run, duplicating a gate that now exists properly. Page count went 41 → 42 under goldmark; the extra page is goldmark's, and every page the old toolchain produced is still produced.*
+
+*`package-lock.json` shrank by 1411 lines. It was deliberately kept at `lockfileVersion: 1` rather than letting a current npm rewrite it to v3, to avoid an unrelated 5328-line lockfile migration in this change.*
+
+## 2. Verification Foundation
+
+*Capability: `build-verification`. Makes the gates capable of failing. Lands green: it records the measured baseline rather than fixing anything, because a gate that lands red teaches everyone to ignore it.* **Landed.**
+
+- [x] 2.1 Pin every tool the gates invoke — Hugo, `html-validate`, `stylelint` — in the environment definition, and verify no gate resolves to an unpinned range
+- [x] 2.2 Provide Hugo from the environment definition at a pinned version, replacing the npm-installed binary, and verify the docs build through it
+- [x] 2.3 Create a correctness-only ruleset for generated CSS, and verify it reports unknown properties, at-rules, functions, units, and declaration values without reporting formatting
+- [x] 2.4 Record in that ruleset why `declaration-block-no-duplicate-properties` is not enforced on generated CSS, naming the custom-property fallback pattern that makes it a false positive
+- [x] 2.5 Create `.htmlvalidate.json` declaring the rule set enforced against the built documentation, and verify a deliberately invalid page fails
+- [x] 2.6 Record the measured baseline in `.htmlvalidate-baseline.json` as a per-rule ceiling, and verify a deliberately introduced violation fails while an unmodified build passes
+- [x] 2.7 Add `scripts/check-html.mjs` to walk the built output, run `html-validate`, and enforce the per-rule ceilings, and verify it reports the excluded count on every run
+- [x] 2.8 Add a build-determinism gate that builds twice and compares the outputs, and verify it fails when a template is made non-deterministic
+- [x] 2.9 Add a gate asserting the tracked distribution matches a fresh build, and verify it fails when the tracked file is edited by hand
+- [x] 2.10 Add a `check` target to the `Makefile` running the full sequence, and verify it appears in `make help`
+- [x] 2.11 Add the environment definition and a continuous integration workflow that invokes `make check`, and verify the workflow runs the same sequence as the local command
+
+*All five gates verified to fail when they should, not merely to pass: an injected invalid CSS value, a `src/` change without a rebuild, a deliberately non-reproducible build, an injected invalid HTML page, and an uncommitted `dist/` under `CI=1`. Recorded baseline: **4240 across 33 pages**.*
+
+*Three things were not as planned, and each changed the design:*
+
+- **`ignoreProperties` is unusable on `declaration-property-value-no-unknown`.** Rejected as an invalid option value in both stylelint 16.26.1 and 17.16.0 — even for an ordinary property name like `color` — because the rule's own validator expects a different shape than the option takes. The rule equally rejects the `languageOptions` spelling its deprecation notice points at. Only `propertiesSyntax` works, and it emits a deprecation warning on every run pointing at an alternative the rule does not accept. This is a stylelint defect, not a configuration mistake; the warning is expected and is documented in the config so a future maintainer does not "fix" it.
+- **The first run of the generated-CSS gate produced a false positive, not a bug.** `_reset.scss` sets `-webkit-text-decoration-skip: objects`, and `objects` looked like a typo for `ink`. It is not: it was a value of `text-decoration-skip` in CSS Text Decoration Level 3 and is still the initial value of `text-decoration-skip-self` in Level 4. Level 4 narrowed the unprefixed property to `none | auto`, and the rule validates against the current definition, so it rejects a value the prefixed property accepts. Correcting the value set via `propertiesSyntax` keeps the property under check rather than muting it.
+- **The `dist/` comparison has to run before anything else builds.** `check` originally began with `build`, which synced `dist/` to `src/` and so destroyed the only evidence that `dist/` had been stale — the gate could not fail, and testing it proved as much. `check` now performs the comparison first, which leaves a fresh build in place for the later gates. Related: the "is the *committed* stylesheet current" question is only meaningful against a commit, so that half runs in CI only (`CI=1`) and is skipped locally, where a rebuilt-but-uncommitted `dist/` differs from `HEAD` by design.
+
+*Two stylelints exist in this environment deliberately: the project-local 13 lints the SCSS with the ruleset the sources were written against, and a pinned global 17 runs the generated-CSS gate, because that gate needs `declaration-property-value-no-unknown`, which the local version does not have. Unifying them requires migrating the sources off 76 flagged global Sass function calls — tracked as task 4.8, not folded into landing the pipeline.*
+
+## 3. Declaration Value Correction
+
+*Capability: `component-contract`. Lands with the pipeline because the new stylesheet gate fails on it and a gate that lands red is worse than no gate.* **Landed.**
+
+- [x] 3.1 Correct `padding: none` on the navbar's collapsible body to a real padding value, and verify the new stylesheet gate passes and the rule's intended effect is what now happens
+- [x] 3.2 Re-run the full gate and confirm the corrected declaration changes no other component's rendering
+
+*3.1 corrected `padding: none` to `padding: 0`, with the reasoning recorded at the declaration: `none` is not a padding value, browsers dropped it silently, and the sibling rule `input[id^=collapsible]:checked ~ div.collapsible-body` already sets `padding: 0` on the same element. **This is a rendering change**, not a pure correction: the navbar's collapsible body previously kept the accordion's `padding: 0 0.75rem` because the invalid declaration was discarded, and now has no inner padding. That matches the surrounding intent, but it is a visual difference and is recorded as such rather than being presented as a no-op fix.*
+
+*3.2 verified by diffing the built stylesheet before and after: exactly one line changed, `padding: none` → `padding: 0`. No other declaration moved.*
+
+- [ ] 3.3 Decide whether `_reset.scss`'s `-webkit-text-decoration-skip: objects` should be modernized, dropped as obsolete, or kept as-is, and record the decision
+
+## 4. Build Toolchain Replacement
+
+*Capability: `build-verification`. Deliberately **not** last. The pipeline currently needs two stylelints — local 13 for the sources, plus a pinned global 17 for the generated-CSS gate, because 13 has no `declaration-property-value-no-unknown`. That is a direct consequence of the 2019 tree, and it means the gate that catches `padding: none` cannot run through `npm run lint`. 2.0 is the breaking release, so it is the place to move once. This group also runs before the framework fixes so every later verification runs against the toolchain that actually ships.*
+
+*Verified before planning, so the tasks below are counts and not estimates: **73** global Sass built-in calls that Dart Sass 2.0 removes (33 `lighten`, 29 `darken`, 8 `map-get`, 2 `map-keys`, 1 `str-length`), **29** `@import`s in `src/styles.scss` with no `@use`/`@forward` anywhere, and **109** `!default` declarations in `_config.scss`. Installed sass is 1.29.0.*
+
+- [ ] 4.1 Record the resolved declaration set for every selector in `dist/paper.css` — property **and** value — so the replacement can be verified for equivalence rather than by byte comparison. A set of property names alone is not acceptable, because it would pass a wholesale palette rewrite (see task 5.1)
+- [ ] 4.2 Record the current `npm audit` finding count, so what the replacement resolves is measurable
+- [ ] 4.3 Replace `sass` with a 2.x release and convert `src/styles.scss` and all 29 partials to the module system, adding the entry point that forwards the framework's public API. Note that `_config.scss`'s `@import url($font-src)` is a **CSS** import, not a Sass one — it survives the migration and must not be converted
+- [ ] 4.4 Migrate the 73 global built-in calls to their module equivalents, and verify the built stylesheet's resolved declarations match the set recorded in 4.1 exactly
+- [ ] 4.5 Verify a Sass consumer can reach the framework through the new entry point and override configuration through `with (...)`, using a real `!default` value, and that the previous mechanism now fails loudly rather than styling differently
+- [ ] 4.6 Replace `postcss`, `autoprefixer`, and `cssnano` with current releases, and verify the resolved declarations still match 4.1
+- [ ] 4.7 Replace `stylelint` 13 and `stylelint-config-sass-guidelines` with a current stylelint and an equivalent configuration, and verify the sources still pass the authoring ruleset
+- [ ] 4.8 Migrate the sources off the 76 global Sass function calls the modern configuration flags, and verify the flag count reaches zero with the resolved declarations unchanged. These are migrated rather than silenced by disabling rules, so the authoring gate is not weakened to make the migration land
+- [ ] 4.9 Unify the two stylelints into one project-local version, and verify `make check` runs the generated-CSS gate through the project's own install with no tool resolved from outside it
+- [ ] 4.10 Add the recorded-declaration-set comparison to `make check`, and verify it fails when a declaration's value changes and passes when only formatting changes
+- [ ] 4.11 Rewrite `package-lock.json` at the current lockfile version, and verify `npm ci` installs the pinned tree from it
+- [ ] 4.12 Confirm no replacement reintroduces an install script the package manager refuses to run
+- [ ] 4.13 Record the one-time generated-output difference in `CHANGELOG.md`, since consumers vendoring `dist/paper.css` byte-for-byte will see it
+
+## 5. Dark Theme Preservation
+
+*Capability: `component-contract`, `build-verification`. **Prerequisite of task 4.3, not a parallel task.** Dark mode is one `html.dark` block at `src/core/_config.scss:247` generated over a shared theme map; every component reads the result through `var(--…)`. There is therefore no per-component dark styling to lose and none to catch a loss. All 56 `darken`/`lighten` calls that compute the palette are removed in Dart Sass 2.0, so unmigrated the palette compiles to nothing **and the build still succeeds** — no error, no warning, no failed gate.*
+
+- [ ] 5.1 Record every custom property the light theme declares in `html`, with its resolved value, and the same for `html.dark`. Values, not just names — a presence check passes a palette rewrite
+- [ ] 5.2 Add a gate asserting `html.dark` declares every custom property `html` declares, and verify it fails when one is removed
+- [ ] 5.3 Add a gate asserting the `html.dark` block exists in the built stylesheet, and verify it fails when the block is dropped
+- [ ] 5.4 Migrate the 56 `darken`/`lighten` calls in `_config.scss` to their maintained equivalents, and verify every resolved custom-property value matches 5.1 exactly
+- [ ] 5.5 Handle the `lighten()`-on-`rgba` cases explicitly — `lighten()` lightens the colour channels and leaves alpha alone, and the maintained equivalents do not all agree on that — and verify `--white-dark-light-80`'s alpha channel is unchanged
+- [ ] 5.6 Verify the build emits no theme-related deprecation warning
+- [ ] 5.7 Render each component from the documentation's dark-mode page in both themes, and verify every one resolves from the theme it should
+- [ ] 5.8 Confirm activation is still a single class on the root element, and update the documentation if the mechanism moved
+- [ ] 5.9 Record in `UPGRADE.md` that the dark theme's activation and property surface are unchanged, so a consumer can confirm nothing about their dark styling moved
+
+## 6. Release Documentation
+
+*Capability: `release-documentation`. The repository ships **no `CHANGELOG.md` at all**, so 24 tagged releases are undocumented and 2.0 would be the first release in the project's history to be documented anywhere. Both files are written as changes land, not reconstructed at the end.*
+
+- [ ] 6.1 Reconstruct `CHANGELOG.md` from the repository's 25 tags, with a dated entry and user-visible changes for each, and identify the entries as reconstructed rather than presenting them as contemporaneous
+- [ ] 6.2 Verify the reconstructed `1.9.2` entry matches what 1.9.2 actually shipped, since that is the version consumers migrate *from*
+- [ ] 6.3 Where a tag's changes cannot be established, record the gap explicitly rather than omitting the release
+- [ ] 6.4 Open a `2.0.0` section in `CHANGELOG.md` and add an entry per change as it lands
+- [ ] 6.5 Create `UPGRADE.md` with one section per breaking change — toggle element type, toggle focusability, collapsible height cap, default font loading, and the Sass consumer migration — each stating before, after, why, and the substitution. The Sass section shows assignment-before-`@import` next to `with (...)` side by side
+- [ ] 6.6 Link both files from `README.md`, and verify a consumer can find the upgrade path without already knowing it exists
+- [ ] 6.7 Verify `UPGRADE.md`'s sections match the recorded breaking changes in `proposal.md` in both directions, and that none describes a non-breaking change
+
+## 7. Collapsible Keyboard Operability
+
+*Capability: `component-contract`. **Breaking** — the toggle becomes focusable.*
+
+- [ ] 7.1 Replace `display: none` on the collapsible input with a visually-hidden pattern that keeps the control focusable, and verify it remains operable by pointer exactly as before
+- [ ] 7.2 Style the framework's own focus indicator so keyboard focus is visible on the toggle, and verify the indicator is visible against every surface the component renders on
+- [ ] 7.3 Verify the toggle is the expected tab stop and that operating it with the keyboard opens and closes the body
+- [ ] 7.4 Verify the same control works in the navbar and in a standalone collapsible, since both are conditioned on the same rule
+- [ ] 7.5 Document the breaking change in `UPGRADE.md` with the substitution a consumer must make if their stylesheet assumed the control was invisible, and record it in the `2.0.0` section of `CHANGELOG.md`
+
+## 8. Collapsible Height Cap
+
+*Capability: `component-contract`. **Breaking** — tall bodies now expand fully.*
+
+- [ ] 8.1 Replace the fixed `max-height` on the expanded accordion body with an approach that reveals arbitrary content, modeling the pending upstream fix rather than inventing a third approach
+- [ ] 8.2 Apply the same correction to the navbar's collapsible body, and verify the two are not left inconsistent
+- [ ] 8.3 Verify a body taller than the old threshold is fully visible, and that no part of it is cut off without a means of reaching it
+- [ ] 8.4 Verify the open and closed states still animate and that the transition still runs
+- [ ] 8.5 Record the changed layout for long content in `UPGRADE.md` and in the `2.0.0` section of `CHANGELOG.md`, since a consumer relying on the old cap will see different heights
+
+## 9. Toggle Markup
+
+*Capability: `component-contract`, `docs-markup`. **Breaking** — documented element type changes.*
+
+- [ ] 9.1 Change the documented toggle bars from `div` to `span`, and update the framework's own selectors so the styling is unchanged
+- [ ] 9.2 Update the navbar and collapsible documentation so the demonstrated markup matches, in both the live demo and the code sample
+- [ ] 9.3 Verify the built documentation reports no `element-permitted-content` violation in the demo region
+- [ ] 9.4 Verify a consumer's existing class-based selectors still match after the element type changes
+- [ ] 9.5 Record the substitution in `UPGRADE.md`, naming both the before and after markup, and in the `2.0.0` section of `CHANGELOG.md`
+
+## 10. Documentation Gate Partition
+
+*Capability: `docs-markup`, `build-verification`. Lands before the markup work so the contract-bearing region is separable from the style churn. One ceiling covering both means a template cleanup can mask an invalid demo — which is the failure that reached the downstream theme as 96 errors on 24 pages.*
+
+- [ ] 10.1 Emit an explicit region marker from the shortcode that renders each live demo, so demo markup is identifiable in the built output
+- [ ] 10.2 Partition the built pages at those markers in `scripts/check-html.mjs`, producing two disjoint file sets, and verify the page set is unchanged from the single-set case
+- [ ] 10.3 Record a separate per-rule baseline per region, and verify a violation in either fails only its own baseline
+- [ ] 10.4 Record the demo-region **count** in the baseline, and verify a change to it is reported as a structural change rather than passing as a reduction — a gate satisfied by validating less is not a gate
+
+## 11. Live Demos as Reference Implementation
+
+*Capability: `docs-markup`. The demos are what a reader copies, so this region reaches zero on its own merits and is not credited with the page chrome's progress.*
+
+- [ ] 11.1 Correct the documented navbar toggle markup that produces `element-permitted-content`, and verify the demo region's count reaches zero for that rule
+- [ ] 11.2 Correct every remaining validity or accessibility defect located in a demo, and verify the demo region's baseline reaches zero with the chrome region unchanged
+- [ ] 11.3 Verify the demo baseline reaches zero without disabling a rule to absorb a violation, and that every disabled rule states why
+- [ ] 11.4 Verify a demo copied verbatim reports no violation without the documentation's own scaffolding around it
+
+## 12. Documentation Page Chrome as Reference Implementation
+
+*Capability: `docs-markup`. The template's own defects: language declaration, landmarks, and form labelling.*
+
+- [ ] 12.1 Add the missing `lang` attribute to the base template, and verify `element-required-attributes` reaches zero in the chrome region
+- [ ] 12.2 Give each landmark on a page with more than one of the same kind a unique accessible name, and verify `unique-landmark` reaches zero
+- [ ] 12.3 Give every form control in the documentation an associated label and a non-duplicate name, and verify `wcag/h71` and `form-dup-name` reach zero
+- [ ] 12.4 Add `type` to every button in the documentation and convert the `input`-as-button examples to real buttons, and verify `no-implicit-button-type` and `prefer-button` reach zero
+- [ ] 12.5 Remove redundant `for` attributes and close all implicitly-closed elements, and verify `no-redundant-for` and `no-implicit-close` reach zero
+- [ ] 12.6 Tighten the chrome region's recorded baseline in this same change, and verify CI fails on any subsequent increase in **either** region
+
+## 13. Style Cleanup and Baseline Tightening
+
+*Capability: `docs-markup`. The recorded baseline is 97% these two rules. They are style, not correctness, but leaving them makes every future gate run unreadable.*
+
+- [ ] 13.1 Convert the documentation's single-quoted attributes to double quotes across the templates and content, and verify `attr-quotes` reaches zero with the rule left enabled — it is a house style, not a defect, so switching it off would be a one-line diff that permanently weakens the gate
+- [ ] 13.2 Strip the template-internal whitespace that leaks into the rendered documentation, and verify `no-trailing-whitespace` reaches zero
+- [ ] 13.3 Move inline presentation in the documentation out of markup, and verify `no-inline-style` reaches zero
+- [ ] 13.4 Tighten both regions' recorded baselines in this same change, and verify every disabled rule in the committed configuration states why it is disabled
+
+## 14. Font Loading
+
+*Capability: `component-contract`. Changes the framework's default network behavior.*
+
+- [ ] 14.1 Default the font source to disabled so the shipped stylesheet initiates no third-party request, and verify the built stylesheet contains no `@import url(...)` to a remote origin
+- [ ] 14.2 Provide a documented way for a consumer who wants the framework's fonts to load them, and verify the opt-in is discoverable from the configuration
+- [ ] 14.3 Verify the font stack still degrades acceptably with the framework fonts absent
+- [ ] 14.4 Record the behavior change in `UPGRADE.md` with the migration stated, and in the `2.0.0` section of `CHANGELOG.md`
+
+## 15. Documentation of the Framework Contract
+
+*Capability: `component-contract`, `docs-markup`.*
+
+- [ ] 15.1 Document the `input[id^=collapsible]` identifier contract explicitly, rather than leaving consumers to infer it from the stylesheet, and record that 2.x does not change it
+- [ ] 15.2 Document which element types are interchangeable for the toggle's bars and why, so the constraint is discoverable before a consumer hits it
+- [ ] 15.3 Document the breaking changes with before-and-after markup for each, pointing at `UPGRADE.md` as the canonical location rather than restating them in a second place that can drift
+- [ ] 15.4 Document the verification workflow for contributors, and verify the documented command runs the same gates as continuous integration
+
+## 16. Remaining Dependency Findings
+
+*Capability: `build-verification`. Deliberately last. The toolchain replacement in group 4 resolves most of the 92 findings, so this group is only what is left over.*
+
+- [ ] 16.1 Record the post-replacement `npm audit` finding count against the baseline taken in 4.2, so the remaining debt is measurable
+- [ ] 16.2 For each remaining finding, record whether it is reachable from this repository's build or development workflow
+- [ ] 16.3 Resolve the reachable ones and confirm the rest cannot affect a consumer, since consumers use the prebuilt stylesheet and never run this tree
