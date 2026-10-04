@@ -11,8 +11,10 @@
     "dev:hot-reload": "node ./build/hot-reload.js",
     "dev:docs": "hugo server --source=docs --disableFastRender",
     "start": "npm run dev:docs",
-    "lint": "npm run stylelint",
-    "stylelint": "stylelint src/**/*.scss"
+    "lint": "npm run lint:src && npm run lint:dist",
+    "lint:src": "stylelint \"src/**/*.scss\"",
+    "lint:dist": "stylelint --config .stylelint-dist.cjs \"dist/paper.css\" \"dist/paper.min.css\"",
+    "lint:docs": "node scripts/check-html.mjs"
   },
   "repository": {
     "type": "git",

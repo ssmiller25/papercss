@@ -1,0 +1,47 @@
+name: Verify
+
+on:
+  push:
+    branches: [ main, release20 ]
+  pull_request:
+    branches: [ main, release20 ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # `make check` is the single source of truth for the gate sequence, so CI
+      # and local runs cannot drift apart. It builds the stylesheet and the
+      # documentation, lints both, validates the documentation against the
+      # recorded baseline, and requires the tracked dist/ to match a fresh build.
+      - name: Build and verify in devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          # pipefail so a failing gate still fails the step even though `tee`
+          # is the last command in the pipeline.
+          runCmd: set -o pipefail && make check 2>&1 | tee verify-output.txt
+
+      # A gate nobody reads is not a gate. Post the per-rule table where a
+      # reviewer sees it without opening logs, since the whole point of the
+      # baseline is that improvement is visible over time.
+      - name: Publish the error-budget table
+        if: always()
+        run: |
+          {
+            echo "## Verification"
+            echo
+            echo '```'
+            cat verify-output.txt 2>/dev/null || echo "(no output captured)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

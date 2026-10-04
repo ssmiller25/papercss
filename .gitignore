@@ -8,3 +8,10 @@ npm-debug.log
 # Ignore compiled CSS
 /docs/static/assets/paper.css
 /docs/static/assets/paper.min.css
+
+# Temporary build-comparison directory used by `make check-determinism`
+/.check-tmp
+
+# Hugo build lock file
+/.hugo_build.lock
+/docs/.hugo_build.lock

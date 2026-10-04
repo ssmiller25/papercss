@@ -1,0 +1,18 @@
+{
+	"name": "PaperCSS",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"DavidAnson.vscode-markdownlint",
+				"bierner.markdown-preview",
+				"shd101wyy.markdown-preview-enhanced",
+				"github.vscode-github-actions"
+			]
+		}
+	},
+	"postCreateCommand": "npm install && make check",
+	"remoteUser": "vscode"
+}

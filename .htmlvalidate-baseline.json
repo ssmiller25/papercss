@@ -1,0 +1,21 @@
+{
+  "total": 4240,
+  "pages": 33,
+  "aliasesExcluded": 0,
+  "byRule": {
+    "attr-quotes": 2775,
+    "element-permitted-content": 12,
+    "element-required-attributes": 33,
+    "form-dup-name": 15,
+    "no-implicit-button-type": 18,
+    "no-implicit-close": 8,
+    "no-inline-style": 37,
+    "no-raw-characters": 2,
+    "no-redundant-for": 7,
+    "no-trailing-whitespace": 1303,
+    "prefer-button": 4,
+    "unique-landmark": 3,
+    "void-style": 15,
+    "wcag/h71": 8
+  }
+}
