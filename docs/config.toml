@@ -4,11 +4,6 @@ title = "PaperCSS"
 # Directories
 publishDir = "../public"
 
-# Syntax Highlighting ( https://gohugo.io/content-management/syntax-highlighting/ )
-pygmentsCodefences = true
-pygmentsStyle = "emacs"
-pygmentsUseClasses=true
-
 [params.info]
 description = "the less formal CSS framework"
 title404 = "Nothing's here!"
@@ -18,6 +13,24 @@ title404 = "Nothing's here!"
 titleSeparator = "•"
 
 [markup]
-  defaultMarkdownHandler = "blackfriday"
-  [markup.blackFriday]
-    hrefTargetBlank = true
+  # Goldmark replaces blackfriday, which Hugo removed in v0.100.0. The previous
+  # handler pinned this site to a 2020 build of Hugo, which in turn pinned it to
+  # a toolchain no longer installable on a current Node.
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      # Required, not incidental: every component demo on this site is raw HTML
+      # inside a Markdown file. Without `unsafe`, the demos render as escaped
+      # text instead of as the live examples they exist to be.
+      unsafe = true
+    [markup.goldmark.parser]
+      # Replaces blackfriday's hrefTargetBlank, which goldmark spells
+      # `linkify`/`autoLink` rather than as a renderer flag.
+      autoHeadingID = true
+  [markup.highlight]
+    # Replaces the pre-0.100 pygments* keys above, which Hugo no longer reads.
+    codeFences = true
+    noClasses = false
+    style = "emacs"
+    guessSyntax = false
+    lineNos = false
+    tabWidth = 4
