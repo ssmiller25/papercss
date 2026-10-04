@@ -137,7 +137,11 @@ nav {
   }
 
   div.collapsible-body {
-    padding: none;
+    // Was `padding: none`, which is not a valid padding value. Browsers drop
+    // the declaration silently, so the rule appeared to work and did nothing.
+    // Intended value is 0, matching the `:checked ~ div.collapsible-body`
+    // padding above; the navbar's collapsible body carries no inner padding.
+    padding: 0;
   }
 
   .collapsible label {

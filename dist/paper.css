@@ -3293,7 +3293,7 @@ nav .collapsible .collapsible-body {
   }
 }
 nav div.collapsible-body {
-  padding: none;
+  padding: 0;
 }
 nav .collapsible label {
   border-color: #41403e;
