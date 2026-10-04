@@ -64,13 +64,26 @@
 
 *Capability: `build-verification`. Deliberately **not** last. The pipeline currently needs two stylelints — local 13 for the sources, plus a pinned global 17 for the generated-CSS gate, because 13 has no `declaration-property-value-no-unknown`. That is a direct consequence of the 2019 tree, and it means the gate that catches `padding: none` cannot run through `npm run lint`. 2.0 is the breaking release, so it is the place to move once. This group also runs before the framework fixes so every later verification runs against the toolchain that actually ships.*
 
-*Verified before planning, so the tasks below are counts and not estimates: **73** global Sass built-in calls that Dart Sass 2.0 removes (33 `lighten`, 29 `darken`, 8 `map-get`, 2 `map-keys`, 1 `str-length`), **29** `@import`s in `src/styles.scss` with no `@use`/`@forward` anywhere, and **109** `!default` declarations in `_config.scss`. Installed sass is 1.29.0.*
+*Verified before planning, so the tasks below are counts and not estimates: **73** global Sass built-in calls (33 `lighten`, 29 `darken`, 8 `map-get`, 2 `map-keys`, 1 `str-length`), **29** `@import`s in `src/styles.scss` with no `@use`/`@forward` anywhere, and **109** `!default` declarations in `_config.scss`. Installed sass is 1.29.0.*
+
+*Corrected after further measurement. This group originally targeted Sass 2.x, on the assumption that 2.0 removes `@import` and the global built-ins. It does not — there is no Sass 2.x, and `latest` is 1.105.1. Compiling the current sources with it reports:*
+
+| Deprecation | Occurrences | Removal target |
+|---|---|---|
+| `@import` | 29 | **3.0.0** |
+| global built-ins | 11 | **3.0.0** |
+| `darken()` / `lighten()` | 62 | 3.0.0 |
+| **`/` division** | **1 site** | **2.0.0** |
+
+*plus `164 repetitive deprecation warnings omitted` — roughly 186 real occurrences in total.*
+
+*So the target is the current **1.x**, and the work is much smaller than planned: fix the single `/` division at `src/layout/_flexbox.scss:8`, and migrate the 73 built-in calls so the color-function warnings go away. **`@import` stays**, which is the significant consequence — the 109 `!default` overrides keep working, so **2.0 ships with no Sass-consumer break** and no new configuration mechanism is needed. The `@use` migration remains available as separate work when 3.0.0 forces it.*
 
 - [ ] 4.1 Record the resolved declaration set for every selector in `dist/paper.css` — property **and** value — so the replacement can be verified for equivalence rather than by byte comparison. A set of property names alone is not acceptable, because it would pass a wholesale palette rewrite (see task 5.1)
 - [ ] 4.2 Record the current `npm audit` finding count, so what the replacement resolves is measurable
-- [ ] 4.3 Replace `sass` with a 2.x release and convert `src/styles.scss` and all 29 partials to the module system, adding the entry point that forwards the framework's public API. Note that `_config.scss`'s `@import url($font-src)` is a **CSS** import, not a Sass one — it survives the migration and must not be converted
+- [ ] 4.3 Replace `sass` with the current 1.x release, and convert the single `/` division at `src/layout/_flexbox.scss:8` to `math.div` — the only construct Dart Sass 2.0 actually removes, and this repository's only instance of it. `@import` is deliberately **not** migrated; see the correction above
 - [ ] 4.4 Migrate the 73 global built-in calls to their module equivalents, and verify the built stylesheet's resolved declarations match the set recorded in 4.1 exactly
-- [ ] 4.5 Verify a Sass consumer can reach the framework through the new entry point and override configuration through `with (...)`, using a real `!default` value, and that the previous mechanism now fails loudly rather than styling differently
+- [ ] 4.5 Verify the configuration mechanism still works after the toolchain change — a real `!default` override, assigned before `@import`, honoured by the current compiler. This is a regression guard on a public API this change deliberately preserves, so that a future 3.0.0 migration is a conscious break rather than an accident
 - [ ] 4.6 Replace `postcss`, `autoprefixer`, and `cssnano` with current releases, and verify the resolved declarations still match 4.1
 - [ ] 4.7 Replace `stylelint` 13 and `stylelint-config-sass-guidelines` with a current stylelint and an equivalent configuration, and verify the sources still pass the authoring ruleset
 - [ ] 4.8 Migrate the sources off the 76 global Sass function calls the modern configuration flags, and verify the flag count reaches zero with the resolved declarations unchanged. These are migrated rather than silenced by disabling rules, so the authoring gate is not weakened to make the migration land
@@ -82,12 +95,14 @@
 
 ## 5. Dark Theme Preservation
 
-*Capability: `component-contract`, `build-verification`. **Prerequisite of task 4.3, not a parallel task.** Dark mode is one `html.dark` block at `src/core/_config.scss:247` generated over a shared theme map; every component reads the result through `var(--…)`. There is therefore no per-component dark styling to lose and none to catch a loss. All 56 `darken`/`lighten` calls that compute the palette are removed in Dart Sass 2.0, so unmigrated the palette compiles to nothing **and the build still succeeds** — no error, no warning, no failed gate.*
+*Capability: `component-contract`, `build-verification`. **Not a prerequisite of anything** — this group previously claimed to be, on the basis that the palette would be deleted by the Sass 2.0 migration. That was wrong: `darken`/`lighten` are deprecated with removal targeted at **3.0.0**, so on 1.x the palette compiles exactly as before and merely warns. Nothing is at risk today.*
+
+*The fragility is structural rather than scheduled, which is why the gate is still worth building. Dark mode is one `html.dark` block at `src/core/_config.scss:247` generated over a shared theme map; every component reads the result through `var(--…)`. So there is no per-component dark styling to lose and none to catch a loss — one missing custom property degrades every component reading it, and nothing in the pipeline notices, because a missing custom property is not invalid CSS. That is the same failure mode as `padding: none`: a declaration that looks right and does nothing. Recording the values turns "did the theme survive this upgrade" into a build result rather than a reviewer's recollection — which matters most at 3.0.0, when someone else does the migration.*
 
 - [ ] 5.1 Record every custom property the light theme declares in `html`, with its resolved value, and the same for `html.dark`. Values, not just names — a presence check passes a palette rewrite
 - [ ] 5.2 Add a gate asserting `html.dark` declares every custom property `html` declares, and verify it fails when one is removed
 - [ ] 5.3 Add a gate asserting the `html.dark` block exists in the built stylesheet, and verify it fails when the block is dropped
-- [ ] 5.4 Migrate the 56 `darken`/`lighten` calls in `_config.scss` to their maintained equivalents, and verify every resolved custom-property value matches 5.1 exactly
+- [ ] 5.4 Migrate the 56 `darken`/`lighten` calls in `_config.scss` to `color.adjust`, verifying every resolved custom-property value matches 5.1 exactly. The `sass` migrator's first suggestion is often `color.scale`, which computes a different percentage — the suggestion is not interchangeable with the original and its output must be compared, not trusted
 - [ ] 5.5 Handle the `lighten()`-on-`rgba` cases explicitly — `lighten()` lightens the colour channels and leaves alpha alone, and the maintained equivalents do not all agree on that — and verify `--white-dark-light-80`'s alpha channel is unchanged
 - [ ] 5.6 Verify the build emits no theme-related deprecation warning
 - [ ] 5.7 Render each component from the documentation's dark-mode page in both themes, and verify every one resolves from the theme it should
@@ -121,7 +136,7 @@
 - [ ] 7.2 Verify the reconstructed `1.9.2` entry matches what 1.9.2 actually shipped, since that is the version consumers migrate *from*
 - [ ] 7.3 Where a tag's changes cannot be established, record the gap explicitly rather than omitting the release
 - [ ] 7.4 Open a `2.0.0` section in `CHANGELOG.md` and add an entry per change as it lands
-- [ ] 7.5 Create `UPGRADE.md` with one section per breaking change — toggle element type, toggle focusability, collapsible height cap, default font loading, and the Sass consumer migration — each stating before, after, why, and the substitution. The Sass section shows assignment-before-`@import` next to `with (...)` side by side
+- [ ] 7.5 Create `UPGRADE.md` with one section per breaking change — toggle element type, toggle focusability, collapsible height cap, default font loading — each stating before, after, why, and the substitution. Note that the toolchain replacement is **not** among them: the Sass configuration mechanism is unchanged (task 4.5), so a consumer who configures the palette by assigning before `@import` needs no change at all
 - [ ] 7.6 Link both files from `README.md`, and verify a consumer can find the upgrade path without already knowing it exists
 - [ ] 7.7 Verify `UPGRADE.md`'s sections match the recorded breaking changes in `proposal.md` in both directions, and that none describes a non-breaking change
 

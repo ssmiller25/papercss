@@ -57,9 +57,9 @@ The framework SHALL continue to ship a dark theme, activated by the documented c
 - **THEN** the change is treated as a defect rather than as equivalent output
 - **AND** the resolved values are compared, not only the set of property names
 
-#### Scenario: The theme survives a major toolchain migration
+#### Scenario: The theme survives a compiler upgrade
 
-- **WHEN** the framework migrates to a version of its Sass compiler that removes the functions computing the palette
+- **WHEN** the framework is compiled by a newer version of its Sass compiler
 - **THEN** every theme custom property still resolves to its recorded value
 - **AND** a successful compilation is not accepted as evidence that the theme survived
 
@@ -144,24 +144,24 @@ The shipped stylesheet SHALL NOT, by default, cause the consumer's page to block
 - **THEN** the framework provides a documented way to load them
 - **AND** the opt-in is discoverable rather than being the default
 
-### Requirement: The configuration surface is reachable from the framework's published entry point
+### Requirement: The configuration surface stays reachable and keeps working
 
-A consumer who builds from the framework's source SHALL be able to reach the framework through a single documented entry point, and SHALL be able to override configuration through the mechanism that entry point provides. Overriding a configuration value before importing the framework SHALL NOT be the only supported mechanism.
+The framework SHALL continue to be configurable by a consumer building from its source, through the documented mechanism, and that mechanism SHALL NOT change without being declared as breaking with a migration stated. A configuration value a consumer can set today SHALL remain settable in the release that replaces the build toolchain.
 
 #### Scenario: A consumer configures the framework's palette
 
 - **WHEN** a consumer overrides a theme colour when consuming the framework from source
-- **THEN** the override is expressed through the entry point's configuration mechanism
+- **THEN** the override is honoured
 - **AND** the framework declares the value as overridable rather than assigning it unconditionally
 
-#### Scenario: A consumer imports the framework the previous way
+#### Scenario: The toolchain is replaced
 
-- **WHEN** a consumer loads the framework using the mechanism the previous release documented
-- **THEN** the upgrade document states that it is no longer supported and gives the substitution
-- **AND** the failure mode is a build error rather than silently different styling
+- **WHEN** a release replaces the tools the framework's source is compiled with
+- **THEN** the documented configuration mechanism still works afterwards
+- **AND** a consumer who configured the framework on the previous release needs no change
 
-#### Scenario: The entry point is absent
+#### Scenario: The configuration mechanism changes
 
-- **WHEN** the framework ships source but no documented entry point
-- **THEN** verification fails
-- **AND** requiring consumers to reproduce the framework's internal file order is not accepted as an entry point
+- **WHEN** a release would move configuration to a different mechanism
+- **THEN** it is declared as breaking with the substitution for the previous form stated
+- **AND** it is not presented as an internal refactor of the build

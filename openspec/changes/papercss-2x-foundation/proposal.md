@@ -18,9 +18,11 @@ Two further problems surfaced while building the verification pipeline, and both
 
 So the fork is not a fork of convenience — it is four upstream bugs plus a documentation site that cannot be rebuilt on a current toolchain.
 
-One more thing surfaced while planning the toolchain work, and it is the reason that work is not optional housekeeping:
+One more thing surfaced while planning the toolchain work:
 
-7. **The entire dark theme is one dependency bump from vanishing.** `src/core/_config.scss` computes both themes with 56 `darken()`/`lighten()` calls, every component reads the result through `var(--…)`, and there is no per-component dark styling — so there is also nothing that would catch a loss. Those functions are removed in Dart Sass 2.0. Upgrading sass without migrating them compiles the palette to nothing, and the build still succeeds: no error, no warning, no failed gate, just a framework that renders in light mode for anyone who asks for dark. A missing custom property is not invalid CSS.
+7. **The dark theme has no safety net.** `src/core/_config.scss` computes both themes with 56 `darken()`/`lighten()` calls, every component reads the result through `var(--…)`, and there is no per-component dark styling — so there is also nothing that would catch a loss. One missing custom property degrades every component reading it, and no gate notices, because a missing custom property is not invalid CSS.
+
+Those calls are deprecated with removal targeted at Dart Sass 3.0.0, so nothing is at risk on the current toolchain — the palette compiles as before and warns. That is precisely why it needs a gate rather than a deadline: the failure mode is silent by construction, so it will not announce itself when 3.0.0 lands, and by then the migration will be someone else's problem. Recording every theme property with its resolved value turns "did the theme survive this upgrade" from a judgement call into a build result.
 
 That is the whole thesis of this change in miniature — a shipped artifact that looks fine and is wrong — which is why the theme gets its own recorded baseline rather than a line in a review checklist.
 
@@ -48,19 +50,20 @@ That is the whole thesis of this change in miniature — a shipped artifact that
 - Treat `docs/` as the reference implementation rather than incidental sample code, and drive its `lang`, landmark, form-labelling, and duplicate-id defects to zero.
 - Split the documentation gate so the *live demos* are validated separately from the surrounding page chrome, each with its own recorded ceiling, since a consumer copies the demo rather than the template.
 
-**Build toolchain modernization (breaking for Sass consumers)**
+**Build toolchain modernization**
 - Replace the 2019 toolchain with maintained equivalents: sass, postcss, autoprefixer, cssnano, stylelint and its configuration, and the lockfile format.
-- Move the Sass sources onto the module system, removing the 29 `@import`s and the 73 global built-in function calls that Dart Sass 2.0 deletes.
+- Move to the current Sass 1.x. The only construct Dart Sass 2.0 actually removes is `/` division, and this repository has exactly one site; `@import` and the global built-ins are deprecated with removal targeted at 3.0.0.
+- Migrate the 73 deprecated global built-in calls (`lighten`, `darken`, `map-get`, `map-keys`, `str-length`) to their `sass:` module equivalents, leaving `@import` in place. The ~186 remaining `@import` deprecation warnings are accepted rather than cleared.
 - Replace the two-stylelint workaround with one project-local linter, so the gate that catches an invalid declaration value runs through `npm run lint`.
 - Verify the replacement by resolved declaration values per selector rather than by byte comparison, since the modern tools emit differently-formatted output.
 
 **Dark theme preservation**
-- Record every custom property both themes declare, with its resolved value, and gate on that record — because the theme is computed entirely by `darken`/`lighten` calls that Dart Sass 2.0 removes, and unmigrated they compile to nothing while the build still succeeds.
+- Record every custom property both themes declare, with its resolved value, and gate on that record — because one missing custom property degrades every component that reads it, silently and without failing any gate.
 - Gate on the presence of the `html.dark` block and on its declaring every property the light theme declares.
 
 **Release documentation**
 - Reconstruct `CHANGELOG.md` from the repository's 25 existing tags; the project currently ships no changelog at all, so 24 releases are undocumented.
-- Add `UPGRADE.md` stating, per breaking change, the before and after, why it changed, and the substitution — including the Sass consumer migration from assigning before `@import` to `with (...)`.
+- Add `UPGRADE.md` stating, per breaking change, the before and after, why it changed, and the substitution.
 
 **Release pipeline**
 - Replace the manual release in `DISTRIBUTING.md` with a tag-triggered workflow that runs `make check` before publishing anything, so no release is cut from a tree that fails its own gates.
@@ -90,8 +93,8 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 - `src/components/_accordion.scss` — the `display: none` rule and the `max-height` cap
 - `src/components/_navbar.scss` — the `max-height` cap, `padding: none`, the `.bar*` rules, and the backwards-compatibility `+ button` selectors
 - `src/core/_config.scss` — the `$font-src` default and its `@import url(...)`; the 109 `!default` declarations and 56 `darken`/`lighten` calls that compute both themes; the `html.dark` block
-- `src/styles.scss` and all 29 partials — conversion from `@import` to the module system
-- `src/_index.scss` — new entry point forwarding the public API
+- `src/core/_config.scss` — 56 `darken`/`lighten` calls and 8 `map-get`/`map-keys`/`str-length` calls migrated to their `sass:` module equivalents
+- `src/layout/_flexbox.scss` — the single `/` division, the only construct Dart Sass 2.0 removes
 - `docs/config.toml` — markdown handler
 - `docs/layouts/**` and `docs/content/**` — the markup the framework teaches
 
@@ -99,7 +102,7 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 - New `Makefile`, `.devcontainer/`, `.github/workflows/verify.yml`
 - New `scripts/check-html.mjs`, `scripts/check-theme.mjs`, `scripts/check-css-equivalence.mjs`, `scripts/check-release.mjs`, `.htmlvalidate.json`, `.htmlvalidate-baseline.json`, `.stylelint-dist.json`
 - New `.github/workflows/release.yml` — tag-triggered, gated on `make check`, attaches the artifact set to the GitHub Release
-- `package.json` — `hugo-bin` removed, `sass`/`postcss`/`autoprefixer`/`cssnano`/`stylelint` replaced with current majors, new gate scripts, npm `exports` for the Sass entry point
+- `package.json` — `hugo-bin` removed, `sass`/`postcss`/`autoprefixer`/`cssnano`/`stylelint` replaced with current majors, new gate scripts
 - `package-lock.json` — rewritten at the current lockfile version
 - `dist/paper.css`, `dist/paper.min.css` — tracked and regenerated; content changes once the defect fixes land, and once more for the toolchain replacement's formatting
 
@@ -113,7 +116,6 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 - **BREAKING** for the toggle markup: `<div class="barN">` becomes `<span class="barN">`. Both are class-styled, so existing CSS keeps working, but any consumer selector written against the element type breaks.
 - **BREAKING** for consumers who pin `< 2.0`: the `display: none` removal means the checkbox input is now focusable, so a stylesheet that assumed it was invisible may need adjusting.
 - **BREAKING** for consumers relying on the 960px cap: tall bodies now expand fully, changing layout for long content.
-- **BREAKING** for Sass consumers: the module migration removes `@import`, so `@use 'papercss'` replaces it, and configuration moves from assigning a variable before the import to `with (...)`. Consumers who only use `dist/paper.css` are unaffected.
 - The Google Fonts change is opt-in-by-default-off and therefore not breaking, but consumers who relied on PaperCSS to pull the fonts must now link them.
 - `docs/config.toml` moving to goldmark changes rendering of raw HTML in documentation pages. This is internal to the docs site.
 - **Unchanged and verified as unchanged:** the dark theme's activation mechanism, its property surface, and every resolved colour value.
