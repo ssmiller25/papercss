@@ -15,7 +15,7 @@ See `proposal.md` for motivation. The constraints that shape the approach:
 | `npm run lint` (stylelint 13, `sass-guidelines`) | passes |
 | GitHub Actions workflows | **none** — `.github/` holds only a pull-request template |
 | `dist/` tracked and in sync | tracked; rebuild leaves no diff |
-| `npm audit` | 92 findings, 3 critical (the un-merged Dependabot branches) |
+| `npm audit` | 92 findings, 3 critical when first measured. **Now 73 / 2** — group 1 removed `hugo-bin` and `pre-commit`, whose trees accounted for 19 findings and 1 critical. Re-measured at task 4.2 |
 | Installed lint toolchain | stylelint 13 (2019), Node 22 in the devcontainer path |
 
 So the framework's CSS is in better shape than its safety net. That shapes the pipeline: most gates start green, which is exactly the condition under which a green pipeline means nothing — so the first job of the pipeline is to be *capable* of failing.

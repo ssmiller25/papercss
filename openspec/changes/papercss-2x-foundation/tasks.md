@@ -79,8 +79,28 @@
 
 *So the target is the current **1.x**, and the work is much smaller than planned: fix the single `/` division at `src/layout/_flexbox.scss:8`, and migrate the 73 built-in calls so the color-function warnings go away. **`@import` stays**, which is the significant consequence — the 109 `!default` overrides keep working, so **2.0 ships with no Sass-consumer break** and no new configuration mechanism is needed. The `@use` migration remains available as separate work when 3.0.0 forces it.*
 
-- [ ] 4.1 Record the resolved declaration set for every selector in `dist/paper.css` — property **and** value — so the replacement can be verified for equivalence rather than by byte comparison. A set of property names alone is not acceptable, because it would pass a wholesale palette rewrite (see task 5.1)
-- [ ] 4.2 Record the current `npm audit` finding count, so what the replacement resolves is measurable
+- [x] 4.1 Record the resolved declaration set for every selector in `dist/paper.css` — property **and** value — so the replacement can be verified for equivalence rather than by byte comparison. A set of property names alone is not acceptable, because it would pass a wholesale palette rewrite (see task 5.1)
+*4.1 delivered `scripts/record-css-declarations.mjs` and the committed record `.css-declarations.json`: **596 rules, 1603 declarations**, sha256 `7a7be54e`. Values are recorded, not just property names — a name-only record would produce an identical result for a toolchain change that rewrote every colour in the palette, which is the specific failure the record exists to prevent.*
+
+*Writing the parser surfaced three bugs worth recording, because each would have made the comparison quietly incomplete rather than failing:*
+
+- ***Multi-line selectors were truncated to their last line.*** `article,\naside,\nfooter {` recorded as `footer`. The prelude has to be buffered until the brace arrives, or a rule loses most of its identity.*
+- ***At-rule conditions were dropped from nested selectors.*** `nav .collapsible-body` appears under several `@media` breakpoints and resolves differently at each; keyed on selector alone, the comparison collapsed them into one entry and a change inside a single breakpoint would be masked by its siblings. Rules are now keyed by their full path through the at-rule chain.*
+- ***Each rule was included in its own path*** — `stack.push()` ran before the path was computed, producing selectors like `nav ul nav ul`. This corrupts the comparison key silently.*
+
+*The parser also blanks comments rather than deleting them, so the line numbers it reports when it cannot classify a line actually point at it.*
+
+*Duplicate selectors are **real** in this stylesheet rather than a parsing artefact — `html` appears four times, `a` twice, because the reset and component layers each style them. Keying on selector alone kept only the last, so a change to the first `html` rule would have been invisible. Rules are keyed on (selector, occurrence) and the key *sequence* is compared as well, so a reordering is caught even when every declaration matches.*
+
+*Verified to fail, not merely to pass — five cases: a palette rewrite (`html.dark { --primary }: #000 -> #fff`), a missing custom property in the dark theme, a change to the first of four `html` rules specifically, a cascade reordering with identical declarations, and the `@import` removal planned for group 15. An unmodified build reports 0 differences and exits 0.*
+
+*Duplicate-selector and reordering detection are what make this a gate rather than a diff: both are invisible to a name-only or per-selector comparison, and both change what the stylesheet does.*
+
+- [x] 4.2 Record the current `npm audit` finding count, so what the replacement resolves is measurable
+*4.2 recorded: **73 findings — 2 critical, 22 high, 48 moderate, 1 low.** Only **6 are direct** dependencies (`postcss` high; `autoprefixer`, `cssnano`, `stylelint`, `stylelint-config-sass-guidelines`, `stylelint-order` moderate); the other 67 are transitive. `dependencies` is empty, so nothing here ships: consumers use the prebuilt `dist/paper.css` and never execute this tree.*
+
+*This is already lower than the **92 findings / 3 critical** recorded in design.md's Context table, and the difference is explained rather than assumed: group 1 removed `hugo-bin` and `pre-commit`, and their dependency trees accounted for 19 findings and 1 critical. The Context table figure was accurate when written and is now stale, so it is corrected rather than left to drift further.*
+
 - [ ] 4.3 Replace `sass` with the current 1.x release, and convert the single `/` division at `src/layout/_flexbox.scss:8` to `math.div` — the only construct Dart Sass 2.0 actually removes, and this repository's only instance of it. `@import` is deliberately **not** migrated; see the correction above
 - [ ] 4.4 Migrate the 73 global built-in calls to their module equivalents, and verify the built stylesheet's resolved declarations match the set recorded in 4.1 exactly
 - [ ] 4.5 Verify the configuration mechanism still works after the toolchain change — a real `!default` override, assigned before `@import`, honoured by the current compiler. This is a regression guard on a public API this change deliberately preserves, so that a future 3.0.0 migration is a conscious break rather than an accident
