@@ -67,6 +67,8 @@ Two facts about that number matter for reading the gate.
 - A build toolchain made of maintained tools, so the gates run on one toolchain rather than two and nothing depends on a version no one supports.
 - Every capability the 1.9 release shipped still present in 2.0, verified rather than assumed — most sharply the dark theme.
 - A recorded changelog for every release the project has tagged, and a written upgrade path into 2.0.
+- Releases produced by pushing a tag, not by hand-editing version numbers and dragging files into a web form.
+- Documentation that points at the artifacts this repository actually publishes, verified rather than assumed.
 
 **Non-Goals:**
 - Restyling. No visual change to any component.
@@ -183,6 +185,22 @@ The gap is larger than it sounds. The repository has **no `CHANGELOG.md` at all*
 
 **Consequence.** `CHANGELOG.md` is reconstructed from the tags with a dated entry and user-visible changes per release. `UPGRADE.md` states, per breaking change, the before and after, why it changed, and the substitution a consumer must make — including the Sass consumer migration from Decision 9 and the dark-theme confirmation from Decision 10. Component tasks write into these files as they land rather than reconstructing them at the end, so neither document is written from memory after the fact.
 
+### Decision 12: A release is a tag, verified — and the tag is the only version number
+
+**Rationale.** `DISTRIBUTING.md` documents the current release as: update the version in `package.json`, `package-lock.json` and `docs/content/_index.md`; commit; tag; open the GitHub UI; drag `paper.css` and `paper.min.css` into "Attach Binaries"; then `npm publish`. Every step is manual and no step checks the others. The version lives in three files with nothing verifying they agree, and the stylesheet is uploaded by hand, so a release can be labelled `1.8.3` while built from `1.8.2` sources — a mismatch that is invisible precisely because consumers have no way to check.
+
+The deeper cost is that the documentation's download links are **already wrong, and have been long enough to be load-bearing**. `docs/content/_index.md` points its GitHub Releases buttons at `github.com/rhyneav/papercss` and its "build it yourself" clone URL at `github.com/papercss/papercss` — both the upstream project, not this fork. So the primary download buttons on this fork's documentation hand a visitor the original author's 1.9.2 build, and the build instructions describe a repository whose sources differ from the ones being shipped. A pipeline that publishes here does not fix that on its own; the documentation has to be repointed and gated, which is why this decision covers both halves.
+
+**Mechanism.** The tag is the single source of truth. `package.json`'s version must agree with it, and disagreement fails the release rather than warning. `make check` runs before anything is published, so no release is cut from a tree that fails its own gates — reusing Decision 6's single entry point instead of restating the sequence in a second place that can drift. A prerelease tag is published as a prerelease and does not become the latest release, so `2.0.0-rc.1` cannot quietly ship as `2.0.0`.
+
+**Artifact set.** `paper.css`, `paper.min.css`, and an SCSS source archive. The third is not optional: once Decision 9's module migration removes `@import`, a Sass consumer needs `src/` and its entry point, so a CSS-only release would break the source-consumption path the documentation describes.
+
+**Why GitHub Releases only.** `npm publish` stays a documented manual step. Trusted publishing is its own piece of work with its own failure mode, and a release that half-succeeds — GitHub Release created, npm publish rejected — is worse than either channel alone. It is a clean follow-up, and the artifact set is already the same either way.
+
+**Consequence.** The documented version is read from one place and gated against the tag, so the six hardcoded `1.9.2` strings in the documentation become a build failure rather than a stale link.
+
+**Split across capabilities.** The mechanism is a `build-verification` concern — it is CI deciding what may ship. The consumer-facing half is `release-documentation` — where the artifacts are pointed at and whether the documented paths are satisfiable by what is published. Two capabilities, one decision, because both halves have to land together for either to be worth anything.
+
 ## Risks / Trade-offs
 
 **Converting 60 single-quoted attributes touches 11 template files** → Mechanical, and verified by rebuilding and confirming the `attr-quotes` count reaches zero with the rest of the report unchanged. The alternative — disabling the rule — is a smaller diff that permanently weakens the gate.
@@ -205,6 +223,12 @@ The gap is larger than it sounds. The repository has **no `CHANGELOG.md` at all*
 
 **Reconstructing the changelog depends on the tags being legible** → Twenty-five tags is enough to reconstruct a real history, but a tag whose changes cannot be determined must be recorded as a gap rather than omitted, since a silently missing release is the same failure as no changelog at all.
 
+**Publishing from a tag means a bad tag is a published release** → A mistyped `v2.0.1` cannot be unpublished, only superseded. Mitigated by making the gates run *before* publication rather than after, by requiring a `CHANGELOG.md` entry as a precondition, and by treating the first real release as a prerelease (task 6.14) so the mechanics are proven on something that can be superseded cheaply.
+
+**Repointing the documentation will break inbound links** → The current download URLs point at the upstream project, so consumers following them have been getting upstream's build; correcting them changes where those links resolve. Accepted: the links were wrong, and leaving them wrong to preserve habit is the same failure as the rest of this change.
+
+**The artifact set can drift from what the documentation promises** → A release could ship CSS only, or omit the source archive, leaving the documented Sass path unsatisfiable. Mitigated by defining the set once and gating that a release carries all of it — and that the published source archive really contains the entry point a Sass consumer needs, which is easy to break silently in exactly the same way the theme was.
+
 ## Migration Plan
 
 1. **Move the docs off blackfriday** so a supported Hugo can build them. Prerequisite for everything else. **Landed.**
@@ -214,5 +238,6 @@ The gap is larger than it sounds. The repository has **no `CHANGELOG.md` at all*
 5. **Framework fixes, one commit each.** Toggle focus, height cap, toggle markup, fonts — each with the gate that now proves it, and each recorded in `UPGRADE.md` as it lands.
 6. **Documentation markup.** Partition the gate into demo and chrome regions first, then framework-contract defects in the demos, then the chrome defects, then the two style rules, tightening the baseline in the same change.
 7. **Release documentation, finalized before the tag.** `CHANGELOG.md` reconstructed from the tags and carried forward release by release; `UPGRADE.md` complete against the recorded set of breaking changes, including the Sass consumer migration.
+8. **Release by tag.** The release pipeline and the documentation it points at are built in step 4's group, but the release itself is cut last, so the first tag carries every change in steps 5–7 and nothing is published from a tree that has not passed `make check`.
 
-Rollback is per-step: steps 1–3 change no component behaviour beyond one corrected declaration, and steps 5–7 each land independently. Step 4 is the only one needing care on rollback, because a consumer who has migrated to the module system cannot un-migrate — which is why it lands before the fixes it would otherwise complicate.
+Rollback is per-step: steps 1–3 change no component behaviour beyond one corrected declaration, and steps 5–8 each land independently. Step 4 is the only one needing care on rollback, because a consumer who has migrated to the module system cannot un-migrate — which is why it lands before the fixes it would otherwise complicate. Step 8 is not rolled back at all, which is why it is last and why the gates run before publication rather than after.

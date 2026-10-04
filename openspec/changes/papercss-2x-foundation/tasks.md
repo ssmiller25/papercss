@@ -88,108 +88,127 @@
 - [ ] 5.8 Confirm activation is still a single class on the root element, and update the documentation if the mechanism moved
 - [ ] 5.9 Record in `UPGRADE.md` that the dark theme's activation and property surface are unchanged, so a consumer can confirm nothing about their dark styling moved
 
-## 6. Release Documentation
+## 6. Release Pipeline
+
+*Capability: `build-verification`, `release-documentation`. Replaces the manual procedure in `DISTRIBUTING.md`: hand-edit the version in three files, commit, tag, then create the release in the GitHub UI and drag `dist/` into "Attach Binaries". Nothing verifies those version numbers agree, so a release can be labelled `1.8.3` while built from `1.8.2` sources, and a forgotten edit ships a stale download link. **GitHub Releases only** — `npm publish` stays a documented manual step, because a release that half-succeeds is worse than either channel alone.*
+
+- [ ] 6.1 Make the tag the single source of truth for a release's version, and add a gate failing when `package.json`'s version disagrees with it. A mismatch is a failure, not a warning
+- [ ] 6.2 Add `.github/workflows/release.yml`, triggered on a `v*` tag, that runs `make check` before publishing anything — so no release is cut from a tree that fails its own gates, reusing the single entry point rather than restating the sequence in a second place
+- [ ] 6.3 Define the released artifact set explicitly: `paper.css`, `paper.min.css`, and an SCSS source archive
+- [ ] 6.4 Verify the source archive is built from the tagged commit's `src/` and contains the entry point a Sass consumer needs — it is not optional once `@import` is gone (task 4.3), so a CSS-only release would break the source-consumption path the docs describe
+- [ ] 6.5 Attach the artifacts to the GitHub Release for the tag, and verify a dry run produces all three and nothing else
+- [ ] 6.6 Require `CHANGELOG.md` to carry an entry for the released version, and fail the release when it does not — an undocumented release is the exact failure this change exists to prevent
+- [ ] 6.7 Treat a prerelease tag such as `v2.0.0-rc.1` as a prerelease rather than as `2.0.0`, so a release candidate is never published as the stable version or made the `latest` release, and verify the version comparison accepts prerelease forms
+- [ ] 6.8 Attach provenance metadata to the release so a downloaded artifact can be tied back to this repository and the commit it was built from
+- [ ] 6.9 Move the documentation's version to a single source the docs build reads, and remove the literals from `docs/content/_index.md`
+- [ ] 6.10 Add a gate failing when the documented version disagrees with the released tag, so drift is a build failure rather than a stale download link
+- [ ] 6.11 Repoint every download and build URL in the documentation at **this** repository. `docs/content/_index.md` currently points its GitHub Releases buttons at `github.com/rhyneav/papercss` and its clone URL at `github.com/papercss/papercss` — both the upstream project, so the documented download and build instructions hand users someone else's framework
+- [ ] 6.12 Update `README.md` to name the released artifacts and the repository they come from, including the SCSS source path for consumers building from source
+- [ ] 6.13 Rewrite `DISTRIBUTING.md` as the tag-and-watch procedure, and record the manual `npm publish` step as still manual, with the reason
+- [ ] 6.14 Verify a release end to end on a real prerelease tag: artifacts downloadable, `CHANGELOG.md` entry present, documented URLs resolving to the tagged artifacts
+
+## 7. Release Documentation
 
 *Capability: `release-documentation`. The repository ships **no `CHANGELOG.md` at all**, so 24 tagged releases are undocumented and 2.0 would be the first release in the project's history to be documented anywhere. Both files are written as changes land, not reconstructed at the end.*
 
-- [ ] 6.1 Reconstruct `CHANGELOG.md` from the repository's 25 tags, with a dated entry and user-visible changes for each, and identify the entries as reconstructed rather than presenting them as contemporaneous
-- [ ] 6.2 Verify the reconstructed `1.9.2` entry matches what 1.9.2 actually shipped, since that is the version consumers migrate *from*
-- [ ] 6.3 Where a tag's changes cannot be established, record the gap explicitly rather than omitting the release
-- [ ] 6.4 Open a `2.0.0` section in `CHANGELOG.md` and add an entry per change as it lands
-- [ ] 6.5 Create `UPGRADE.md` with one section per breaking change — toggle element type, toggle focusability, collapsible height cap, default font loading, and the Sass consumer migration — each stating before, after, why, and the substitution. The Sass section shows assignment-before-`@import` next to `with (...)` side by side
-- [ ] 6.6 Link both files from `README.md`, and verify a consumer can find the upgrade path without already knowing it exists
-- [ ] 6.7 Verify `UPGRADE.md`'s sections match the recorded breaking changes in `proposal.md` in both directions, and that none describes a non-breaking change
+- [ ] 7.1 Reconstruct `CHANGELOG.md` from the repository's 25 tags, with a dated entry and user-visible changes for each, and identify the entries as reconstructed rather than presenting them as contemporaneous
+- [ ] 7.2 Verify the reconstructed `1.9.2` entry matches what 1.9.2 actually shipped, since that is the version consumers migrate *from*
+- [ ] 7.3 Where a tag's changes cannot be established, record the gap explicitly rather than omitting the release
+- [ ] 7.4 Open a `2.0.0` section in `CHANGELOG.md` and add an entry per change as it lands
+- [ ] 7.5 Create `UPGRADE.md` with one section per breaking change — toggle element type, toggle focusability, collapsible height cap, default font loading, and the Sass consumer migration — each stating before, after, why, and the substitution. The Sass section shows assignment-before-`@import` next to `with (...)` side by side
+- [ ] 7.6 Link both files from `README.md`, and verify a consumer can find the upgrade path without already knowing it exists
+- [ ] 7.7 Verify `UPGRADE.md`'s sections match the recorded breaking changes in `proposal.md` in both directions, and that none describes a non-breaking change
 
-## 7. Collapsible Keyboard Operability
+## 8. Collapsible Keyboard Operability
 
 *Capability: `component-contract`. **Breaking** — the toggle becomes focusable.*
 
-- [ ] 7.1 Replace `display: none` on the collapsible input with a visually-hidden pattern that keeps the control focusable, and verify it remains operable by pointer exactly as before
-- [ ] 7.2 Style the framework's own focus indicator so keyboard focus is visible on the toggle, and verify the indicator is visible against every surface the component renders on
-- [ ] 7.3 Verify the toggle is the expected tab stop and that operating it with the keyboard opens and closes the body
-- [ ] 7.4 Verify the same control works in the navbar and in a standalone collapsible, since both are conditioned on the same rule
-- [ ] 7.5 Document the breaking change in `UPGRADE.md` with the substitution a consumer must make if their stylesheet assumed the control was invisible, and record it in the `2.0.0` section of `CHANGELOG.md`
+- [ ] 8.1 Replace `display: none` on the collapsible input with a visually-hidden pattern that keeps the control focusable, and verify it remains operable by pointer exactly as before
+- [ ] 8.2 Style the framework's own focus indicator so keyboard focus is visible on the toggle, and verify the indicator is visible against every surface the component renders on
+- [ ] 8.3 Verify the toggle is the expected tab stop and that operating it with the keyboard opens and closes the body
+- [ ] 8.4 Verify the same control works in the navbar and in a standalone collapsible, since both are conditioned on the same rule
+- [ ] 8.5 Document the breaking change in `UPGRADE.md` with the substitution a consumer must make if their stylesheet assumed the control was invisible, and record it in the `2.0.0` section of `CHANGELOG.md`
 
-## 8. Collapsible Height Cap
+## 9. Collapsible Height Cap
 
 *Capability: `component-contract`. **Breaking** — tall bodies now expand fully.*
 
-- [ ] 8.1 Replace the fixed `max-height` on the expanded accordion body with an approach that reveals arbitrary content, modeling the pending upstream fix rather than inventing a third approach
-- [ ] 8.2 Apply the same correction to the navbar's collapsible body, and verify the two are not left inconsistent
-- [ ] 8.3 Verify a body taller than the old threshold is fully visible, and that no part of it is cut off without a means of reaching it
-- [ ] 8.4 Verify the open and closed states still animate and that the transition still runs
-- [ ] 8.5 Record the changed layout for long content in `UPGRADE.md` and in the `2.0.0` section of `CHANGELOG.md`, since a consumer relying on the old cap will see different heights
+- [ ] 9.1 Replace the fixed `max-height` on the expanded accordion body with an approach that reveals arbitrary content, modeling the pending upstream fix rather than inventing a third approach
+- [ ] 9.2 Apply the same correction to the navbar's collapsible body, and verify the two are not left inconsistent
+- [ ] 9.3 Verify a body taller than the old threshold is fully visible, and that no part of it is cut off without a means of reaching it
+- [ ] 9.4 Verify the open and closed states still animate and that the transition still runs
+- [ ] 9.5 Record the changed layout for long content in `UPGRADE.md` and in the `2.0.0` section of `CHANGELOG.md`, since a consumer relying on the old cap will see different heights
 
-## 9. Toggle Markup
+## 10. Toggle Markup
 
 *Capability: `component-contract`, `docs-markup`. **Breaking** — documented element type changes.*
 
-- [ ] 9.1 Change the documented toggle bars from `div` to `span`, and update the framework's own selectors so the styling is unchanged
-- [ ] 9.2 Update the navbar and collapsible documentation so the demonstrated markup matches, in both the live demo and the code sample
-- [ ] 9.3 Verify the built documentation reports no `element-permitted-content` violation in the demo region
-- [ ] 9.4 Verify a consumer's existing class-based selectors still match after the element type changes
-- [ ] 9.5 Record the substitution in `UPGRADE.md`, naming both the before and after markup, and in the `2.0.0` section of `CHANGELOG.md`
+- [ ] 10.1 Change the documented toggle bars from `div` to `span`, and update the framework's own selectors so the styling is unchanged
+- [ ] 10.2 Update the navbar and collapsible documentation so the demonstrated markup matches, in both the live demo and the code sample
+- [ ] 10.3 Verify the built documentation reports no `element-permitted-content` violation in the demo region
+- [ ] 10.4 Verify a consumer's existing class-based selectors still match after the element type changes
+- [ ] 10.5 Record the substitution in `UPGRADE.md`, naming both the before and after markup, and in the `2.0.0` section of `CHANGELOG.md`
 
-## 10. Documentation Gate Partition
+## 11. Documentation Gate Partition
 
 *Capability: `docs-markup`, `build-verification`. Lands before the markup work so the contract-bearing region is separable from the style churn. One ceiling covering both means a template cleanup can mask an invalid demo — which is the failure that reached the downstream theme as 96 errors on 24 pages.*
 
-- [ ] 10.1 Emit an explicit region marker from the shortcode that renders each live demo, so demo markup is identifiable in the built output
-- [ ] 10.2 Partition the built pages at those markers in `scripts/check-html.mjs`, producing two disjoint file sets, and verify the page set is unchanged from the single-set case
-- [ ] 10.3 Record a separate per-rule baseline per region, and verify a violation in either fails only its own baseline
-- [ ] 10.4 Record the demo-region **count** in the baseline, and verify a change to it is reported as a structural change rather than passing as a reduction — a gate satisfied by validating less is not a gate
+- [ ] 11.1 Emit an explicit region marker from the shortcode that renders each live demo, so demo markup is identifiable in the built output
+- [ ] 11.2 Partition the built pages at those markers in `scripts/check-html.mjs`, producing two disjoint file sets, and verify the page set is unchanged from the single-set case
+- [ ] 11.3 Record a separate per-rule baseline per region, and verify a violation in either fails only its own baseline
+- [ ] 11.4 Record the demo-region **count** in the baseline, and verify a change to it is reported as a structural change rather than passing as a reduction — a gate satisfied by validating less is not a gate
 
-## 11. Live Demos as Reference Implementation
+## 12. Live Demos as Reference Implementation
 
 *Capability: `docs-markup`. The demos are what a reader copies, so this region reaches zero on its own merits and is not credited with the page chrome's progress.*
 
-- [ ] 11.1 Correct the documented navbar toggle markup that produces `element-permitted-content`, and verify the demo region's count reaches zero for that rule
-- [ ] 11.2 Correct every remaining validity or accessibility defect located in a demo, and verify the demo region's baseline reaches zero with the chrome region unchanged
-- [ ] 11.3 Verify the demo baseline reaches zero without disabling a rule to absorb a violation, and that every disabled rule states why
-- [ ] 11.4 Verify a demo copied verbatim reports no violation without the documentation's own scaffolding around it
+- [ ] 12.1 Correct the documented navbar toggle markup that produces `element-permitted-content`, and verify the demo region's count reaches zero for that rule
+- [ ] 12.2 Correct every remaining validity or accessibility defect located in a demo, and verify the demo region's baseline reaches zero with the chrome region unchanged
+- [ ] 12.3 Verify the demo baseline reaches zero without disabling a rule to absorb a violation, and that every disabled rule states why
+- [ ] 12.4 Verify a demo copied verbatim reports no violation without the documentation's own scaffolding around it
 
-## 12. Documentation Page Chrome as Reference Implementation
+## 13. Documentation Page Chrome as Reference Implementation
 
 *Capability: `docs-markup`. The template's own defects: language declaration, landmarks, and form labelling.*
 
-- [ ] 12.1 Add the missing `lang` attribute to the base template, and verify `element-required-attributes` reaches zero in the chrome region
-- [ ] 12.2 Give each landmark on a page with more than one of the same kind a unique accessible name, and verify `unique-landmark` reaches zero
-- [ ] 12.3 Give every form control in the documentation an associated label and a non-duplicate name, and verify `wcag/h71` and `form-dup-name` reach zero
-- [ ] 12.4 Add `type` to every button in the documentation and convert the `input`-as-button examples to real buttons, and verify `no-implicit-button-type` and `prefer-button` reach zero
-- [ ] 12.5 Remove redundant `for` attributes and close all implicitly-closed elements, and verify `no-redundant-for` and `no-implicit-close` reach zero
-- [ ] 12.6 Tighten the chrome region's recorded baseline in this same change, and verify CI fails on any subsequent increase in **either** region
+- [ ] 13.1 Add the missing `lang` attribute to the base template, and verify `element-required-attributes` reaches zero in the chrome region
+- [ ] 13.2 Give each landmark on a page with more than one of the same kind a unique accessible name, and verify `unique-landmark` reaches zero
+- [ ] 13.3 Give every form control in the documentation an associated label and a non-duplicate name, and verify `wcag/h71` and `form-dup-name` reach zero
+- [ ] 13.4 Add `type` to every button in the documentation and convert the `input`-as-button examples to real buttons, and verify `no-implicit-button-type` and `prefer-button` reach zero
+- [ ] 13.5 Remove redundant `for` attributes and close all implicitly-closed elements, and verify `no-redundant-for` and `no-implicit-close` reach zero
+- [ ] 13.6 Tighten the chrome region's recorded baseline in this same change, and verify CI fails on any subsequent increase in **either** region
 
-## 13. Style Cleanup and Baseline Tightening
+## 14. Style Cleanup and Baseline Tightening
 
 *Capability: `docs-markup`. The recorded baseline is 97% these two rules. They are style, not correctness, but leaving them makes every future gate run unreadable.*
 
-- [ ] 13.1 Convert the documentation's single-quoted attributes to double quotes across the templates and content, and verify `attr-quotes` reaches zero with the rule left enabled — it is a house style, not a defect, so switching it off would be a one-line diff that permanently weakens the gate
-- [ ] 13.2 Strip the template-internal whitespace that leaks into the rendered documentation, and verify `no-trailing-whitespace` reaches zero
-- [ ] 13.3 Move inline presentation in the documentation out of markup, and verify `no-inline-style` reaches zero
-- [ ] 13.4 Tighten both regions' recorded baselines in this same change, and verify every disabled rule in the committed configuration states why it is disabled
+- [ ] 14.1 Convert the documentation's single-quoted attributes to double quotes across the templates and content, and verify `attr-quotes` reaches zero with the rule left enabled — it is a house style, not a defect, so switching it off would be a one-line diff that permanently weakens the gate
+- [ ] 14.2 Strip the template-internal whitespace that leaks into the rendered documentation, and verify `no-trailing-whitespace` reaches zero
+- [ ] 14.3 Move inline presentation in the documentation out of markup, and verify `no-inline-style` reaches zero
+- [ ] 14.4 Tighten both regions' recorded baselines in this same change, and verify every disabled rule in the committed configuration states why it is disabled
 
-## 14. Font Loading
+## 15. Font Loading
 
 *Capability: `component-contract`. Changes the framework's default network behavior.*
 
-- [ ] 14.1 Default the font source to disabled so the shipped stylesheet initiates no third-party request, and verify the built stylesheet contains no `@import url(...)` to a remote origin
-- [ ] 14.2 Provide a documented way for a consumer who wants the framework's fonts to load them, and verify the opt-in is discoverable from the configuration
-- [ ] 14.3 Verify the font stack still degrades acceptably with the framework fonts absent
-- [ ] 14.4 Record the behavior change in `UPGRADE.md` with the migration stated, and in the `2.0.0` section of `CHANGELOG.md`
+- [ ] 15.1 Default the font source to disabled so the shipped stylesheet initiates no third-party request, and verify the built stylesheet contains no `@import url(...)` to a remote origin
+- [ ] 15.2 Provide a documented way for a consumer who wants the framework's fonts to load them, and verify the opt-in is discoverable from the configuration
+- [ ] 15.3 Verify the font stack still degrades acceptably with the framework fonts absent
+- [ ] 15.4 Record the behavior change in `UPGRADE.md` with the migration stated, and in the `2.0.0` section of `CHANGELOG.md`
 
-## 15. Documentation of the Framework Contract
+## 16. Documentation of the Framework Contract
 
 *Capability: `component-contract`, `docs-markup`.*
 
-- [ ] 15.1 Document the `input[id^=collapsible]` identifier contract explicitly, rather than leaving consumers to infer it from the stylesheet, and record that 2.x does not change it
-- [ ] 15.2 Document which element types are interchangeable for the toggle's bars and why, so the constraint is discoverable before a consumer hits it
-- [ ] 15.3 Document the breaking changes with before-and-after markup for each, pointing at `UPGRADE.md` as the canonical location rather than restating them in a second place that can drift
-- [ ] 15.4 Document the verification workflow for contributors, and verify the documented command runs the same gates as continuous integration
+- [ ] 16.1 Document the `input[id^=collapsible]` identifier contract explicitly, rather than leaving consumers to infer it from the stylesheet, and record that 2.x does not change it
+- [ ] 16.2 Document which element types are interchangeable for the toggle's bars and why, so the constraint is discoverable before a consumer hits it
+- [ ] 16.3 Document the breaking changes with before-and-after markup for each, pointing at `UPGRADE.md` as the canonical location rather than restating them in a second place that can drift
+- [ ] 16.4 Document the verification workflow for contributors, and verify the documented command runs the same gates as continuous integration
 
-## 16. Remaining Dependency Findings
+## 17. Remaining Dependency Findings
 
 *Capability: `build-verification`. Deliberately last. The toolchain replacement in group 4 resolves most of the 92 findings, so this group is only what is left over.*
 
-- [ ] 16.1 Record the post-replacement `npm audit` finding count against the baseline taken in 4.2, so the remaining debt is measurable
-- [ ] 16.2 For each remaining finding, record whether it is reachable from this repository's build or development workflow
-- [ ] 16.3 Resolve the reachable ones and confirm the rest cannot affect a consumer, since consumers use the prebuilt stylesheet and never run this tree
+- [ ] 17.1 Record the post-replacement `npm audit` finding count against the baseline taken in 4.2, so the remaining debt is measurable
+- [ ] 17.2 For each remaining finding, record whether it is reachable from this repository's build or development workflow
+- [ ] 17.3 Resolve the reachable ones and confirm the rest cannot affect a consumer, since consumers use the prebuilt stylesheet and never run this tree

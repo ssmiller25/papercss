@@ -90,3 +90,56 @@ The changelog and upgrade document SHALL be updated in the same change as the be
 
 - **WHEN** the entries for a group of changes are planned to be written after all of them land
 - **THEN** each change is required to carry its own entry instead
+
+### Requirement: The documentation points at the artifacts this repository publishes
+
+Every download, install and build instruction in the documentation SHALL reference artifacts published by this repository. An instruction pointing at another project's releases SHALL be treated as a defect, since it delivers a different framework than the one being documented.
+
+#### Scenario: A download button targets another project
+
+- **WHEN** a documented download link resolves to a release published elsewhere
+- **THEN** verification fails
+- **AND** the link is repointed at this repository's release rather than left as a working link to the wrong artifact
+
+#### Scenario: Build instructions target another project
+
+- **WHEN** the documentation tells a consumer to clone or build from a repository other than this one
+- **THEN** verification fails
+- **AND** the sources are known to differ, so following the instruction produces a different result
+
+#### Scenario: A consumer follows the primary download path
+
+- **WHEN** a consumer uses the documentation's main download control
+- **THEN** they receive an artifact published by this repository
+
+### Requirement: The documented version has one source
+
+The version the documentation names SHALL come from a single place, and SHALL be verified against the released version rather than restated by hand. A version duplicated across files SHALL NOT be left unverified.
+
+#### Scenario: The documented version drifts from the release
+
+- **WHEN** the version the documentation names disagrees with the version being released
+- **THEN** verification fails
+- **AND** a stale download link is treated as a build failure rather than a cosmetic defect
+
+#### Scenario: A version is stated in several places
+
+- **WHEN** the same version appears in more than one documented location
+- **THEN** the locations read from the single source rather than repeating the literal
+- **AND** the number of hand-edits a release requires does not grow with the number of pages mentioning it
+
+### Requirement: Every documented way to obtain the framework is satisfiable
+
+Where the documentation describes more than one way to obtain or consume the framework, each SHALL be satisfiable by what a release actually publishes. A documented path that no release supports SHALL be treated as a defect.
+
+#### Scenario: A documented consumption path has no artifact
+
+- **WHEN** the documentation describes consuming the framework in a way the published set does not support
+- **THEN** verification fails
+- **AND** the path is either supported by the release or removed from the documentation
+
+#### Scenario: A manual release step remains
+
+- **WHEN** a step of publishing is still performed by hand
+- **THEN** the documented procedure states so explicitly
+- **AND** it does not imply an automation that does not exist

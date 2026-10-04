@@ -226,3 +226,52 @@ The gates SHALL verify that every custom property the default theme declares is 
 - **WHEN** a component's custom property is absent from the active theme
 - **THEN** the component renders with a default-theme value
 - **AND** this is a failure of the theme gate rather than a rendering detail to be noted in review
+
+### Requirement: A release is produced by a tag, and only from a verified tree
+
+A release SHALL be triggered by pushing a version tag. The tag SHALL be the single source of truth for the release's version, and no artifact SHALL be published before the repository's own gates pass. A version disagreement SHALL fail the release rather than warn.
+
+#### Scenario: The tag and the declared version disagree
+
+- **WHEN** a release tag does not match the version the package declares
+- **THEN** the release fails
+- **AND** nothing is published
+
+#### Scenario: The tree fails its gates
+
+- **WHEN** a release is triggered from a commit whose gates fail
+- **THEN** nothing is published
+- **AND** the gates run before publication rather than after it
+
+#### Scenario: The gate sequence is restated for the release
+
+- **WHEN** a release workflow spells out the verification steps itself
+- **THEN** that is treated as a second source of truth
+- **AND** the release is required to invoke the same single entry point contributors run
+
+#### Scenario: A prerelease is tagged
+
+- **WHEN** a tag carries a prerelease version
+- **THEN** the release is published as a prerelease
+- **AND** it does not become the release consumers are offered as current
+
+### Requirement: Published artifacts are a defined, complete set
+
+A release SHALL publish a defined set of artifacts, and SHALL fail rather than publish an incomplete set. The set SHALL include everything the documentation tells consumers to obtain. Published artifacts SHALL be traceable to the repository and commit they were built from.
+
+#### Scenario: A documented artifact is missing
+
+- **WHEN** a release would omit an artifact the documentation directs consumers to
+- **THEN** the release fails
+- **AND** a smaller set is not accepted as a partial release
+
+#### Scenario: The source distribution is omitted
+
+- **WHEN** consumers are documented as building from the framework's source
+- **THEN** the release publishes a source archive containing that source
+- **AND** a release carrying only compiled CSS does not satisfy the documented path
+
+#### Scenario: An artifact's origin is unprovable
+
+- **WHEN** a consumer needs to determine which build a downloaded artifact came from
+- **THEN** the release records the repository and commit it was built from

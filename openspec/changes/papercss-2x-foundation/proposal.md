@@ -62,14 +62,23 @@ That is the whole thesis of this change in miniature — a shipped artifact that
 - Reconstruct `CHANGELOG.md` from the repository's 25 existing tags; the project currently ships no changelog at all, so 24 releases are undocumented.
 - Add `UPGRADE.md` stating, per breaking change, the before and after, why it changed, and the substitution — including the Sass consumer migration from assigning before `@import` to `with (...)`.
 
+**Release pipeline**
+- Replace the manual release in `DISTRIBUTING.md` with a tag-triggered workflow that runs `make check` before publishing anything, so no release is cut from a tree that fails its own gates.
+- Treat the tag as the only version number, failing the release when `package.json` disagrees rather than warning — today the version is duplicated across three files with nothing verifying they agree.
+- Publish `paper.css`, `paper.min.css` and an SCSS source archive as GitHub Release artifacts, with provenance tying each to the commit it was built from. The source archive is required once `@import` is gone, or the documented Sass path has nothing to consume.
+- Publish prereleases as prereleases, so a release candidate cannot ship as the stable version.
+- Repoint the documentation at this repository's releases. It currently sends its primary download buttons to `github.com/rhyneav/papercss` and its clone URL to `github.com/papercss/papercss` — both upstream — so the documented download and build instructions hand users the original author's framework.
+- Move the documentation's hardcoded version to a single gated source, so six duplicated `1.9.2` strings become a build failure rather than a stale link.
+- Leave `npm publish` as a documented manual step; a release that half-succeeds is worse than either channel alone.
+
 ## Capabilities
 
 ### New Capabilities
 
-- `build-verification`: the gates that decide whether this repository may ship — a correctness ruleset over the built stylesheet, a ratcheted baseline over the built documentation partitioned into demos and page chrome, build determinism, `dist/`-in-sync-with-`src/`, dark-theme completeness, and exact tool pinning on maintained versions.
+- `build-verification`: the gates that decide whether this repository may ship — a correctness ruleset over the built stylesheet, a ratcheted baseline over the built documentation partitioned into demos and page chrome, build determinism, `dist/`-in-sync-with-`src/`, dark-theme completeness, exact tool pinning on maintained versions, and a tag-triggered release that cannot run before those gates pass.
 - `component-contract`: what the collapsible and navbar components guarantee to the people using them — the frozen `input[id^=collapsible]` identifier contract, keyboard operability, no content-clipping height cap, a documented valid toggle markup, and the dark theme as a preserved surface.
 - `docs-markup`: the documentation site as reference implementation — valid, accessible, self-consistent markup on every page, with the demos that users copy driven to zero independently of the page template.
-- `release-documentation`: what a release owes the people upgrading to it — a changelog covering every tagged release, and an upgrade document that states each breaking change's before, after, reason, and substitution.
+- `release-documentation`: what a release owes the people upgrading to it — a changelog covering every tagged release, an upgrade document that states each breaking change's before, after, reason, and substitution, and documentation that points at the artifacts this repository publishes.
 
 ### Modified Capabilities
 
@@ -87,14 +96,18 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 - `docs/layouts/**` and `docs/content/**` — the markup the framework teaches
 
 **Tooling and CI**
-- New `Makefile`, `.devcontainer/`, `.github/workflows/ci.yml`
-- New `scripts/check-html.mjs`, `scripts/check-theme.mjs`, `scripts/check-css-equivalence.mjs`, `.htmlvalidate.json`, `.htmlvalidate-baseline.json`, `.stylelint-dist.json`
+- New `Makefile`, `.devcontainer/`, `.github/workflows/verify.yml`
+- New `scripts/check-html.mjs`, `scripts/check-theme.mjs`, `scripts/check-css-equivalence.mjs`, `scripts/check-release.mjs`, `.htmlvalidate.json`, `.htmlvalidate-baseline.json`, `.stylelint-dist.json`
+- New `.github/workflows/release.yml` — tag-triggered, gated on `make check`, attaches the artifact set to the GitHub Release
 - `package.json` — `hugo-bin` removed, `sass`/`postcss`/`autoprefixer`/`cssnano`/`stylelint` replaced with current majors, new gate scripts, npm `exports` for the Sass entry point
 - `package-lock.json` — rewritten at the current lockfile version
 - `dist/paper.css`, `dist/paper.min.css` — tracked and regenerated; content changes once the defect fixes land, and once more for the toolchain replacement's formatting
 
 **Documentation**
 - New `CHANGELOG.md` and `UPGRADE.md`; `README.md` gains links to both
+- `DISTRIBUTING.md` — rewritten as the tag-and-watch procedure, with the manual `npm publish` step recorded as still manual
+- `docs/content/_index.md` — the version moves to a single gated source, and every download and clone URL is repointed at this repository. This file currently sends users to `rhyneav/papercss` and `papercss/papercss` for both downloading and building
+- `docs/config.toml` or site data — the single source the documentation reads its version and repository URLs from
 
 **Compatibility**
 - **BREAKING** for the toggle markup: `<div class="barN">` becomes `<span class="barN">`. Both are class-styled, so existing CSS keeps working, but any consumer selector written against the element type breaks.
