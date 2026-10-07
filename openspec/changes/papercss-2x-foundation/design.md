@@ -162,11 +162,11 @@ The first is that a change would not fail loudly. The downstream theme vendors `
 | Deprecation | Occurrences | Removal target |
 |---|---|---|
 | `@import` | 29 | **3.0.0** |
-| global built-ins (`map-get`, `map-keys`, `str-length`) | 11 | **3.0.0** |
+| global built-ins (`map-get`, `map-keys`, `str-slice`, `str-index`, `str-length`) | 14 | **3.0.0** |
 | `darken()` / `lighten()` | 62 | 3.0.0 |
 | **`/` division** | **2 sites** | **2.0.0** |
 
-There is no Sass 2.x to move to — `latest` is 1.105.1 and no 2.x release exists. So the target is **the current 1.x**, and the work is: fix the two `/` division sites in `src/layout/_flexbox.scss` (lines 7 and 8, both in `create-flex-classes`), and migrate the 73 global built-in calls to their `sass:` module equivalents so the color-function warnings go away. `@import` stays.
+There is no Sass 2.x to move to — `latest` is 1.105.1 and no 2.x release exists. So the target is **the current 1.x**, and the work is: fix the two `/` division sites in `src/layout/_flexbox.scss` (lines 7 and 8, both in `create-flex-classes`), and migrate the 76 global built-in calls off the global namespace so the color-function warnings go away. `@import` stays.
 
 **The consequence worth the most: 2.0 ships with no Sass-consumer break.** `_config.scss` carries **109 `!default` declarations**, and that is how consumers configure the framework — assign `$primary` before importing, and the `!default` honours it. That mechanism works identically on 1.x. Migrating to `@use` would move configuration to `with (...)` and break every Sass consumer, but nothing forces that before 3.0.0, so 2.0 does not do it. The migration remains available as separately reviewable work when 3.0.0 makes it necessary.
 
@@ -174,7 +174,7 @@ There is no Sass 2.x to move to — `latest` is 1.105.1 and no 2.x release exist
 
 **Ordering.** This lands *before* the framework defect fixes, not last. Every later verification then runs against the toolchain that actually ships, and the two-stylelint workaround disappears as part of it instead of lingering as a permanent oddity.
 
-**Cost accepted.** Migrating 73 built-in calls and the 76 global Sass function calls the modern stylelint flags is real work in the sources. Adopting the remaining ~186 `@import`-related deprecation warnings is not, and is not done.
+**Cost accepted.** Migrating 76 built-in calls is real work in the sources. Adopting the remaining ~186 `@import`-related deprecation warnings is not, and is not done.
 
 ### Decision 10: The dark theme is a preserved surface, verified by resolved value
 
@@ -226,7 +226,7 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **The Sass migration can silently alter the theme** → The highest-consequence risk in this change, and the reason Decision 10 exists. The 56 palette-computing `darken`/`lighten` calls are removed in Dart Sass 3.0.0; substituted carelessly, the palette resolves to different colours or to nothing, and the build still succeeds. The risk is real but dated — nothing is at risk on 1.x today, where these calls warn rather than fail. Mitigated by recording every theme custom property with its resolved value *before* migrating, by gating on the presence of the `html.dark` block and the completeness of its property set, and by comparing values rather than accepting a successful compile.
 
-**Migrating the built-in calls risks changing resolved values** → The 73 replacements are not all mechanical equivalents: `color.adjust` and `color.scale` treat an `rgba`'s alpha differently, so a careless substitution silently alters a theme colour. Mitigated by recording the resolved declaration set before touching anything, comparing values per selector afterward, and calling out the `rgba` cases individually.
+**Migrating the built-in calls risks changing resolved values** → The 76 replacements are not all mechanical equivalents, and the colour ones are the trap: `lighten`/`darken` clamp the resulting lightness to 0-100%, `color.adjust` does not, and `color.scale` uses a different formula entirely. Seven theme values (including `--primary-dark`, which is `black` only because `darken(#41403e, 50%)` clamps -25% to 0) depend on that clamping, and Sass's own deprecation message suggests the non-clamping form. Mitigated by recording the resolved declaration set before touching anything, comparing values per selector afterward, and using a clamping helper verified value-identical to both functions including `rgba` alpha.
 
 **Replacing the linter changes what the authoring gate accepts** → The modern equivalent of `stylelint-config-sass-guidelines` flags 76 global Sass function calls the current configuration does not. Those are migrated as their own task rather than absorbed by disabling rules, so the authoring gate is not quietly weakened to make the migration land.
 

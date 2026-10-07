@@ -2,6 +2,8 @@
   Global PaperCSS Config
 */
 
+@use 'sass:map';
+
 // The src for fonts (false to disable)
 $font-src: 'https://fonts.googleapis.com/css?family=Neucha|Patrick+Hand+SC&display=swap' !default;
 
@@ -19,44 +21,44 @@ $warning: #ddcd45 !default;
 $danger: #a7342d !default;
 $muted: #868e96 !default;
 
-$primary-light: lighten($primary, 55%) !default;
-$secondary-light: lighten($secondary, 48%) !default;
-$success-light: lighten($success, 32%) !default;
-$warning-light: lighten($warning, 30%) !default;
-$danger-light: lighten($danger, 45%) !default;
-$muted-light: lighten($muted, 35%) !default;
+$primary-light: adjust-lightness($primary, 55%) !default;
+$secondary-light: adjust-lightness($secondary, 48%) !default;
+$success-light: adjust-lightness($success, 32%) !default;
+$warning-light: adjust-lightness($warning, 30%) !default;
+$danger-light: adjust-lightness($danger, 45%) !default;
+$muted-light: adjust-lightness($muted, 35%) !default;
 
-$primary-dark: darken($primary, 50%) !default;
-$secondary-dark: darken($secondary, 50%) !default;
-$success-dark: darken($success, 30%) !default;
-$warning-dark: darken($warning, 30%) !default;
-$danger-dark: darken($danger, 45%) !default;
-$muted-dark: darken($muted, 35%) !default;
+$primary-dark: adjust-lightness($primary, -50%) !default;
+$secondary-dark: adjust-lightness($secondary, -50%) !default;
+$success-dark: adjust-lightness($success, -30%) !default;
+$warning-dark: adjust-lightness($warning, -30%) !default;
+$danger-dark: adjust-lightness($danger, -45%) !default;
+$muted-dark: adjust-lightness($muted, -35%) !default;
 
-$primary-light-10: lighten($primary, 10%) !default;
-$secondary-light-10: lighten($secondary, 10%) !default;
-$success-light-10: lighten($success, 10%) !default;
-$warning-light-10: lighten($warning, 10%) !default;
-$danger-light-10: lighten($danger, 10%) !default;
-$muted-light-10: lighten($muted, 10%) !default;
+$primary-light-10: adjust-lightness($primary, 10%) !default;
+$secondary-light-10: adjust-lightness($secondary, 10%) !default;
+$success-light-10: adjust-lightness($success, 10%) !default;
+$warning-light-10: adjust-lightness($warning, 10%) !default;
+$danger-light-10: adjust-lightness($danger, 10%) !default;
+$muted-light-10: adjust-lightness($muted, 10%) !default;
 
-$primary-dark-10: darken($primary, 10%) !default;
-$secondary-dark-10: darken($secondary, 10%) !default;
-$success-dark-10: darken($success, 23%) !default;
-$warning-dark-10: darken($warning, 30%) !default;
-$danger-dark-10: darken($danger, 10%) !default;
-$muted-dark-10: darken($muted, 10%) !default;
+$primary-dark-10: adjust-lightness($primary, -10%) !default;
+$secondary-dark-10: adjust-lightness($secondary, -10%) !default;
+$success-dark-10: adjust-lightness($success, -23%) !default;
+$warning-dark-10: adjust-lightness($warning, -30%) !default;
+$danger-dark-10: adjust-lightness($danger, -10%) !default;
+$muted-dark-10: adjust-lightness($muted, -10%) !default;
 
-$primary-shaded-70: lighten($primary, 70%) !default;
-$primary-shaded-50: lighten($primary, 50%) !default;
+$primary-shaded-70: adjust-lightness($primary, 70%) !default;
+$primary-shaded-50: adjust-lightness($primary, 50%) !default;
 
 $white-dark: rgba(#000, 0.03) !default;
-$white-dark-light-80: lighten($white-dark, 80%) !default;
+$white-dark-light-80: adjust-lightness($white-dark, 80%) !default;
 $light-dark: rgba(#000, 0.7) !default;
 $white: rgba(#fff, 1) !default;
 $main-background: rgba(#fff, 1) !default;
 $black: rgba(#000, 1) !default;
-$main-background-light: lighten($main-background, 50%) !default;
+$main-background-light: adjust-lightness($main-background, 50%) !default;
 
 $primary-text: $primary-dark-10 !default;
 $secondary-text: $secondary-dark-10 !default;
@@ -81,43 +83,43 @@ $dark-warning: #d4c252 !default;
 $dark-danger: #df4c57 !default;
 $dark-muted: #868e96 !default;
 
-$dark-primary-light: lighten($dark-primary, 5%) !default;
-$dark-secondary-light: lighten($dark-secondary, 5%) !default;
-$dark-success-light: lighten($dark-success, 5%) !default;
-$dark-warning-light: lighten($dark-warning, 5%) !default;
-$dark-danger-light: lighten($dark-danger, 5%) !default;
-$dark-muted-light: lighten($dark-muted, 5%) !default;
+$dark-primary-light: adjust-lightness($dark-primary, 5%) !default;
+$dark-secondary-light: adjust-lightness($dark-secondary, 5%) !default;
+$dark-success-light: adjust-lightness($dark-success, 5%) !default;
+$dark-warning-light: adjust-lightness($dark-warning, 5%) !default;
+$dark-danger-light: adjust-lightness($dark-danger, 5%) !default;
+$dark-muted-light: adjust-lightness($dark-muted, 5%) !default;
 
-$dark-primary-dark: darken($dark-primary, 50%) !default;
-$dark-secondary-dark: darken($dark-secondary, 30%) !default;
-$dark-success-dark: darken($dark-success, 35%) !default;
-$dark-warning-dark: darken($dark-warning, 30%) !default;
-$dark-danger-dark: darken($dark-danger, 30%) !default;
-$dark-muted-dark: darken($dark-muted, 35%) !default;
+$dark-primary-dark: adjust-lightness($dark-primary, -50%) !default;
+$dark-secondary-dark: adjust-lightness($dark-secondary, -30%) !default;
+$dark-success-dark: adjust-lightness($dark-success, -35%) !default;
+$dark-warning-dark: adjust-lightness($dark-warning, -30%) !default;
+$dark-danger-dark: adjust-lightness($dark-danger, -30%) !default;
+$dark-muted-dark: adjust-lightness($dark-muted, -35%) !default;
 
-$dark-primary-light-10: lighten($dark-primary, 10%) !default;
-$dark-secondary-light-10: lighten($dark-secondary, 10%) !default;
-$dark-success-light-10: lighten($dark-success, 10%) !default;
-$dark-warning-light-10: lighten($dark-warning, 10%) !default;
-$dark-danger-light-10: lighten($dark-danger, 10%) !default;
-$dark-muted-light-10: lighten($dark-muted, 10%) !default;
+$dark-primary-light-10: adjust-lightness($dark-primary, 10%) !default;
+$dark-secondary-light-10: adjust-lightness($dark-secondary, 10%) !default;
+$dark-success-light-10: adjust-lightness($dark-success, 10%) !default;
+$dark-warning-light-10: adjust-lightness($dark-warning, 10%) !default;
+$dark-danger-light-10: adjust-lightness($dark-danger, 10%) !default;
+$dark-muted-light-10: adjust-lightness($dark-muted, 10%) !default;
 
-$dark-primary-dark-10: darken($dark-primary, 10%) !default;
-$dark-secondary-dark-10: darken($dark-secondary, 10%) !default;
-$dark-success-dark-10: darken($dark-success, 10%) !default;
-$dark-warning-dark-10: darken($dark-warning, 10%) !default;
-$dark-danger-dark-10: darken($dark-danger, 10%) !default;
-$dark-muted-dark-10: darken($dark-muted, 10%) !default;
+$dark-primary-dark-10: adjust-lightness($dark-primary, -10%) !default;
+$dark-secondary-dark-10: adjust-lightness($dark-secondary, -10%) !default;
+$dark-success-dark-10: adjust-lightness($dark-success, -10%) !default;
+$dark-warning-dark-10: adjust-lightness($dark-warning, -10%) !default;
+$dark-danger-dark-10: adjust-lightness($dark-danger, -10%) !default;
+$dark-muted-dark-10: adjust-lightness($dark-muted, -10%) !default;
 
-$dark-primary-shaded-70: darken($primary, 7%) !default;
-$dark-primary-shaded-50: darken($primary, 5%) !default;
+$dark-primary-shaded-70: adjust-lightness($primary, -7%) !default;
+$dark-primary-shaded-50: adjust-lightness($primary, -5%) !default;
 
 $dark-white-dark: rgba(#fff, 0.03) !default;
-$dark-white-dark-light-80: lighten($dark-white-dark, 80%) !default;
+$dark-white-dark-light-80: adjust-lightness($dark-white-dark, 80%) !default;
 $dark-light-dark: rgba(#fff, 0.7) !default;
 $dark-white: rgba(#fff, 1) !default;
 $dark-main-background: rgba($primary, 1) !default;
-$dark-main-background-light: lighten($dark-main-background, 50%) !default;
+$dark-main-background-light: adjust-lightness($dark-main-background, 50%) !default;
 $dark-black: rgba(#000, 1) !default;
 
 $dark-primary-text: $primary !default;
@@ -239,21 +241,21 @@ $theme-map: (
 
 
 html {
-  @each $var in map-keys(map-get($theme-map, 'light')) {
-    --#{$var}: #{map-get(map-get($theme-map, 'light'), $var)};
+  @each $var in map.keys(map.get($theme-map, 'light')) {
+    --#{$var}: #{map.get(map.get($theme-map, 'light'), $var)};
   }
 }
 
 html.dark {
-  @each $var in map-keys(map-get($theme-map, 'dark')) {
-    --#{$var}: #{map-get(map-get($theme-map, 'dark'), $var)};
+  @each $var in map.keys(map.get($theme-map, 'dark')) {
+    --#{$var}: #{map.get(map.get($theme-map, 'dark'), $var)};
   }
 }
 
 
 @mixin color($property, $varName) {
   // IE falls back to light theme always
-  #{$property}: #{map-get(map-get($theme-map, 'light'), 'primary')};
+  #{$property}: #{map.get(map.get($theme-map, 'light'), 'primary')};
   #{$property}: var(--#{$varName});
 }
 

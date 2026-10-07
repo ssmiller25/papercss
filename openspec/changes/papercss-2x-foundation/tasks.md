@@ -64,20 +64,20 @@
 
 *Capability: `build-verification`. Deliberately **not** last. The pipeline currently needs two stylelints — local 13 for the sources, plus a pinned global 17 for the generated-CSS gate, because 13 has no `declaration-property-value-no-unknown`. That is a direct consequence of the 2019 tree, and it means the gate that catches `padding: none` cannot run through `npm run lint`. 2.0 is the breaking release, so it is the place to move once. This group also runs before the framework fixes so every later verification runs against the toolchain that actually ships.*
 
-*Verified before planning, so the tasks below are counts and not estimates: **73** global Sass built-in calls (33 `lighten`, 29 `darken`, 8 `map-get`, 2 `map-keys`, 1 `str-length`), **29** `@import`s in `src/styles.scss` with no `@use`/`@forward` anywhere, and **109** `!default` declarations in `_config.scss`. Installed sass is 1.29.0.*
+*Verified before planning, so the tasks below are counts and not estimates: **76** global Sass built-in calls (33 `lighten`, 29 `darken`, 8 `map-get`, 2 `map-keys`, 2 `str-slice`, 1 `str-index`, 1 `str-length`), **29** `@import`s in `src/styles.scss` with no `@use`/`@forward` anywhere, and **109** `!default` declarations in `_config.scss`. Installed sass is 1.29.0.*
 
 *Corrected after further measurement. This group originally targeted Sass 2.x, on the assumption that 2.0 removes `@import` and the global built-ins. It does not — there is no Sass 2.x, and `latest` is 1.105.1. Compiling the current sources with it reports:*
 
 | Deprecation | Occurrences | Removal target |
 |---|---|---|
 | `@import` | 29 | **3.0.0** |
-| global built-ins | 11 | **3.0.0** |
+| global built-ins | 14 | **3.0.0** |
 | `darken()` / `lighten()` | 62 | 3.0.0 |
 | **`/` division** | **2 sites** | **2.0.0** |
 
 *plus `164 repetitive deprecation warnings omitted` — roughly 186 real occurrences in total.*
 
-*So the target is the current **1.x**, and the work is much smaller than planned: fix the two `/` division sites in `src/layout/_flexbox.scss`, and migrate the 73 built-in calls so the color-function warnings go away. **`@import` stays**, which is the significant consequence — the 109 `!default` overrides keep working, so **2.0 ships with no Sass-consumer break** and no new configuration mechanism is needed. The `@use` migration remains available as separate work when 3.0.0 forces it.*
+*So the target is the current **1.x**, and the work is much smaller than planned: fix the two `/` division sites in `src/layout/_flexbox.scss`, and migrate the 76 built-in calls so the color-function warnings go away. **`@import` stays**, which is the significant consequence — the 109 `!default` overrides keep working, so **2.0 ships with no Sass-consumer break** and no new configuration mechanism is needed. The `@use` migration remains available as separate work when 3.0.0 forces it.*
 
 - [x] 4.1 Record the resolved declaration set for every selector in `dist/paper.css` — property **and** value — so the replacement can be verified for equivalence rather than by byte comparison. A set of property names alone is not acceptable, because it would pass a wholesale palette rewrite (see task 5.1)
 *4.1 delivered `scripts/record-css-declarations.mjs` and the committed record `.css-declarations.json`: **596 rules, 1603 declarations**, sha256 `7a7be54e`. Values are recorded, not just property names — a name-only record would produce an identical result for a toolchain change that rewrote every colour in the palette, which is the specific failure the record exists to prevent.*
@@ -125,9 +125,26 @@
 
 *Verified: build succeeds, `--check` reports 0 differences against the re-baselined record, and `slash-div` and `legacy-js-api` warnings are both absent. Remaining warnings are the 5 deduped `color-functions` and 5 deduped `global-builtin` for 4.4, and 5 deduped `import` which is deliberately accepted.*
 
-- [ ] 4.4 Migrate the 73 global built-in calls to their module equivalents, and verify the built stylesheet's resolved declarations match the set recorded in 4.1 exactly
+- [x] 4.4 Migrate the 76 global built-in calls off the global namespace, and verify the built stylesheet's resolved declarations match the committed record exactly. The colour calls use a clamping helper, **not** `color.adjust`: `lighten`/`darken` clamp lightness to 0-100% and `color.adjust` does not. The 14 `map.*`/`string.*` calls are mechanical
+*4.4 landed. All 62 `color-functions` and `global-builtin` warnings are gone; only the accepted `@import` warnings remain. The record reports **0 differences**, so the palette is byte-identical to the post-bump baseline.*
+
+*Two corrections to the spec's premise, both found by measuring rather than substituting:*
+
+- ***The count was 76, not 73.*** *The original figure omitted `str-slice` (2) and `str-index` (1) because the scan that produced it only looked for the five functions already listed. The full set is 33 `lighten`, 29 `darken`, 8 `map-get`, 2 `map-keys`, 2 `str-slice`, 1 `str-index`, 1 `str-length`. Corrected in the proposal, the group note, the removal table, and Decision 9.*
+
+- ***`color.adjust` is not the equivalent of `lighten`/`darken`, and the migration it implied would have broken the palette.*** *`lighten`/`darken` clamp the resulting lightness to 0-100%; `color.adjust` does not. `color.scale` uses a different formula again. This is load-bearing: `--primary-dark` is `black` only because `darken(#41403e, 50%)` clamps -25% to 0, and the same is true of `--secondary-dark`, `--danger-dark`, `--main-background-light`, and three `html.dark` values. Migrating to `color.adjust` as planned put seven declarations out of range as `hsl(40, 2.36%, -25.0980392157%)` and similar — verified, not predicted. `paper.min.css` was unaffected because cssnano clamps them back, so the damage would have been confined to the shipped, human-readable `paper.css` — the artifact a consumer reads and copies from. That is exactly the "looks fine, is wrong" shape this change exists to prevent.*
+
+*So the 62 colour calls migrate to a new `adjust-lightness($color, $amount)` helper in `src/core/_color.scss`, which restores the clamping. Positive amounts lighten and negative darken, and it is verified value-identical to both originals, including `rgba` inputs where the alpha channel is preserved (the `--white-dark-light-80` case Decision 10 flags). The 14 `map.*` and `string.*` calls are mechanical and need no helper.*
+
+*Two details worth recording:*
+
+- *`str-replace` is a **local** function, not a built-in, so its name is unchanged; only its body's `str-index`/`str-slice`/`str-length` calls migrated. It is exercised by `_forms.scss`, so the record's 0 differences actually test that path rather than leaving it dead code.*
+- *The helper's rationale is written as `//` comments rather than `/* */`, because Sass emits loud comments into the built stylesheet. The first version added 28 lines of rationale to `dist/paper.css`; the source keeps the reasoning and the output gains only a three-line header.*
+
+*The helper is also a deliberate addition to the framework's global namespace. It is `adjust-lightness` rather than `shade` to be unambiguous at 62 call sites, and it follows the existing convention of unprefixed global helpers such as `str-replace` and `resp`.*
+
 - [ ] 4.5 Verify the configuration mechanism still works after the toolchain change — a real `!default` override, assigned before `@import`, honoured by the current compiler. This is a regression guard on a public API this change deliberately preserves, so that a future 3.0.0 migration is a conscious break rather than an accident
-- [ ] 4.6 Replace `postcss`, `autoprefixer`, and `cssnano` with current releases, and verify the resolved declarations still match 4.1
+- [ ] 4.6 Replace `postcss`, `autoprefixer`, and `cssnano` with current releases, and verify the resolved declarations still match the committed record. **Include colour normalisation of the unminified output**: sass 1.79+ stopped rounding colour channels to 8-bit and emits full-precision `rgb(80.3767176162%, …)` instead of `#cdcccb`, which cssnano already normalises in `paper.min.css` but nothing does for `paper.css` — a 7.1% size increase and a much harder file to read. Adding `postcss-colormin` (the plugin cssnano already uses internally) to the autoprefixer step restores `#cdcccb`, removes the 7%, and strips 116 notation-only differences out of the record so every later toolchain comparison is readable
 - [ ] 4.7 Replace `stylelint` 13 and `stylelint-config-sass-guidelines` with a current stylelint and an equivalent configuration, and verify the sources still pass the authoring ruleset
 - [ ] 4.8 Migrate the sources off the 76 global Sass function calls the modern configuration flags, and verify the flag count reaches zero with the resolved declarations unchanged. These are migrated rather than silenced by disabling rules, so the authoring gate is not weakened to make the migration land
 - [ ] 4.9 Unify the two stylelints into one project-local version, and verify `make check` runs the generated-CSS gate through the project's own install with no tool resolved from outside it
@@ -145,7 +162,7 @@
 - [ ] 5.1 Derive the theme's recorded property set from task 4.1's full resolved declaration set rather than recording it independently — `html` and `html.dark` are just two rules in it. Recording it separately would risk capturing post-migration values, which is the one thing a baseline must not be. Values, not just names: a presence check passes a palette rewrite
 - [ ] 5.2 Add a gate asserting `html.dark` declares every custom property `html` declares, and verify it fails when one is removed
 - [ ] 5.3 Add a gate asserting the `html.dark` block exists in the built stylesheet, and verify it fails when the block is dropped
-- [ ] 5.4 Verify the theme's resolved values after task 4.4's migration, against the set scoped in 5.1. **No migration happens here** — 4.4 rewrites all 73 built-in calls, which includes these 56, and doing it twice would mean the second pass silently became the reference. This task is the assertion that the framework's most visible surface came through the toolchain change unchanged
+- [ ] 5.4 Verify the theme's resolved values after task 4.4's migration, against the set scoped in 5.1. **No migration happens here** — 4.4 rewrites all 76 built-in calls, which includes these 56, and doing it twice would mean the second pass silently became the reference. This task is the assertion that the framework's most visible surface came through the toolchain change unchanged
 - [ ] 5.5 Handle the `lighten()`-on-`rgba` cases explicitly during 4.4 — `lighten()` lightens the colour channels and leaves alpha alone, and the maintained equivalents do not all agree on that — and verify `--white-dark-light-80`'s alpha channel is unchanged. This is the one place 4.4's "declarations match" check is too coarse to catch a mistake on its own
 - [ ] 5.6 Verify the build emits no theme-related deprecation warning
 - [ ] 5.7 Render each component from the documentation's dark-mode page in both themes, and verify every one resolves from the theme it should

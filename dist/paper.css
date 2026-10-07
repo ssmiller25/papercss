@@ -1,6 +1,9 @@
 @charset "UTF-8";
 /* PaperCSS core */
 /**
+  PaperCSS colour helpers
+*/
+/**
   Global PaperCSS Config
 */
 @import url("https://fonts.googleapis.com/css?family=Neucha|Patrick+Hand+SC&display=swap");

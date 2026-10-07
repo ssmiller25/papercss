@@ -53,7 +53,7 @@ That is the whole thesis of this change in miniature — a shipped artifact that
 **Build toolchain modernization**
 - Replace the 2019 toolchain with maintained equivalents: sass, postcss, autoprefixer, cssnano, stylelint and its configuration, and the lockfile format.
 - Move to the current Sass 1.x. The only construct Dart Sass 2.0 actually removes is `/` division, and this repository has two sites, both in `create-flex-classes`; `@import` and the global built-ins are deprecated with removal targeted at 3.0.0.
-- Migrate the 73 deprecated global built-in calls (`lighten`, `darken`, `map-get`, `map-keys`, `str-length`) to their `sass:` module equivalents, leaving `@import` in place. The ~186 remaining `@import` deprecation warnings are accepted rather than cleared.
+- Migrate the 76 deprecated global built-in calls (`lighten`, `darken`, `map-get`, `map-keys`, `str-slice`, `str-index`, `str-length`) off the global namespace, leaving `@import` in place. The ~186 remaining `@import` deprecation warnings are accepted rather than cleared. Note the colour calls cannot use the suggested `color.adjust`, which does not clamp the way `lighten`/`darken` do — see the design.
 - Replace the two-stylelint workaround with one project-local linter, so the gate that catches an invalid declaration value runs through `npm run lint`.
 - Verify the replacement by resolved declaration values per selector rather than by byte comparison, since the modern tools emit differently-formatted output.
 
