@@ -52,7 +52,7 @@ That is the whole thesis of this change in miniature — a shipped artifact that
 
 **Build toolchain modernization**
 - Replace the 2019 toolchain with maintained equivalents: sass, postcss, autoprefixer, cssnano, stylelint and its configuration, and the lockfile format.
-- Move to the current Sass 1.x. The only construct Dart Sass 2.0 actually removes is `/` division, and this repository has exactly one site; `@import` and the global built-ins are deprecated with removal targeted at 3.0.0.
+- Move to the current Sass 1.x. The only construct Dart Sass 2.0 actually removes is `/` division, and this repository has two sites, both in `create-flex-classes`; `@import` and the global built-ins are deprecated with removal targeted at 3.0.0.
 - Migrate the 73 deprecated global built-in calls (`lighten`, `darken`, `map-get`, `map-keys`, `str-length`) to their `sass:` module equivalents, leaving `@import` in place. The ~186 remaining `@import` deprecation warnings are accepted rather than cleared.
 - Replace the two-stylelint workaround with one project-local linter, so the gate that catches an invalid declaration value runs through `npm run lint`.
 - Verify the replacement by resolved declaration values per selector rather than by byte comparison, since the modern tools emit differently-formatted output.
@@ -94,7 +94,7 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 - `src/components/_navbar.scss` — the `max-height` cap, `padding: none`, the `.bar*` rules, and the backwards-compatibility `+ button` selectors
 - `src/core/_config.scss` — the `$font-src` default and its `@import url(...)`; the 109 `!default` declarations and 56 `darken`/`lighten` calls that compute both themes; the `html.dark` block
 - `src/core/_config.scss` — 56 `darken`/`lighten` calls and 8 `map-get`/`map-keys`/`str-length` calls migrated to their `sass:` module equivalents
-- `src/layout/_flexbox.scss` — the single `/` division, the only construct Dart Sass 2.0 removes
+- `src/layout/_flexbox.scss` — the two `/` division sites, the only constructs Dart Sass 2.0 removes
 - `docs/config.toml` — markdown handler
 - `docs/layouts/**` and `docs/content/**` — the markup the framework teaches
 
@@ -122,6 +122,6 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 
 **Not in scope**
 - A visual redesign. No component is restyled.
-- Changing the colour palette or the `$colors` map — palette *values* are preserved exactly; only the functions computing them change.
+- Changing the colour palette or the `$colors` map. Palette values are preserved to within 1/255 per channel: Sass 1.79+ truncates colour percentages to 12 significant digits, which shifts five `muted`-grey theme values by one 8-bit step. Recorded in `CHANGELOG.md` under 2.0.0. Only the functions computing them change.
 - Adding `prefers-color-scheme` support. The dark theme stays class-activated; automatic mode is a feature, not a defect fix.
 - Resolving the remaining `npm audit` findings beyond what the toolchain replacement incidentally resolves.

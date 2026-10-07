@@ -73,11 +73,11 @@
 | `@import` | 29 | **3.0.0** |
 | global built-ins | 11 | **3.0.0** |
 | `darken()` / `lighten()` | 62 | 3.0.0 |
-| **`/` division** | **1 site** | **2.0.0** |
+| **`/` division** | **2 sites** | **2.0.0** |
 
 *plus `164 repetitive deprecation warnings omitted` — roughly 186 real occurrences in total.*
 
-*So the target is the current **1.x**, and the work is much smaller than planned: fix the single `/` division at `src/layout/_flexbox.scss:8`, and migrate the 73 built-in calls so the color-function warnings go away. **`@import` stays**, which is the significant consequence — the 109 `!default` overrides keep working, so **2.0 ships with no Sass-consumer break** and no new configuration mechanism is needed. The `@use` migration remains available as separate work when 3.0.0 forces it.*
+*So the target is the current **1.x**, and the work is much smaller than planned: fix the two `/` division sites in `src/layout/_flexbox.scss`, and migrate the 73 built-in calls so the color-function warnings go away. **`@import` stays**, which is the significant consequence — the 109 `!default` overrides keep working, so **2.0 ships with no Sass-consumer break** and no new configuration mechanism is needed. The `@use` migration remains available as separate work when 3.0.0 forces it.*
 
 - [x] 4.1 Record the resolved declaration set for every selector in `dist/paper.css` — property **and** value — so the replacement can be verified for equivalence rather than by byte comparison. A set of property names alone is not acceptable, because it would pass a wholesale palette rewrite (see task 5.1)
 *4.1 delivered `scripts/record-css-declarations.mjs` and the committed record `.css-declarations.json`: **596 rules, 1603 declarations**, sha256 `7a7be54e`. Values are recorded, not just property names — a name-only record would produce an identical result for a toolchain change that rewrote every colour in the palette, which is the specific failure the record exists to prevent.*
@@ -101,7 +101,30 @@
 
 *This is already lower than the **92 findings / 3 critical** recorded in design.md's Context table, and the difference is explained rather than assumed: group 1 removed `hugo-bin` and `pre-commit`, and their dependency trees accounted for 19 findings and 1 critical. The Context table figure was accurate when written and is now stale, so it is corrected rather than left to drift further.*
 
-- [ ] 4.3 Replace `sass` with the current 1.x release, and convert the single `/` division at `src/layout/_flexbox.scss:8` to `math.div` — the only construct Dart Sass 2.0 actually removes, and this repository's only instance of it. `@import` is deliberately **not** migrated; see the correction above
+- [x] 4.3 Replace `sass` with the current 1.x release, and convert the two `/` division sites in `src/layout/_flexbox.scss` to `math.div` — the only constructs Dart Sass 2.0 actually removes, and this repository's only instances of them. `@import` is deliberately **not** migrated; see the correction above
+*4.3 landed: `sass` 1.29.0 → **1.105.1**, and both `/` division sites in `create-flex-classes` now use `math.div` (via `@use 'sass:math'`). The `slash-div` deprecation is gone from the build.*
+
+*Two things were found that the spec did not anticipate:*
+
+- ***The division count was wrong.*** *The spec said one site at `_flexbox.scss:8`. There are **two** — lines 7 and 8, `flex` and `max-width` in the same loop. The original count came from a deduplicated warning, which reports the first occurrence and omits the repeat. Corrected in the task, in Decision 9, and in the proposal.*
+
+- ***The bump surfaced a deprecation the plan had not accounted for.*** *`build/build.js` called `sass.renderSync` and `build/hot-reload.js` called `sass.render`, both the legacy JS API — deprecated and **removed in Dart Sass 2.0.0**, the one thing on the 2.0 list after the division. Upgrading the compiler without changing these would have left the build one major release from breaking. Both now use `sass.compile` / `sass.compileAsync`. The `legacy-js-api` warning is gone. The first attempt at the second file kept a `util.promisify(sass.compileAsync)` wrapper and was caught by smoke-testing rather than shipped: Node warns `DEP0174` because `compileAsync` already returns a Promise, so the wrapper is both unnecessary and itself deprecated. It is now called directly, and `util` is no longer imported.*
+
+*Installing the new compiler also rewrote `package-lock.json` from `lockfileVersion` 1 to 3 — the 5328-line migration group 1 deliberately deferred rather than trigger mid-change. It has now happened as a consequence of the version bump, so task 4.11's rewrite is effectively done and only needs its `npm ci` verification when reached.*
+
+***The palette shifted, and it was accepted deliberately rather than missed.*** *The upgrade changes **122 recorded differences** against the pre-change stylesheet: one rule split in two, and 121 declaration values changed. Categorised and verified channel by channel:*
+
+- *116 are **notation only** — hex → `rgb(%)`, `rgba()` → `hsla()`, `gray` → `rgb(50%, 50%, 50%)`. Every one resolves to the same 8-bit colour.*
+- *5 are **genuine 1/255 shifts**, all in `muted` greys in both themes: `--muted-light-10` (161,**168**,174 → 161,**167**,174) and `--muted-dark-10`/`--muted-text` (108,**117**,125 → 108,**116**,125).*
+
+*The 5 shifts are not a measurement artefact. The true green channel is exactly `167.5`; Sass 1.79+ emits percentages truncated to 12 significant digits, and the truncated value resolves to `167.49999999999`, which a browser rounds to 167 where the exact value rounds to 168. Verified directly: sass ≤ 1.77 reproduces `#a1a8ae` exactly, 1.79–1.89 emit the unrounded `167.5`, and 1.105.1 emits the truncated percentage.*
+
+*This contradicts the proposal's non-goal that palette values are "preserved exactly", so that non-goal is **amended** rather than quietly violated: it now states preservation to within 1/255 per channel, names the cause, and points at the CHANGELOG entry. `color.adjust` does not avoid it — the truncation is in Sass's colour serialisation, so task 4.4's migration meets the same boundary.*
+
+*The record was re-baselined after the bump, because the bump is the intended change and **4.4 must verify against the post-bump baseline** — otherwise its check would fail on differences this task already accepted. The pre-bump record is preserved in this note's counts and in `CHANGELOG.md`; `4.13` owns the consumer-facing statement of the difference.*
+
+*Verified: build succeeds, `--check` reports 0 differences against the re-baselined record, and `slash-div` and `legacy-js-api` warnings are both absent. Remaining warnings are the 5 deduped `color-functions` and 5 deduped `global-builtin` for 4.4, and 5 deduped `import` which is deliberately accepted.*
+
 - [ ] 4.4 Migrate the 73 global built-in calls to their module equivalents, and verify the built stylesheet's resolved declarations match the set recorded in 4.1 exactly
 - [ ] 4.5 Verify the configuration mechanism still works after the toolchain change — a real `!default` override, assigned before `@import`, honoured by the current compiler. This is a regression guard on a public API this change deliberately preserves, so that a future 3.0.0 migration is a conscious break rather than an accident
 - [ ] 4.6 Replace `postcss`, `autoprefixer`, and `cssnano` with current releases, and verify the resolved declarations still match 4.1

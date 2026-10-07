@@ -164,9 +164,9 @@ The first is that a change would not fail loudly. The downstream theme vendors `
 | `@import` | 29 | **3.0.0** |
 | global built-ins (`map-get`, `map-keys`, `str-length`) | 11 | **3.0.0** |
 | `darken()` / `lighten()` | 62 | 3.0.0 |
-| **`/` division** | **1 site** | **2.0.0** |
+| **`/` division** | **2 sites** | **2.0.0** |
 
-There is no Sass 2.x to move to — `latest` is 1.105.1 and no 2.x release exists. So the target is **the current 1.x**, and the work is: fix the single `/` division at `src/layout/_flexbox.scss:8`, and migrate the 73 global built-in calls to their `sass:` module equivalents so the color-function warnings go away. `@import` stays.
+There is no Sass 2.x to move to — `latest` is 1.105.1 and no 2.x release exists. So the target is **the current 1.x**, and the work is: fix the two `/` division sites in `src/layout/_flexbox.scss` (lines 7 and 8, both in `create-flex-classes`), and migrate the 73 global built-in calls to their `sass:` module equivalents so the color-function warnings go away. `@import` stays.
 
 **The consequence worth the most: 2.0 ships with no Sass-consumer break.** `_config.scss` carries **109 `!default` declarations**, and that is how consumers configure the framework — assign `$primary` before importing, and the `!default` honours it. That mechanism works identically on 1.x. Migrating to `@use` would move configuration to `with (...)` and break every Sass consumer, but nothing forces that before 3.0.0, so 2.0 does not do it. The migration remains available as separately reviewable work when 3.0.0 makes it necessary.
 

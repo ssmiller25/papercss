@@ -21,7 +21,11 @@ async function build() {
 
   log('Compiling SCSS to CSS, entrypoint:', constants.ENTRYPOINT_PATH);
 
-  const compiledCSS = sass.renderSync({ file: constants.ENTRYPOINT_PATH });
+  // `sass.compile` is the modern API. `sass.renderSync` was the legacy JS API,
+  // which Dart Sass deprecated and removes in 2.0.0 -- so upgrading the
+  // compiler without changing this call would have left the build one major
+  // release from breaking.
+  const compiledCSS = sass.compile(constants.ENTRYPOINT_PATH);
 
   log('Processing CSS: autoprefixer...');
 

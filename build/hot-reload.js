@@ -1,4 +1,3 @@
-const util = require('util');
 const sass = require('sass');
 const write = require('write');
 const postcss = require('postcss');
@@ -8,11 +7,14 @@ const autoprefixer = require('autoprefixer');
 const constants = require('./constants');
 const log = require('./log');
 
-const sassRenderPromisified = util.promisify(sass.render);
-
+// `sass.compileAsync` replaces `util.promisify(sass.render)`: the legacy JS API
+// is deprecated and removed in Dart Sass 2.0.0. It already returns a Promise,
+// so wrapping it in `promisify` is both unnecessary and a Node deprecation
+// (DEP0174).
 function compile() {
-  sassRenderPromisified({ file: constants.ENTRYPOINT_PATH })
-    .then((compiledCSS) => postcss([autoprefixer]).process(compiledCSS.css.toString(), { from: undefined }))
+  sass
+    .compileAsync(constants.ENTRYPOINT_PATH)
+    .then((compiledCSS) => postcss([autoprefixer]).process(compiledCSS.css, { from: undefined }))
     .then((autoprefixedCSS) => write(constants.PAPER_DOCS_PATH, autoprefixedCSS.css))
     .then(() => log('Compiled CSS in docs/ folder.'));
 }
