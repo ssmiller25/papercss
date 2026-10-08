@@ -14,7 +14,7 @@ const log = require('./log');
 function compile() {
   sass
     .compileAsync(constants.ENTRYPOINT_PATH)
-    .then((compiledCSS) => postcss([autoprefixer]).process(compiledCSS.css, { from: undefined }))
+    .then((compiledCSS) => postcss([autoprefixer()]).process(compiledCSS.css, { from: undefined }))
     .then((autoprefixedCSS) => write(constants.PAPER_DOCS_PATH, autoprefixedCSS.css))
     .then(() => log('Compiled CSS in docs/ folder.'));
 }

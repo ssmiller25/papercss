@@ -122,6 +122,6 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 
 **Not in scope**
 - A visual redesign. No component is restyled.
-- Changing the colour palette or the `$colors` map. Palette values are preserved to within 1/255 per channel: Sass 1.79+ truncates colour percentages to 12 significant digits, which shifts five `muted`-grey theme values by one 8-bit step. Recorded in `CHANGELOG.md` under 2.0.0. Only the functions computing them change.
+- Changing the colour palette or the `$colors` map. Only the functions computing them change. The palette is preserved: measured against the pre-change build, every colour resolves to the same 8-bit value in both `paper.css` and `paper.min.css`. An intermediate state during the toolchain replacement shifted five `muted`-grey values by 1/255 — the Sass upgrade stopped rounding colour channels — and the upgraded minifier rounds them back; that is recorded in `CHANGELOG.md` because it was measured rather than assumed.
 - Adding `prefers-color-scheme` support. The dark theme stays class-activated; automatic mode is a feature, not a defect fix.
 - Resolving the remaining `npm audit` findings beyond what the toolchain replacement incidentally resolves.

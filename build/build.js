@@ -5,6 +5,7 @@ const rimraf = require('rimraf');
 const postcss = require('postcss');
 const cssnano = require('cssnano');
 const autoprefixer = require('autoprefixer');
+const colormin = require('postcss-colormin');
 
 const constants = require('./constants');
 const log = require('./log');
@@ -27,13 +28,30 @@ async function build() {
   // release from breaking.
   const compiledCSS = sass.compile(constants.ENTRYPOINT_PATH);
 
-  log('Processing CSS: autoprefixer...');
+  // Colour normalisation is applied to the *unminified* output as well as the
+  // minified, and deliberately.
+  //
+  // Dart Sass 1.79+ stopped rounding colour channels to 8-bit. Where
+  // `lighten()` used to emit `#cdcccb` it now emits
+  // `rgb(80.3767176162%, 80.0602130616%, 79.4272039524%)` -- the same colour,
+  // but ~50 characters instead of 7. cssnano already normalises that in
+  // paper.min.css; nothing did for paper.css, which is the readable artifact.
+  // The result was a 7.1% larger stylesheet and a far harder one to read or
+  // diff. `postcss-colormin` is the plugin cssnano uses internally, so running
+  // it here makes the two artifacts agree on notation.
+  //
+  // These plugins are called rather than passed. PostCSS 8 accepts a plugin
+  // factory, but each of these exports a function that *returns* the plugin,
+  // so passing the function itself is a subtle way to get a silent no-op.
+  log('Processing CSS: autoprefixer, colormin...');
 
-  const autoprefixedCSS = await postcss([autoprefixer]).process(compiledCSS.css, { from: undefined });
+  const autoprefixedCSS = await postcss([autoprefixer(), colormin()]).process(compiledCSS.css, {
+    from: undefined,
+  });
 
   log('Processing CSS: cssnano...');
 
-  const minifiedCSS = await postcss([cssnano]).process(autoprefixedCSS.css, { from: undefined });
+  const minifiedCSS = await postcss([cssnano()]).process(autoprefixedCSS.css, { from: undefined });
 
   log('Writing paper.css and paper.min.css files to dist/ and docs/ folders...');
 
