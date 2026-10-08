@@ -39,7 +39,7 @@
 - **The first run of the generated-CSS gate produced a false positive, not a bug.** `_reset.scss` sets `-webkit-text-decoration-skip: objects`, and `objects` looked like a typo for `ink`. It is not: it was a value of `text-decoration-skip` in CSS Text Decoration Level 3 and is still the initial value of `text-decoration-skip-self` in Level 4. Level 4 narrowed the unprefixed property to `none | auto`, and the rule validates against the current definition, so it rejects a value the prefixed property accepts. Correcting the value set via `propertiesSyntax` keeps the property under check rather than muting it.
 - **The `dist/` comparison has to run before anything else builds.** `check` originally began with `build`, which synced `dist/` to `src/` and so destroyed the only evidence that `dist/` had been stale — the gate could not fail, and testing it proved as much. `check` now performs the comparison first, which leaves a fresh build in place for the later gates. Related: the "is the *committed* stylesheet current" question is only meaningful against a commit, so that half runs in CI only (`CI=1`) and is skipped locally, where a rebuilt-but-uncommitted `dist/` differs from `HEAD` by design.
 
-*Two stylelints exist in this environment deliberately: the project-local 13 lints the SCSS with the ruleset the sources were written against, and a pinned global 17 runs the generated-CSS gate, because that gate needs `declaration-property-value-no-unknown`, which the local version does not have. Unifying them requires migrating the sources off 76 flagged global Sass function calls — tracked as task 4.8, not folded into landing the pipeline.*
+*Two stylelints exist in this environment deliberately: the project-local 13 lints the SCSS with the ruleset the sources were written against, and a pinned global 17 runs the generated-CSS gate, because that gate needs `declaration-property-value-no-unknown`, which the local version does not have. Unifying them requires migrating the sources off 76 flagged global Sass function calls — tracked as task 4.8, and since performed at task 4.4.*
 
 ## 3. Declaration Value Correction
 
@@ -179,8 +179,22 @@
 
 *One environment finding, not fixed here. cssnano 9 and postcss-colormin 9 require Node `^22.22.3 || ^24.15.0 || >=26.0`, and the devcontainer pin is a floating `ARG NODE_VERSION=22` — which contradicts the same Dockerfile's comment that everything is "pinned exactly", and now carries a real minimum rather than being a harmless floor. Pinning the Node version is task 4.12's kind of work and is noted there.*
 
-- [ ] 4.7 Replace `stylelint` 13 and `stylelint-config-sass-guidelines` with a current stylelint and an equivalent configuration, and verify the sources still pass the authoring ruleset
-- [ ] 4.8 Migrate the sources off the 76 global Sass function calls the modern configuration flags, and verify the flag count reaches zero with the resolved declarations unchanged. These are migrated rather than silenced by disabling rules, so the authoring gate is not weakened to make the migration land
+- [x] 4.7 Replace `stylelint` 13 and `stylelint-config-sass-guidelines` with a current stylelint and an equivalent configuration, and verify the sources still pass the authoring ruleset
+- [x] 4.8 Migrate the sources off the 76 global Sass function calls the modern configuration flags, and verify the flag count reaches zero with the resolved declarations unchanged. These are migrated rather than silenced by disabling rules, so the authoring gate is not weakened to make the migration land
+*4.7 landed: stylelint 13.8.0 → **17.16.0**, `stylelint-config-sass-guidelines` 7.1.0 → **13.0.0**, `stylelint-scss` 3.18.0 → **7.3.0**. `.stylelintrc.json` became **`.stylelintrc.cjs`** so each exclusion can state its reason, matching `.stylelint-dist.cjs`. The sources pass.*
+
+*Three things were found by measuring rather than migrating:*
+
+- ***Task 4.8 is already satisfied by 4.4.*** *The modern configuration enables `scss/no-global-function-names`, and run against the pre-4.4 sources it reports exactly **76** violations — the same 76 calls migrated at 4.4, verified by linting a checkout of `8e591dd`. Run against the current sources it reports **0**. The "76" in that task was always these calls; there was never a second set. 4.8 is therefore marked done rather than left to duplicate work that has already happened.*
+
+- ***Two of the five dependencies were dead.*** *`stylelint-config-standard` and `stylelint-order` were referenced nowhere except `package.json` — not by `.stylelintrc.json`, and not by `sass-guidelines` 13, whose dependencies are `@stylistic/stylelint-plugin`, `postcss-scss` and `stylelint-scss`. They were leftovers from the stylelint 13 setup and are removed.*
+
+- ***One override was suppressing nothing.*** *`selector-max-compound-selectors: null` was carried over from the old config, but the preset sets it to 3 and the sources comply — 0 violations at 3, 16 at 2. The disable is removed so the rule stays active and a future selector that genuinely grows too compound is caught. The other four overrides are load-bearing, and the config now records the count each one hides: `max-nesting-depth` 99 at the preset default, `selector-no-qualifying-type` 44, `scss/selector-no-redundant-nesting-selector` 3, `scss/at-extend-no-missing-placeholder` 1.*
+
+*The `at-extend` rationale was checked rather than assumed: `_forms.scss` extends the `.disabled` class, and `.disabled` is public API — `docs/content/docs/components/buttons.md` documents `<button class="disabled">` — so it cannot become a `%placeholder` without breaking every page that uses it.*
+
+*Verified the gate can still fail, not merely that it passes: `color-named` rejects `black`, `declaration-block-single-line-max-declarations` rejects two declarations on one line, and the stylistic rules are live. Both `lint:src` and `lint:dist` pass under the local stylelint 17, which is the precondition for 4.9 collapsing the two-linter workaround.*
+
 - [ ] 4.9 Unify the two stylelints into one project-local version, and verify `make check` runs the generated-CSS gate through the project's own install with no tool resolved from outside it
 - [ ] 4.10 Add the recorded-declaration-set comparison to `make check`, and verify it fails when a declaration's value changes and passes when only formatting changes
 - [ ] 4.11 Rewrite `package-lock.json` at the current lockfile version, and verify `npm ci` installs the pinned tree from it
