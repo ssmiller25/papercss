@@ -165,3 +165,30 @@ The framework SHALL continue to be configurable by a consumer building from its 
 - **WHEN** a release would move configuration to a different mechanism
 - **THEN** it is declared as breaking with the substitution for the previous form stated
 - **AND** it is not presented as an internal refactor of the build
+### Requirement: Internal constants are distinguishable from configuration
+
+The framework SHALL make clear which values a consumer can configure and which are internal. A value that assigning before the import cannot change SHALL be recorded as internal at its own declaration, so the distinction is discoverable at the point of use rather than learned from a silent no-op.
+
+#### Scenario: A consumer assigns an internal value
+
+- **WHEN** a consumer assigns a value the framework treats as internal
+- **THEN** the assignment has no effect
+- **AND** the declaration records that the value is internal rather than leaving it to be inferred from its name
+
+#### Scenario: A consumer looks for the configuration surface
+
+- **WHEN** a consumer wants to know what the framework lets them configure
+- **THEN** configurable values are distinguishable from internal constants
+- **AND** the distinction does not rest on the variable's name alone
+
+#### Scenario: An internal value is proposed as configurable
+
+- **WHEN** a value currently treated as internal is proposed to become configurable
+- **THEN** it is declared as configurable, documented, and validated
+- **AND** it is not made overridable incidentally, adding an undocumented and unvalidated public surface
+
+#### Scenario: The framework adopts explicit module boundaries
+
+- **WHEN** the framework's sources move to a system with explicit module boundaries
+- **THEN** internal values become private by construction rather than by convention
+- **AND** any value a consumer can configure today remains configurable, or its loss is declared as breaking with a migration

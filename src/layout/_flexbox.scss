@@ -5,6 +5,13 @@
 // global built-ins are 3.0.0, and still work).
 @use 'sass:math';
 
+// Internal, not configurable: there is no `!default`, so assigning this before
+// the import has no effect. The 12-column limit is a documented contract ("the
+// flexgrid supports up to 12 columns per row"), not a setting -- and it is
+// deliberately left that way rather than made overridable, which would add a
+// public configuration surface the framework does not document or validate.
+// See openspec component-contract: internal constants are distinguishable from
+// configuration.
 $number-columns: 12;
 
 @mixin create-flex-classes($colName, $breakpoint: 0) {

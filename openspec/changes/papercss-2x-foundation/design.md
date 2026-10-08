@@ -212,6 +212,24 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **Split across capabilities.** The mechanism is a `build-verification` concern — it is CI deciding what may ship. The consumer-facing half is `release-documentation` — where the artifacts are pointed at and whether the documented paths are satisfiable by what is published. Two capabilities, one decision, because both halves have to land together for either to be worth anything.
 
+### Decision 13: Internal constants are marked, not made configurable
+
+**The question.** Task 4.5's guard found that `src/layout/_flexbox.scss:3` declares `$number-columns: 12;` **without** `!default`, so a consumer who assigns it before the import gets no effect. It reads like configuration — a top-level `$` in the framework's source — and is not. Should it be made overridable, renamed private, or left alone?
+
+**What the codebase says.** It is not a lone anomaly. `$base`, `$large`, and `$small` in `_utilities.scss` are the same thing: top-level, no `!default`, used only in their own file, undocumented as configurable. The configuration surface is the **109 `!default` declarations in `_config.scss`**; these four are internal constants that happen to be globally visible because `@import` has no scope. The docs reinforce that reading for this specific value: *"the flexgrid is a grid system that supports up to 12 columns per row."*
+
+**Options considered.**
+
+*Make it overridable.* Rejected. It is the only option that adds capability, but it adds it in the worst place. Once settable it is a permanent public commitment — `component-contract` requires a configurable value to stay configurable, which at 3.0.0 means `@forward` and `with ()` support on the critical path. It contradicts the documented 12-column contract. And it is unvalidated: `@for $i from 1 through $number-columns` with `0`, a negative, or a non-integer yields empty output or a bare Sass error, so publishing it invites exactly the mistake. Output scales at five breakpoints — 12 columns is 60 rules, 16 is 80. If a configurable grid is wanted it is a legitimate feature, but it belongs in its own change with validation, docs, and `@forward`, not folded into a toolchain group as an incidental `!default`.
+
+*Rename it private.* Rejected as premature. Under `@import` a `-`/`_` prefix is a signal, not a guarantee: it does not prevent access or assignment. Nothing in `src/` currently uses the convention, so it would introduce one, and applying it consistently means renaming two files' worth of constants during a toolchain change. More to the point, the migration already does this structurally — under `@use`, any member not `@forward`ed is private by construction, with no prefix required. Renaming now buys a convention the module system is about to provide for free.
+
+*Leave it, and mark it.* **Chosen.**
+
+**What is done instead.** The behaviour is unchanged, and each of the four declarations carries a comment stating that it is internal and that assigning it before the import has no effect. That is the cheap half of the fix: it does not add API, does not contradict the docs, and does not churn the spacing scale, but it removes the silent no-op from the "looks fine, is wrong" class by making the intent readable where the mistake would be made. A `component-contract` requirement — *internal constants are distinguishable from configuration* — carries the rule forward past this change, and states that the module migration must make internal values private by construction without stranding any value a consumer can configure today.
+
+**Why this is a decision rather than a note.** The trap is real and repeated across four values, and the cheapest option is not the obvious one: the naming invites configuration, and the natural fix is to grant it. Recording the reasoning here means the next person to notice `$number-columns` finds a deliberate choice with its costs stated, rather than re-deriving the question and reaching for `!default`.
+
 ## Risks / Trade-offs
 
 **Converting 60 single-quoted attributes touches 11 template files** → Mechanical, and verified by rebuilding and confirming the `attr-quotes` count reaches zero with the rest of the report unchanged. The alternative — disabling the rule — is a smaller diff that permanently weakens the gate.
