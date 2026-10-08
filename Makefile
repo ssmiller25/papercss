@@ -23,6 +23,7 @@ check:   ## Run the full verification gate - build, then lint the stylesheet and
 	@$(MAKE) _verify-reproducible
 	@$(MAKE) build-docs
 	@$(MAKE) lint
+	@$(MAKE) check-config
 	@$(MAKE) check-dist
 	@$(MAKE) check-docs
 	@$(MAKE) _verify-dist-committed
@@ -30,6 +31,10 @@ check:   ## Run the full verification gate - build, then lint the stylesheet and
 .PHONY: lint
 lint:   ## Lint the SCSS sources with the authoring ruleset
 	npm run lint:src
+
+.PHONY: check-config
+check-config:   ## Verify the documented configuration override still works (assigning a value before the import wins)
+	node scripts/check-config-override.mjs
 
 .PHONY: check-dist
 check-dist:   ## Check the generated stylesheet for correctness (unknown properties, at-rules, functions, units, values)

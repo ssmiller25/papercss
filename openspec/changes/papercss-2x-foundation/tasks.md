@@ -143,7 +143,22 @@
 
 *The helper is also a deliberate addition to the framework's global namespace. It is `adjust-lightness` rather than `shade` to be unambiguous at 62 call sites, and it follows the existing convention of unprefixed global helpers such as `str-replace` and `resp`.*
 
-- [ ] 4.5 Verify the configuration mechanism still works after the toolchain change — a real `!default` override, assigned before `@import`, honoured by the current compiler. This is a regression guard on a public API this change deliberately preserves, so that a future 3.0.0 migration is a conscious break rather than an accident
+- [x] 4.5 Verify the configuration mechanism still works after the toolchain change — a real `!default` override, assigned before `@import`, honoured by the current compiler. This is a regression guard on a public API this change deliberately preserves, so that a future 3.0.0 migration is a conscious break rather than an accident
+*4.5 landed as a durable guard rather than a one-off: `scripts/check-config-override.mjs`, wired into `make check` as `check-config` and listed by `make help`. A verification performed once proves nothing about the next change, and the documented configuration mechanism is precisely what the coming `@import` → `@use` migration would break.*
+
+*The check makes **two** assertions, and both are needed:*
+
+- *the **contract** — `$primary` assigned before `@import 'styles'` appears as `--primary` in the compiled output;*
+- *the **control** — without the assignment, the default `#41403e` appears. Without this the check could pass for the wrong reason, since an output that stopped declaring `--primary` at all would otherwise not be distinguished from a working override.*
+
+*It compiles its own fixture rather than reading `dist/paper.css`, because the point is to exercise the consumer's path, which the shipped stylesheet does not represent.*
+
+*Both assertions were verified to fail, not merely to pass: dropping `!default` from `$primary` in `_config.scss` produces "assigning `$primary` before the import had no effect", and changing the default to `#000000` produces "the default `--primary` is no longer `#41403e`". Each names the cause and points at the migration requirement.*
+
+*Why it matters for 3.0.0: converting even one partial to the module system stops the shared global scope that makes assignment-before-`@import` work. Today that would happen silently — nothing else in this repository reads consumer configuration. With this guard, the same change fails with an explanation, so a 3.0.0 migration is a deliberate breaking change with a UPGRADE.md entry rather than an accident a consumer discovers when their colours stop applying.*
+
+*One observation, recorded but **not** fixed because it is pre-existing and out of scope. `src/layout/_flexbox.scss` declares `$number-columns: 12;` without `!default`, so a consumer assigning `$number-columns` before the import gets no effect — confirmed by test, and verified to predate this change. It reads as a variable the framework invites you to configure and is not one. Whether to make it overridable, or to rename it to signal that it is private, is a separate decision; this change neither introduces nor worsens it.*
+
 - [ ] 4.6 Replace `postcss`, `autoprefixer`, and `cssnano` with current releases, and verify the resolved declarations still match the committed record. **Include colour normalisation of the unminified output**: sass 1.79+ stopped rounding colour channels to 8-bit and emits full-precision `rgb(80.3767176162%, …)` instead of `#cdcccb`, which cssnano already normalises in `paper.min.css` but nothing does for `paper.css` — a 7.1% size increase and a much harder file to read. Adding `postcss-colormin` (the plugin cssnano already uses internally) to the autoprefixer step restores `#cdcccb`, removes the 7%, and strips 116 notation-only differences out of the record so every later toolchain comparison is readable
 - [ ] 4.7 Replace `stylelint` 13 and `stylelint-config-sass-guidelines` with a current stylelint and an equivalent configuration, and verify the sources still pass the authoring ruleset
 - [ ] 4.8 Migrate the sources off the 76 global Sass function calls the modern configuration flags, and verify the flag count reaches zero with the resolved declarations unchanged. These are migrated rather than silenced by disabling rules, so the authoring gate is not weakened to make the migration land
