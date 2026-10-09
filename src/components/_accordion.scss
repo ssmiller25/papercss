@@ -22,7 +22,22 @@
   }
 
   > input {
-    display: none;
+    // Visually hidden, not `display: none`. `display: none` removes the
+    // checkbox from the tab order, so the navbar hamburger and every
+    // collapsible were unreachable by keyboard. This keeps the control
+    // off-screen without removing it from the tab order or from assistive
+    // technology. Pointer behaviour is unchanged: the label still forwards
+    // its click to this checkbox.
+    block-size: 1px;
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    inline-size: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
 
     &:checked + label {
       @include color('color', 'primary');

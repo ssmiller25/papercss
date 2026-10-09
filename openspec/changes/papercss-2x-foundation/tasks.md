@@ -366,7 +366,7 @@
 
 *Capability: `component-contract`. **Breaking** — the toggle becomes focusable.*
 
-- [ ] 8.1 Replace `display: none` on the collapsible input with a visually-hidden pattern that keeps the control focusable, and verify it remains operable by pointer exactly as before
+- [x] 8.1 Replace `display: none` on the collapsible input with a visually-hidden pattern that keeps the control focusable, and verify it remains operable by pointer exactly as before
 - [ ] 8.2 Style the framework's own focus indicator so keyboard focus is visible on the toggle, and verify the indicator is visible against every surface the component renders on
 - [ ] 8.3 Verify the toggle is the expected tab stop and that operating it with the keyboard opens and closes the body
 - [ ] 8.4 Verify the same control works in the navbar and in a standalone collapsible, since both are conditioned on the same rule
