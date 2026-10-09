@@ -78,7 +78,7 @@ Note: If you have a hotfix (usually typos and minor documentation tweaks), creat
 
 ## About
 
-PaperCSS was originally made by [@rhyneav](https://github.com/rhyneav) to be something different than the typical mODerN STylEs and clean pages found in every other CSS framework. It was built with LESS and deployed on a single index.html page before being open sourced. It has since evolved; The CSS source has been rewritten in SCSS and the documentation is now built with Hugo (all thanks to some [wonderful contributors](https://github.com/papercss/papercss/graphs/contributors)). It is currently maintained by the [PaperCSS team](https://github.com/orgs/papercss/people).
+PaperCSS was originally made by [@rhyneav](https://github.com/rhyneav) to be something different than the typical mODerN STylEs and clean pages found in every other CSS framework. It was built with LESS and deployed on a single index.html page before being open sourced. It has since evolved; The CSS source has been rewritten in SCSS and the documentation is now built with Hugo (all thanks to some [wonderful contributors](https://github.com/ssmiller25/papercss/graphs/contributors)). This fork/update is maintained by [ssmiller25](https://r15cookie.com). Contributions are welcome.
 
 The goal of PaperCSS is to be as minimal as possible when adding classes. For example, a button should just look like a paper button. There shouldn't be a need to add a class such as `paper-button`. Because of this, adding PaperCSS to a markdown generated page should instantly paper-ize it.
 
