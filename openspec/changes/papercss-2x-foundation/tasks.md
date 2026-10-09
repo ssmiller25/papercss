@@ -219,9 +219,27 @@
 *The record was regenerated so its embedded `$comment` refers to `make check-declarations-update` rather than the raw node invocation — the previous text pointed at the node command only because this task had not landed. The digest is computed over the statements and rules rather than the whole file, so it is unchanged, and the diff is exactly one line. The script's usage header and failure message were updated to match.*
 
 *This is the gate that would have caught `padding: none`, and it is the one that made every measurement in this group possible: 4.3's colour-notation change, 4.4's clamping discovery and 4.6's restoration of the palette were all found by comparing against this record rather than by inspection.*
-- [ ] 4.11 Rewrite `package-lock.json` at the current lockfile version, and verify `npm ci` installs the pinned tree from it
-- [ ] 4.12 Confirm no replacement reintroduces an install script the package manager refuses to run. **Also pin the Node version the environment provides**: cssnano 9 and postcss-colormin 9 require Node `^22.22.3 || ^24.15.0 || >=26.0`, while the devcontainer uses a floating `ARG NODE_VERSION=22` — which contradicts the same Dockerfile's claim that every version is "pinned exactly", and now carries a real minimum rather than a harmless floor
-- [ ] 4.13 Record the one-time generated-output difference in `CHANGELOG.md`, since consumers vendoring `dist/paper.css` byte-for-byte will see it
+- [x] 4.11 Rewrite `package-lock.json` at the current lockfile version, and verify `npm ci` installs the pinned tree from it
+- [x] 4.12 Confirm no replacement reintroduces an install script the package manager refuses to run. **Also pin the Node version the environment provides**: cssnano 9 and postcss-colormin 9 require Node `^22.22.3 || ^24.15.0 || >=26.0`, while the devcontainer uses a floating `ARG NODE_VERSION=22` — which contradicts the same Dockerfile's claim that every version is "pinned exactly", and now carries a real minimum rather than a harmless floor
+- [x] 4.13 Record the one-time generated-output difference in `CHANGELOG.md`, since consumers vendoring `dist/paper.css` byte-for-byte will see it
+
+*Tasks 4.11–4.13 closed together, as the last three of the toolchain group.*
+
+***4.11 — the lockfile and `npm ci`.*** *The rewrite to `lockfileVersion` 3 had already happened as a side effect of the Sass bump at 4.3, which is why `4.11` was recorded there as needing only its verification. `npm ci` now installs the pinned tree cleanly, and the build, the declaration record and `lint:src` all pass afterwards — so the lockfile is not merely present but sufficient on its own.*
+
+***The audit improvement is now measurable, which is what 4.2 recorded its baseline for.*** *The count went from **73 findings to 18**: critical **2 → 0**, high 22 → 17, moderate 48 → 1, low 1 → 0. The remaining four direct dependencies carrying findings are `chokidar` and three `stylelint` packages. Nothing here ships — `dependencies` is empty and consumers use the prebuilt stylesheet — so the remainder belongs to task 16 rather than blocking this group.*
+
+***4.12 — install scripts.*** *The concern was that a replacement might reintroduce the `hugo-bin`/`pre-commit` failure: a **required** dependency whose install script the package manager refuses to run, leaving the package installed but non-functional. Two packages in the tree do declare install scripts, and neither is that:*
+
+- *`fsevents@2.1.3`, an **optional** dependency of `chokidar`, the dev watch tool. macOS-only, ships prebuilt binaries, and `chokidar` falls back to polling without it.*
+- *`@parcel/watcher@2.6.0`, an **optional** dependency of `sass` itself, used only for `sass --watch`, which this build does not use. It also ships prebuilt binaries.*
+
+*Neither is required, neither is run by our gates, and `npm ci` exits 0 with both present. The distinction matters and is worth keeping: an optional native module whose build step is skipped is a different thing from `hugo-bin`, which was required and left `npm run build` with no Hugo at all.*
+
+***Also 4.12 — the Node version is pinned.*** *The devcontainer used NodeSource's `setup_${NODE_VERSION}.x`, which accepts only a major, so `ARG NODE_VERSION=22` installed whatever the newest 22.x happened to be — contradicting the same file's claim that every version is "pinned exactly". That stopped being academic when cssnano 9 and postcss-colormin 9 began requiring `^22.22.3 || ^24.15.0 || >=26.0`: a sufficiently old 22.x would have failed `npm install` with an engine error naming the dependency rather than the pin responsible. Node is now installed from the release tarball at **22.23.3**, exactly as Hugo is, so the version the file names is the version that runs.*
+
+***4.13 — the CHANGELOG.*** *Written at 4.6, when the difference it describes was established, rather than reconstructed here. It records the notation changes, the minified size reduction, the one split rule, and the fact that the palette is preserved — including the intermediate 1/255 shift that was accepted at 4.3 and resolved at 4.6.*
+
 
 ## 5. Dark Theme Preservation
 

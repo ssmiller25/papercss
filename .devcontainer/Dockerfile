@@ -10,7 +10,7 @@ FROM mcr.microsoft.com/devcontainers/base:bookworm
 # build, which docs/config.toml could then require, because that config named
 # blackfriday and Hugo removed blackfriday in v0.100.0.
 ARG HUGO_VERSION=0.131.0
-ARG NODE_VERSION=22
+ARG NODE_VERSION=22.23.3
 ARG HTML_VALIDATE_VERSION=11.16.2
 
 # Install system dependencies
@@ -33,11 +33,21 @@ RUN mkdir -p /tmp/hugo && \
     sudo install -m 0755 hugo /usr/local/bin/hugo && \
     cd / && rm -rf /tmp/hugo
 
-# Install Node.js
-RUN curl -fsSL "https://deb.nodesource.com/setup_${NODE_VERSION}.x" | sudo -E bash - && \
-    sudo apt-get install -y nodejs && \
-    sudo apt-get clean && \
-    sudo rm -rf /var/lib/apt/lists/*
+# Install Node.js, pinned exactly.
+#
+# This previously used NodeSource's `setup_${NODE_VERSION}.x`, which accepts only
+# a major version and therefore installed whatever the newest 22.x happened to
+# be. That contradicted this file's claim that every version is pinned, and it
+# stopped being academic when cssnano 9 and postcss-colormin 9 began requiring
+# ^22.22.3 || ^24.15.0 || >=26.0: a sufficiently old 22.x would have failed
+# `npm install` with an engine error naming the dependency rather than the pin
+# that caused it. Installing the release tarball makes the version named above
+# the version that runs, as with Hugo.
+RUN cd /tmp && \
+    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" && \
+    sudo tar -xzf "node-v${NODE_VERSION}-linux-x64.tar.gz" -C /usr/local --strip-components=1 && \
+    rm "node-v${NODE_VERSION}-linux-x64.tar.gz" && \
+    node --version && npm --version
 
 # Install the verification tools.
 #
