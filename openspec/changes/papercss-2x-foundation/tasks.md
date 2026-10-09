@@ -294,7 +294,22 @@
 
 - [ ] 5.3 Record in `UPGRADE.md` that the dark theme's activation and property surface are unchanged, so a consumer can confirm nothing about their dark styling moved. Depends on `UPGRADE.md` existing, which happens at task 7.5
 
-- [ ] 5.4 Add a **light/dark toggle to the documentation site header**, so any page can be switched live rather than the theme only being demonstrable on one page. Verify it applies the framework's `.dark` class to the root element, is reachable and operable by keyboard, and states the current mode rather than relying on appearance alone. The existing `Dark Mode` page stays exactly as it is and is not replaced by this — the toggle is what makes the theme reviewable while browsing. Its markup is page chrome, so it is held to the documentation gate like any other: if it adds a violation, that is a defect in the toggle rather than a baseline to raise
+- [x] 5.4 Add a **light/dark toggle to the documentation site header**, so any page can be switched live rather than the theme only being demonstrable on one page. Verify it applies the framework's `.dark` class to the root element, is reachable and operable by keyboard, and states the current mode rather than relying on appearance alone. The existing `Dark Mode` page stays exactly as it is and is not replaced by this — the toggle is what makes the theme reviewable while browsing. Its markup is page chrome, so it is held to the documentation gate like any other: if it adds a violation, that is a defect in the toggle rather than a baseline to raise
+
+*5.4 landed. A button in the site header (`nav/main.html`) plus `docs/static/assets/theme-toggle.js`, included with `defer`. The button is present on every page, applies the framework's `.dark` class to `<html>`, and needs nothing else — the framework's activation contract is a single class, so the control is correspondingly small.*
+
+- *Keyboard operation is native: it is a real `<button>`, not a styled `div`, so it is focusable and activates on Enter and Space for free.*
+- *State is announced rather than implied. `aria-pressed` carries on/off and the label stays `Dark mode`, which is the standard toggle-button pattern: a label that changes between "enable" and "disable" reads as two different actions rather than one control with two states.*
+- *The choice is remembered in `localStorage`, restored before the first paint so the page does not flash the other theme, and the code degrades quietly if storage is unavailable.*
+- *The existing `Dark Mode` page is untouched, as the task required.*
+
+***The documentation gate caught this twice, which is the whole reason 5.4 said the toggle is held to it.*** *The first attempt failed with 4240 → 4306 errors: `attr-quotes` +33 and `no-trailing-whitespace` +33, one of each per page, because header markup is on every page. Both were defects in the toggle, not baseline drift, and both were mine:*
+
+- *the `<script>` tag used single-quoted attributes, where the site's house style is double quotes — the same style deviation group 14 exists to clean up, so it was fixed rather than absorbed;*
+- *an **indented HTML comment** that Hugo strips, leaving its leading whitespace behind as a blank-but-indented line. Replaced with a Hugo template comment, `{{- /* … */ -}}`, which trims the surrounding whitespace and leaves nothing. Worth recording because the failure is invisible in the source: the comment reads as documentation and the violation appears only in the rendered output.*
+
+*Verified: `make check-docs` reports **4240 errors at baseline, none new**, and the button is present on all 33 pages.*
+
 
 ## 6. Release Pipeline
 
