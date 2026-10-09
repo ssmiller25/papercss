@@ -14,11 +14,30 @@
     @include transition;
     border-bottom-style: solid;
     border-bottom-width: 1px;
+    // The collapsed height is a zero-height grid row, not a fixed max-height.
+    // A max-height clips a body taller than it; a row track can animate
+    // between 0fr and 1fr, so an arbitrarily tall body expands in full while
+    // the transition still runs. This models upstream PR #311 rather than
+    // raising the cap to another number that would clip the next tall body.
+    // `grid-auto-rows` is the one addition to that PR: it collapses every row,
+    // not only the first, so a body with more than one child is not left with
+    // its later children showing while "closed" - which the old max-height
+    // hid and a single-track grid would not.
+    display: grid;
+    grid-auto-rows: 0fr;
+    grid-template-rows: 0fr;
     margin: 0;
-    max-height: 0;
     opacity: 0;
     overflow: hidden;
     padding: 0 0.75rem;
+
+    // Grid items default to min-height: auto, which would hold the row at the
+    // content height and block the collapse. This lets the row shrink to 0fr
+    // and clips the content while it does.
+    > * {
+      min-height: 0;
+      overflow: hidden;
+    }
   }
 
   > input {
@@ -44,8 +63,9 @@
     }
 
     &[id^='collapsible']:checked~div.collapsible-body {
+      grid-auto-rows: 1fr;
+      grid-template-rows: 1fr;
       margin: 0;
-      max-height: 960px;
       opacity: 1;
       padding: 0.75rem;
     }
