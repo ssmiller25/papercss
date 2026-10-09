@@ -12,7 +12,6 @@ FROM mcr.microsoft.com/devcontainers/base:bookworm
 ARG HUGO_VERSION=0.131.0
 ARG NODE_VERSION=22
 ARG HTML_VALIDATE_VERSION=11.16.2
-ARG STYLELINT_VERSION=17.16.0
 
 # Install system dependencies
 RUN sudo apt-get update && \
@@ -42,23 +41,19 @@ RUN curl -fsSL "https://deb.nodesource.com/setup_${NODE_VERSION}.x" | sudo -E ba
 
 # Install the verification tools.
 #
-# Two stylelints exist in this environment on purpose, and the Makefile is
-# explicit about which is used where:
+# Only the tools that cannot come from npm as project dependencies live here.
+# Hugo is one: `hugo-bin` was removed because its install script cannot run on a
+# current npm, so the binary is fetched and pinned here instead. html-validate is
+# the other, for the documentation gate.
 #
-#   stylelint 13 (project-local, via node_modules) lints src/**/*.scss. Its
-#     ruleset, stylelint-config-sass-guidelines, is the one the sources were
-#     written against and it passes today.
-#
-#   stylelint 17 (this global install) lints the generated dist/paper.css with
-#     .stylelint-dist.json. That gate needs a rule the project-local version
-#     does not have - declaration-property-value-no-unknown, added in a later
-#     major - and without it nothing here would catch `padding: none`.
-#
-# Unifying the two means migrating the sources to a modern Sass module style,
-# which is tracked as its own task rather than folded into landing the pipeline.
+# stylelint is deliberately NOT installed globally. It used to be, because the
+# generated-CSS gate needed `declaration-property-value-no-unknown` and the
+# project-local stylelint was 13, which does not have it -- so two linters
+# existed and the Makefile had to say which ran where. The project now carries
+# stylelint 17, so there is one linter and every gate runs it from
+# node_modules.
 RUN sudo npm install -g \
-    "html-validate@${HTML_VALIDATE_VERSION}" \
-    "stylelint@${STYLELINT_VERSION}"
+    "html-validate@${HTML_VALIDATE_VERSION}"
 
 # Node's install of the project dependencies runs at container create, not build,
 # so an image rebuild is not required when package.json changes.

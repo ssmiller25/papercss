@@ -38,11 +38,15 @@ check-config:   ## Verify the documented configuration override still works (ass
 
 .PHONY: check-dist
 check-dist:   ## Check the generated stylesheet for correctness (unknown properties, at-rules, functions, units, values)
-	@# stylelint resolves a shareable `extends` against the config file, the
-	@# working directory, and finally a directory it infers from the node
-	@# binary. The linters are installed globally and that inference does not
-	@# reliably point at where npm put them, so name it explicitly.
-	stylelint --config-basedir "$$(npm root --global)" --config .stylelint-dist.cjs "dist/paper.css" "dist/paper.min.css"
+	@# Through the project's own install, like every other gate. This
+	@# previously ran a second, globally-installed stylelint with an explicit
+	@# `--config-basedir` because the ruleset needed
+	@# declaration-property-value-no-unknown, which the project-local stylelint
+	@# 13 did not have. The project now carries stylelint 17, so there is one
+	@# linter and nothing resolves from outside node_modules. The
+	@# `--config-basedir` is not needed either: .stylelint-dist.cjs extends
+	@# nothing, so there is no shareable config to resolve.
+	npm run lint:dist
 
 .PHONY: check-docs
 check-docs:   ## Validate the built documentation against the recorded error baseline

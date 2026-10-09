@@ -195,7 +195,16 @@
 
 *Verified the gate can still fail, not merely that it passes: `color-named` rejects `black`, `declaration-block-single-line-max-declarations` rejects two declarations on one line, and the stylistic rules are live. Both `lint:src` and `lint:dist` pass under the local stylelint 17, which is the precondition for 4.9 collapsing the two-linter workaround.*
 
-- [ ] 4.9 Unify the two stylelints into one project-local version, and verify `make check` runs the generated-CSS gate through the project's own install with no tool resolved from outside it
+- [x] 4.9 Unify the two stylelints into one project-local version, and verify `make check` runs the generated-CSS gate through the project's own install with no tool resolved from outside it
+*4.9 landed. There is now **one stylelint**, the project-local 17.16.0, and every gate runs it from `node_modules`.*
+
+- *`make check-dist` calls `npm run lint:dist` instead of invoking a global `stylelint --config-basedir "$(npm root --global)"`. The `--config-basedir` was never needed for its own sake: it existed to point a globally-installed stylelint 17 at shareable configs, and `.stylelint-dist.cjs` extends nothing, so there is no shareable config to resolve.*
+- *The devcontainer no longer installs stylelint globally. `ARG STYLELINT_VERSION` and the global install are removed, and the comment that explained the two-linter arrangement is replaced with the reason stylelint is deliberately absent from the global installs — it is a project dependency now, like the rest.*
+- *`html-validate` and Hugo remain global. Neither can be a project dependency: Hugo because `hugo-bin` cannot install on a current npm, `html-validate` because it is the one validator the documentation gate uses and is pinned in the environment definition.*
+
+*Verified as far as this machine allows. `stylelint` is **not on PATH** here, so `make check-dist` passing is proof the gate resolves the project install rather than finding a global one — the strongest available evidence short of the devcontainer itself. `make check-config` and `npm run lint:src` also pass, and `make -n check` confirms the sequence still runs the generated-CSS gate through `check-dist`.*
+
+*This closes the workaround the pipeline was landed with: the two-stylelint split was a direct consequence of the 2019 tree, and section 2 recorded it as deliberate rather than permanent. The group 4 note that explained the split is now historical.*
 - [ ] 4.10 Add the recorded-declaration-set comparison to `make check`, and verify it fails when a declaration's value changes and passes when only formatting changes
 - [ ] 4.11 Rewrite `package-lock.json` at the current lockfile version, and verify `npm ci` installs the pinned tree from it
 - [ ] 4.12 Confirm no replacement reintroduces an install script the package manager refuses to run. **Also pin the Node version the environment provides**: cssnano 9 and postcss-colormin 9 require Node `^22.22.3 || ^24.15.0 || >=26.0`, while the devcontainer uses a floating `ARG NODE_VERSION=22` — which contradicts the same Dockerfile's claim that every version is "pinned exactly", and now carries a real minimum rather than a harmless floor
