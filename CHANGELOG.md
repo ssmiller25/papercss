@@ -22,6 +22,13 @@ See `UPGRADE.md` for the before/after of each.
   focus indicator. A stylesheet that assumed the input was invisible may need
   to account for it being focusable. See `UPGRADE.md`.
 
+- **A tall collapsible body is no longer clipped.** An expanded collapsible or
+  navbar body had `max-height: 960px`, so content taller than that was cut off
+  with no scroll and no ellipsis. The cap is gone — the body is now a grid row
+  that animates between `0fr` and `1fr` — so an expanded body reveals its full
+  height. A body that relied on the cap to constrain its height now expands
+  fully. See `UPGRADE.md`.
+
 ### Build
 
 - **The generated stylesheet is not byte-identical, but every colour is
