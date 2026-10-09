@@ -352,9 +352,9 @@
 
 ## 7. Release Documentation
 
-*Capability: `release-documentation`. The repository ships **no `CHANGELOG.md` at all**, so 24 tagged releases are undocumented and 2.0 would be the first release in the project's history to be documented anywhere. Both files are written as changes land, not reconstructed at the end.*
+*Capability: `release-documentation`. The repository recorded nothing for its 24 earlier tagged releases, so `CHANGELOG.md` began at 2.0.0. The 2.0.0 section is written as changes land; the 1.x history is reconstructed from the tags and marked as such.*
 
-- [ ] 7.1 Reconstruct `CHANGELOG.md` from the repository's 25 tags, with a dated entry and user-visible changes for each, and identify the entries as reconstructed rather than presenting them as contemporaneous
+- [x] 7.1 Reconstruct `CHANGELOG.md` from the repository's 25 tags, with a dated entry and user-visible changes for each, and identify the entries as reconstructed rather than presenting them as contemporaneous
 - [ ] 7.2 Verify the reconstructed `1.9.2` entry matches what 1.9.2 actually shipped, since that is the version consumers migrate *from*
 - [ ] 7.3 Where a tag's changes cannot be established, record the gap explicitly rather than omitting the release
 - [ ] 7.4 Open a `2.0.0` section in `CHANGELOG.md` and add an entry per change as it lands
