@@ -69,12 +69,17 @@ Two facts about that number matter for reading the gate.
 - A recorded changelog for every release the project has tagged, and a written upgrade path into 2.0.
 - Releases produced by pushing a tag, not by hand-editing version numbers and dragging files into a web form.
 - Documentation that points at the artifacts this repository actually publishes, verified rather than assumed.
+- A framework other websites can link without downloading anything and without a package registry, served from the tagged repository by open CDNs.
+- The remaining dependency findings measured and classified, with resolution split into a follow-up so it cannot gate the release.
+- A documentation site published at a repository-owned address rather than the upstream project's domain.
 
 **Non-Goals:**
 - Restyling. No visual change to any component.
 - Changing the *values* in the colour palette or `$colors` map. The palette is preserved value-for-value; only the Sass functions that compute it are replaced.
 - Adding capabilities 1.9 does not have. `prefers-color-scheme` is not introduced — the dark theme stays class-activated, because adding an automatic mode is a feature and this change is a defect-and-toolchain release.
-- Resolving the 92 `npm audit` findings. Most are resolved incidentally by the toolchain replacement; the remainder are recorded as measured and sequenced separately, because the Dependabot branches carrying those bumps have been unmerged upstream since 2023 and merging them wholesale is a distinct piece of work with its own regression surface.
+- Resolving the 92 `npm audit` findings. Most are resolved incidentally by the toolchain replacement; the remainder are measured against the pre-change baseline and classified by reachability here (group 17), but their resolution is sequenced separately (the `dependency-hardening` change), because the Dependabot branches carrying those bumps have been unmerged upstream since 2023 and merging them wholesale is a distinct piece of work with its own regression surface.
+- Publishing to a package registry. A release does not run `npm publish` or push to any registry; distribution outside GitHub Releases is served from the tagged tree by open CDNs. This is a removal, not a deferral.
+- The documentation's page-chrome accessibility defects and style debt. They are split into `docs-accessibility` and `docs-style-cleanup`; only the demos a consumer copies are held to zero here.
 
 ## Decisions
 
@@ -202,11 +207,11 @@ The gap is larger than it sounds. The repository has **no `CHANGELOG.md` at all*
 
 The deeper cost is that the documentation's download links are **already wrong, and have been long enough to be load-bearing**. `docs/content/_index.md` points its GitHub Releases buttons at `github.com/rhyneav/papercss` and its "build it yourself" clone URL at `github.com/papercss/papercss` — both the upstream project, not this fork. So the primary download buttons on this fork's documentation hand a visitor the original author's 1.9.2 build, and the build instructions describe a repository whose sources differ from the ones being shipped. A pipeline that publishes here does not fix that on its own; the documentation has to be repointed and gated, which is why this decision covers both halves.
 
-**Mechanism.** The tag is the single source of truth. `package.json`'s version must agree with it, and disagreement fails the release rather than warning. `make check` runs before anything is published, so no release is cut from a tree that fails its own gates — reusing Decision 6's single entry point instead of restating the sequence in a second place that can drift. A prerelease tag is published as a prerelease and does not become the latest release, so `2.0.0-rc.1` cannot quietly ship as `2.0.0`.
+**Mechanism.** The tag is the single source of truth. `package.json`'s version must agree with it, and disagreement fails the release rather than warning. The tag is pressed **through the GitHub release process**: creating a draft release creates the tag, the tag push runs the workflow, and the workflow publishes the draft only after `make check` passes — so the release exists as a draft while the gates run and cannot be offered to consumers until they pass. `make check` is Decision 6's single entry point, reused rather than restated in a second place that can drift. A prerelease tag is published as a prerelease and does not become the latest release, so `2.0.0-rc.1` cannot quietly ship as `2.0.0`.
 
 **Artifact set.** `paper.css`, `paper.min.css`, and an SCSS source archive. The third is not optional: the framework documents building from its Sass source, so a consumer needs `src/` in the release for that path to work at all — and it is what makes the preserved `!default` configuration mechanism in Decision 9 usable by anyone who wants to customise the palette rather than just consume the compiled CSS.
 
-**Why GitHub Releases only.** `npm publish` stays a documented manual step. Trusted publishing is its own piece of work with its own failure mode, and a release that half-succeeds — GitHub Release created, npm publish rejected — is worse than either channel alone. It is a clean follow-up, and the artifact set is already the same either way.
+**Why GitHub Releases only, with no package registry.** An earlier draft kept `npm publish` as a documented manual step. That is removed rather than deferred, for the reason that made it a candidate for deferral in the first place: a release that half-succeeds is worse than either channel alone, and keeping a second channel means keeping a second failure mode and a second set of documented instructions for a path this fork does not want to promise. Removing it also removes the consumption paths that depend on it — the `npm install` instructions, the `node_modules/papercss/...` locations, the unpkg snippet, and the `.npmignore` file that exists only to shape an `npm pack`. The artifact set is identical either way, so nothing is lost but the ambiguity.
 
 **Consequence.** The documented version is read from one place and gated against the tag, so the six hardcoded `1.9.2` strings in the documentation become a build failure rather than a stale link.
 
@@ -230,6 +235,36 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **Why this is a decision rather than a note.** The trap is real and repeated across four values, and the cheapest option is not the obvious one: the naming invites configuration, and the natural fix is to grant it. Recording the reasoning here means the next person to notice `$number-columns` finds a deliberate choice with its costs stated, rather than re-deriving the question and reaching for `!default`.
 
+### Decision 14: Distribution is registry-free, served from the tag by open CDNs
+
+**The question.** With `npm publish` removed, how does another website consume PaperCSS? "Download a zip from the GitHub Release" answers it for someone setting up a project by hand, but not for a page that wants a `<link>` to a versioned stylesheet — which is what a CDN URL provides and what the removed unpkg snippet used to provide.
+
+**Options considered.**
+
+- **npm + unpkg/jsDelivr `/npm/`.** Rejected. It reinstates exactly the registry dependency this change removes, and it is what the current documentation points at. The `unpkg.com/papercss@1.9.2/...` links in `docs/content/_index.md` are npm-backed and would break the moment publication stops.
+- **`raw.githubusercontent.com`.** Rejected. It serves files as `text/plain`, so a browser refuses to apply them under `<link rel="stylesheet">`; it is not a stylesheet distribution channel.
+- **GitHub Pages.** Viable but weaker: a single origin, no multi-CDN failover, and it couples artifact serving to the documentation deploy, so a documentation change becomes a distribution event.
+- **An open CDN that resolves a GitHub tag (jsDelivr, Statically).** **Chosen.** Both serve `https://cdn.<host>/gh/<owner>/<repo>@<tag>/<file>` with no account, no submission and no registry. jsDelivr is the primary — multi-CDN (Cloudflare + Fastly), a permanent cache, correct `text/css`, and ~150 billion requests a month — with Statically (bunny.net + Cloudflare) documented as a fallback. Both are npm-free and derive the artifact solely from the GitHub tag.
+
+**The load-bearing constraint.** These CDNs serve the repository *tree* at the ref, not the GitHub Release attachments. So the release must commit `dist/paper.css` and `dist/paper.min.css` at the tag, not merely attach them. That is already required by Decision 5 — `dist/` is tracked and gated in sync with `src/` — so this decision adds no new obligation, but it makes the tracked `dist/` load-bearing for a second reason and it is verified explicitly at task 6.16 rather than assumed. A release that attached artifacts without committing them would download fine from GitHub and 404 on every CDN, which is the "looks fine, is wrong" shape again.
+
+**Consequence.** The documented CDN URL is pinned to a tag, so a consumer's link cannot drift; `@<tag>` is immutable. This is not merely a convention: jsDelivr caches a tagged file **permanently** and its purge API works only for version-aliased URLs, so an exact tag genuinely cannot change under a consumer's feet. A corrected or re-tagged release is therefore served under a **new tag** rather than by mutating an existing one, and the project has no purge step because it needs none (task 6.18). What follows is a gate: every documented CDN URL must be an exact tag, and a mutable alias (`@latest`, a partial version, a branch or a commit) fails, because that is the only shape that could serve a stale copy. The `style`/`jsdelivr` field in `package.json` can name the default file so the bare `/gh/<owner>/<repo>@<tag>` URL resolves to a stylesheet, but the explicit `dist/paper.min.css` path is what the documentation shows because it is unambiguous.
+
+### Decision 15: The documentation site is published at a repository-owned address
+
+**The question.** The documentation currently builds with `baseURL = "https://getpapercss.com"` — the upstream project's domain. The README links readers to `getpapercss.com` and `develop.getpapercss.com`. So this fork's primary teaching surface, like its download links (Decision 12), resolves to someone else's project. Where should it live?
+
+**Options considered.**
+
+- **Leave it on the upstream domain.** Rejected for the same reason the download links were repointed: it sends readers to a differently-versioned framework and gives them no way to tell. It is the same defect as Decision 12's wrong download buttons, on the docs host instead of the buttons.
+- **The default GitHub Pages project URL (`https://<owner>.github.io/papercss/`).** Viable and free, but a project path under a personal domain is easy to mistake for a scratch deploy and gives no stable brand address; it also bakes a moving owner name into every canonical link.
+- **A third-party host (Netlify, Vercel, Cloudflare Pages).** Rejected as unnecessary: it adds an account, a second CI integration, and a credential to manage for a static site GitHub already serves.
+- **GitHub Pages behind a custom subdomain, `https://papercss.r15cookie.com`.** **Chosen.** Pages serves the built site for free from the same repository and CI; the custom domain is the repository owner's existing `r15cookie.com` zone, so the canonical address is stable and owned by this project. The README already references this host, so the intent predates the change.
+
+**Mechanism.** The site is built by the same gated sequence as everything else (Decision 6) and published by a Pages workflow, so the deployed pages are the ones the gates verified. `docs/config.toml`'s `baseURL` becomes `https://papercss.r15cookie.com/`, and `docs/static/CNAME` carries the host so the published artifact tells Pages which domain it belongs to. The custom domain itself is **not committed**: it is a repository setting, and the DNS record lives in a zone this change cannot touch. Both are a manual deployment step the owner performs when the site is ready to be announced (task 18.3), not part of the automated pipeline.
+
+**Consequence.** Canonical links must all agree on the new address, or the site's own metadata points somewhere else: the `baseURL`, the `CNAME`, and the hardcoded OpenGraph/Twitter URL are the three places to check (task 18.5). Until the manual step is done, the workflow still publishes to the default Pages URL, so the site is reachable before the domain is wired; the domain is a cutover, not a prerequisite for the build.
+
 ## Risks / Trade-offs
 
 **Converting 60 single-quoted attributes touches 11 template files** → Mechanical, and verified by rebuilding and confirming the `attr-quotes` count reaches zero with the rest of the report unchanged. The alternative — disabling the rule — is a smaller diff that permanently weakens the gate.
@@ -240,7 +275,7 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **The baseline hides 162 real defects until they are ratcheted** → Mitigated by the per-rule ceilings and by ordering the docs group so the framework-contract defects are fixed before the style cleanup, so that fixing real problems is never buried under churn.
 
-**`npm audit` findings stay partly open** → Deliberate, and tracked. They are build-time dependencies of this repository only; consumers use the prebuilt `dist/paper.css` and never run it, so they carry none of the risk. The toolchain replacement resolves most of the 92; what remains is recorded with a count so improvement stays measurable.
+**`npm audit` findings stay partly open** → Deliberate, and tracked. They are build-time dependencies of this repository only; consumers use the prebuilt `dist/paper.css` and never run it, so they carry none of the risk. The toolchain replacement resolves most of the 92; what remains is recorded with a count and classified by reachability (group 17) so improvement stays measurable, while resolution is the `dependency-hardening` change so a hard upstream bump cannot gate the release.
 
 **The Sass migration can silently alter the theme** → The highest-consequence risk in this change, and the reason Decision 10 exists. The 56 palette-computing `darken`/`lighten` calls are removed in Dart Sass 3.0.0; substituted carelessly, the palette resolves to different colours or to nothing, and the build still succeeds. The risk is real but dated — nothing is at risk on 1.x today, where these calls warn rather than fail. Mitigated by recording every theme custom property with its resolved value *before* migrating, by gating on the presence of the `html.dark` block and the completeness of its property set, and by comparing values rather than accepting a successful compile.
 
@@ -252,11 +287,21 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **Reconstructing the changelog depends on the tags being legible** → Twenty-five tags is enough to reconstruct a real history, but a tag whose changes cannot be determined must be recorded as a gap rather than omitted, since a silently missing release is the same failure as no changelog at all.
 
-**Publishing from a tag means a bad tag is a published release** → A mistyped `v2.0.1` cannot be unpublished, only superseded. Mitigated by making the gates run *before* publication rather than after, by requiring a `CHANGELOG.md` entry as a precondition, and by treating the first real release as a prerelease (task 6.14) so the mechanics are proven on something that can be superseded cheaply.
+**Publishing from a tag means a bad tag is a published release** → A mistyped `v2.0.1` cannot be unpublished, only superseded. Mitigated by making the gates run *before* publication rather than after, by requiring a `CHANGELOG.md` entry as a precondition, and by treating the first real release as a prerelease (task 19.4) so the mechanics are proven on something that can be superseded cheaply.
 
 **Repointing the documentation will break inbound links** → The current download URLs point at the upstream project, so consumers following them have been getting upstream's build; correcting them changes where those links resolve. Accepted: the links were wrong, and leaving them wrong to preserve habit is the same failure as the rest of this change.
 
 **The artifact set can drift from what the documentation promises** → A release could ship CSS only, or omit the source archive, leaving the documented Sass path unsatisfiable. Mitigated by defining the set once and gating that a release carries all of it — and that the published source archive really contains the entry point a Sass consumer needs, which is easy to break silently in exactly the same way the theme was.
+
+**Removing npm publication breaks consumers who installed from npm** → Existing users of `npm install papercss` will stop receiving updates through that channel. Accepted: the package on npm is upstream's, not this fork's, so those users were never receiving this fork's releases anyway, and the registry path is removed by decision rather than neglect. The install instructions are repointed at the GitHub Release and the CDN, and the change is stated in `UPGRADE.md`.
+
+**The CDNs serve the repository tree, not the GitHub Release attachments** → A release that attached the stylesheets but did not commit them would download from GitHub and 404 on every CDN. Mitigated by Decision 5's `dist/`-in-sync gate and by task 6.16, which verifies the tagged tree contains the artifacts rather than assuming it.
+
+**A CDN can serve a stale cache for a re-tagged version** → Not applicable to the documented URLs: each is pinned to an exact tag, and jsDelivr caches an exact tag permanently, so it cannot drift; a corrected release is a new tag, not a mutated one. The exposure would exist only for a version-aliased URL (`@latest`, a partial version, a branch or a commit), which the documentation does not use and the gate rejects (task 6.18).
+
+**The documentation site's `baseURL` and its deployed address disagree** → Assets and canonical links break or point off-site. Mitigated by setting `baseURL` and `CNAME` together (task 18.2) and by verifying the built pages emit the canonical URL before the domain is wired.
+
+**The custom-domain step depends on settings this repository does not control** → The build and publish can succeed while the domain is not yet serving. Mitigated by making the domain a clearly-owned manual step (task 18.3) and by keeping the pipeline's output reachable at the default Pages URL in the meantime, so the site is never blocked on DNS or certificate issuance.
 
 ## Migration Plan
 
@@ -265,8 +310,9 @@ The deeper cost is that the documentation's download links are **already wrong, 
 3. **Correct the one declaration value.** `padding: none`, because the new stylesheet gate fails on it and a gate that lands red teaches everyone to ignore it. **Landed.**
 4. **Modernize the build, and gate the theme while doing it.** The toolchain moves to maintained versions and the built-in calls are migrated, with the theme's resolved values recorded first so any change to them is detected rather than absorbed. Then the linter replacement and the value-level equivalence check. Verified by resolved values, not by a byte diff.
 5. **Framework fixes, one commit each.** Toggle focus, height cap, toggle markup, fonts — each with the gate that now proves it, and each recorded in `UPGRADE.md` as it lands.
-6. **Documentation markup.** Partition the gate into demo and chrome regions first, then framework-contract defects in the demos, then the chrome defects, then the two style rules, tightening the baseline in the same change.
+6. **Documentation markup, demos only.** Partition the gate into demo and chrome regions first, then drive the framework-contract defects in the demos to zero. The chrome region keeps its recorded baseline; the chrome defects and the style rules are the `docs-accessibility` and `docs-style-cleanup` follow-up changes.
 7. **Release documentation, finalized before the tag.** `CHANGELOG.md` reconstructed from the tags and carried forward release by release; `UPGRADE.md` complete against the recorded set of breaking changes.
-8. **Release by tag.** The release pipeline and the documentation it points at are built alongside step 4's group, but the release itself is cut last, so the first tag carries every change in steps 5–7 and nothing is published from a tree that has not passed `make check`.
+8. **Release by tag.** The release pipeline and the documentation it points at are built alongside step 4's group, but the release itself is cut last, so the first tag carries every change in steps 5–7 and nothing is published from a tree that has not passed `make check`. The release publishes to no registry; the tagged tree is served by open CDNs, and the documented CDN URLs are verified against the release rather than assumed.
+9. **Publish the documentation site.** The Pages workflow builds and publishes the site through the gated sequence; `baseURL` and `CNAME` are set to `papercss.r15cookie.com`. The owner then performs the manual custom-domain and DNS step when ready to announce (task 18.3). Until then the site is reachable at the default Pages URL, so the cutover is not on the critical path.
 
 Rollback is per-step: steps 1–3 change no component behaviour beyond one corrected declaration, and steps 4–8 each land independently. Step 4 carries the only consumer-visible risk in this plan — the theme's resolved values — and it is guarded by recording them before the change rather than after. Step 8 is not rolled back at all, which is why it is last and why the gates run before publication rather than after.

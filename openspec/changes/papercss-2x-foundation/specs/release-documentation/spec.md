@@ -143,3 +143,44 @@ Where the documentation describes more than one way to obtain or consume the fra
 - **WHEN** a step of publishing is still performed by hand
 - **THEN** the documented procedure states so explicitly
 - **AND** it does not imply an automation that does not exist
+
+### Requirement: No documented way to obtain the framework requires a package registry
+
+The framework SHALL be obtainable without any package registry. A release SHALL NOT publish to npm or any other registry, and the documentation SHALL NOT instruct consumers to install the framework from one, because such a path cannot be satisfied. Download and CDN instructions SHALL be offered instead, and the CDN URL SHALL be derived from a tagged release of this repository.
+
+#### Scenario: A consumer follows an install instruction
+
+- **WHEN** the documentation tells a consumer to install or add the framework
+- **THEN** the instruction resolves to a GitHub Release artifact or a CDN URL derived from a tagged release
+- **AND** no instruction depends on a registry publication that does not exist
+
+#### Scenario: A registry-only consumption path is documented
+
+- **WHEN** a documented path requires a package registry
+- **THEN** verification fails, because no release publishes one
+- **AND** the path is either replaced with the CDN or Release path or removed
+
+#### Scenario: The package metadata advertises a publication channel
+
+- **WHEN** the repository's package metadata or ignore files exist only to support a registry publication
+- **THEN** they are removed, so the repository does not advertise a channel it does not use
+
+### Requirement: The documentation site is published at the repository's canonical address
+
+The documentation SHALL be published at a stable address owned by this repository, and every link to the documentation from the repository or its metadata SHALL use that address rather than another project's.
+
+#### Scenario: A repository link names the documentation site
+
+- **WHEN** the README or repository metadata links to the documentation
+- **THEN** it points at this repository's canonical address
+
+#### Scenario: The documentation resolves to another project's domain
+
+- **WHEN** a canonical link or site metadata names the upstream project's domain as this project's documentation
+- **THEN** it is treated as a defect and repointed
+
+#### Scenario: The custom domain is not yet configured
+
+- **WHEN** the site is published before the custom domain is registered
+- **THEN** the build and publish still succeed at the default address
+- **AND** the custom domain is a separate deployment step rather than a build prerequisite

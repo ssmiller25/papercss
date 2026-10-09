@@ -47,7 +47,7 @@ That is the whole thesis of this change in miniature — a shipped artifact that
 - Stop inlining a render-blocking Google Fonts `@import` into the shipped stylesheet by default.
 
 **Reference-implementation markup**
-- Treat `docs/` as the reference implementation rather than incidental sample code, and drive its `lang`, landmark, form-labelling, and duplicate-id defects to zero.
+- Treat `docs/` as the reference implementation rather than incidental sample code, and drive the *live demos* a consumer copies to zero validity and accessibility violations. The page template's own `lang`, landmark, form-labelling and duplicate-id defects are split into the `docs-accessibility` follow-up change, so the demo region proves itself on its own merits rather than on chrome cleanup.
 - Split the documentation gate so the *live demos* are validated separately from the surrounding page chrome, each with its own recorded ceiling, since a consumer copies the demo rather than the template.
 
 **Build toolchain modernization**
@@ -56,6 +56,7 @@ That is the whole thesis of this change in miniature — a shipped artifact that
 - Migrate the 76 deprecated global built-in calls (`lighten`, `darken`, `map-get`, `map-keys`, `str-slice`, `str-index`, `str-length`) off the global namespace, leaving `@import` in place. The ~186 remaining `@import` deprecation warnings are accepted rather than cleared. Note the colour calls cannot use the suggested `color.adjust`, which does not clamp the way `lighten`/`darken` do — see the design.
 - Replace the two-stylelint workaround with one project-local linter, so the gate that catches an invalid declaration value runs through `npm run lint`.
 - Verify the replacement by resolved declaration values per selector rather than by byte comparison, since the modern tools emit differently-formatted output.
+- Record the post-replacement `npm audit` count against the pre-change baseline and classify each remaining finding by reachability. Resolving the reachable findings is the `dependency-hardening` follow-up, so an unmergeable upstream bump cannot block this release.
 
 **Dark theme preservation**
 - Record every custom property both themes declare, with its resolved value, and gate on that record — because one missing custom property degrades every component that reads it, silently and without failing any gate.
@@ -65,23 +66,29 @@ That is the whole thesis of this change in miniature — a shipped artifact that
 - Reconstruct `CHANGELOG.md` from the repository's 25 existing tags; the project currently ships no changelog at all, so 24 releases are undocumented.
 - Add `UPGRADE.md` stating, per breaking change, the before and after, why it changed, and the substitution.
 
+**Documentation site**
+- Publish the documentation to GitHub Pages at the repository-owned address `https://papercss.r15cookie.com`, built by the same gates as every other artifact, so the docs no longer resolve to the upstream project's `getpapercss.com`.
+- Repoint the site's canonical URL — `baseURL`, a `CNAME` for the custom domain, and the OpenGraph/Twitter metadata — and the README's documentation links at that address.
+- Register the custom domain and its DNS record as a manual deployment step the owner performs when the site is ready to be announced, since it depends on repository and DNS settings this change cannot commit.
+
 **Release pipeline**
 - Replace the manual release in `DISTRIBUTING.md` with a tag-triggered workflow that runs `make check` before publishing anything, so no release is cut from a tree that fails its own gates.
 - Treat the tag as the only version number, failing the release when `package.json` disagrees rather than warning — today the version is duplicated across three files with nothing verifying they agree.
-- Publish `paper.css`, `paper.min.css` and an SCSS source archive as GitHub Release artifacts, with provenance tying each to the commit it was built from. The source archive is required once `@import` is gone, or the documented Sass path has nothing to consume.
+- Publish `paper.css`, `paper.min.css` and an SCSS source archive as GitHub Release artifacts, with provenance tying each to the commit it was built from. The source archive is required because the documentation tells consumers they may build from source, or that documented Sass path has nothing to consume.
 - Publish prereleases as prereleases, so a release candidate cannot ship as the stable version.
+- **Publish to no package registry.** `npm publish` is removed entirely, not kept as a documented manual step, so a release cannot half-succeed across two channels and the repository advertises only the channel it uses. The npm install instructions, the `node_modules/papercss/...` paths and the unpkg CDN snippet come out of the documentation with it.
+- **Serve the released CSS from open CDNs keyed to the GitHub tag**, so other websites can link it without downloading anything and without a registry. `jsDelivr` is primary and `Statically` is a documented fallback; both derive the artifact directly from the tagged repository tree (`https://cdn.jsdelivr.net/gh/<owner>/<repo>@<tag>/dist/paper.min.css`). This requires that the built CSS is committed at the tag, since the CDNs serve the repository tree rather than the GitHub Release attachments — which the `dist/`-in-sync gate already guarantees.
 - Repoint the documentation at this repository's releases. It currently sends its primary download buttons to `github.com/rhyneav/papercss` and its clone URL to `github.com/papercss/papercss` — both upstream — so the documented download and build instructions hand users the original author's framework.
 - Move the documentation's hardcoded version to a single gated source, so six duplicated `1.9.2` strings become a build failure rather than a stale link.
-- Leave `npm publish` as a documented manual step; a release that half-succeeds is worse than either channel alone.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `build-verification`: the gates that decide whether this repository may ship — a correctness ruleset over the built stylesheet, a ratcheted baseline over the built documentation partitioned into demos and page chrome, build determinism, `dist/`-in-sync-with-`src/`, dark-theme completeness, exact tool pinning on maintained versions, and a tag-triggered release that cannot run before those gates pass.
+- `build-verification`: the gates that decide whether this repository may ship — a correctness ruleset over the built stylesheet, a ratcheted baseline over the built documentation partitioned into demos and page chrome, build determinism, `dist/`-in-sync-with-`src/`, dark-theme completeness, exact tool pinning on maintained versions, the dependency-audit finding count measured against a baseline and classified by reachability, and a tag-triggered release that cannot run before those gates pass and that serves the tagged artifact from open CDNs without touching a package registry.
 - `component-contract`: what the collapsible and navbar components guarantee to the people using them — the frozen `input[id^=collapsible]` identifier contract, keyboard operability, no content-clipping height cap, a documented valid toggle markup, and the dark theme as a preserved surface.
-- `docs-markup`: the documentation site as reference implementation — valid, accessible, self-consistent markup on every page, with the demos that users copy driven to zero independently of the page template.
-- `release-documentation`: what a release owes the people upgrading to it — a changelog covering every tagged release, an upgrade document that states each breaking change's before, after, reason, and substitution, and documentation that points at the artifacts this repository publishes.
+- `docs-markup`: the documentation site as reference implementation — the demos that users copy driven to zero independently of the page template. The remaining page-chrome accessibility defects and the style debt are deferred to separate follow-up changes (`docs-accessibility`, `docs-style-cleanup`) rather than bundled here.
+- `release-documentation`: what a release owes the people upgrading to it — a changelog covering every tagged release, an upgrade document that states each breaking change's before, after, reason, and substitution, documentation that points at the artifacts this repository publishes through registry-free consumption paths, and a documentation site published at this repository's own canonical address rather than another project's.
 
 ### Modified Capabilities
 
@@ -101,16 +108,21 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 **Tooling and CI**
 - New `Makefile`, `.devcontainer/`, `.github/workflows/verify.yml`
 - New `scripts/check-html.mjs`, `scripts/check-theme.mjs`, `scripts/check-css-equivalence.mjs`, `scripts/check-release.mjs`, `.htmlvalidate.json`, `.htmlvalidate-baseline.json`, `.stylelint-dist.json`
-- New `.github/workflows/release.yml` — tag-triggered, gated on `make check`, attaches the artifact set to the GitHub Release
-- `package.json` — `hugo-bin` removed, `sass`/`postcss`/`autoprefixer`/`cssnano`/`stylelint` replaced with current majors, new gate scripts
+- New `.github/workflows/release.yml` — tag-triggered, gated on `make check`, attaches the artifact set to the GitHub Release, and serves it from registry-free open CDNs keyed to the tag (`jsDelivr` primary, `Statically` fallback)
+- `package.json` — `hugo-bin` removed, `sass`/`postcss`/`autoprefixer`/`cssnano`/`stylelint` replaced with current majors, new gate scripts, and repository/homepage/bugs metadata repointed at this repository
 - `package-lock.json` — rewritten at the current lockfile version
-- `dist/paper.css`, `dist/paper.min.css` — tracked and regenerated; content changes once the defect fixes land, and once more for the toolchain replacement's formatting
+- `.npmignore` — removed; it is an npm-pack-only artifact and this repository no longer publishes to npm
+- `dist/paper.css`, `dist/paper.min.css` — tracked and regenerated; content changes once the defect fixes land, and once more for the toolchain replacement's formatting. Tracking them is also what makes the CDNs work, since they serve the repository tree at the tag rather than the Release attachments
 
 **Documentation**
-- New `CHANGELOG.md` and `UPGRADE.md`; `README.md` gains links to both
-- `DISTRIBUTING.md` — rewritten as the tag-and-watch procedure, with the manual `npm publish` step recorded as still manual
-- `docs/content/_index.md` — the version moves to a single gated source, and every download and clone URL is repointed at this repository. This file currently sends users to `rhyneav/papercss` and `papercss/papercss` for both downloading and building
-- `docs/config.toml` or site data — the single source the documentation reads its version and repository URLs from
+- New `CHANGELOG.md` and `UPGRADE.md`; `README.md` gains links to both and loses the `npm install`/`yarn add` quick-start
+- `DISTRIBUTING.md` — rewritten around pressing the tag through the GitHub release process (a draft release creates the tag and the workflow publishes it only after the gates pass), with the `npm publish` step removed rather than recorded as manual and the CDN pickup documented. The 2.0 cutover and follow-up (`release/2.0.1`) procedure is sketched there and tracked as group 19
+- `docs/content/_index.md` — the version moves to a single gated source; the NPM install section, the `node_modules/papercss/...` paths and the unpkg/npm CDN snippet are removed; every download and clone URL is repointed at this repository and the CDN guidance becomes the `jsDelivr` GitHub-tag URL. This file currently sends users to `rhyneav/papercss` and `papercss/papercss` for both downloading and building
+- `docs/config.toml` or site data — the single source the documentation reads its version and repository URLs from, and `baseURL` set to `https://papercss.r15cookie.com/`
+- New `docs/static/CNAME` — carries the custom domain so the published GitHub Pages site resolves at that address
+- `docs/layouts/partials/head/opengraph.html` — the hardcoded canonical URL is repointed from upstream to this repository's documentation address
+- New `.github/workflows/pages.yml` — builds the documentation through the gated sequence and publishes it to GitHub Pages
+- `README.md` — documentation links repointed from `getpapercss.com`/`develop.getpapercss.com` to `https://papercss.r15cookie.com`
 
 **Compatibility**
 - **BREAKING** for the toggle markup: `<div class="barN">` becomes `<span class="barN">`. Both are class-styled, so existing CSS keeps working, but any consumer selector written against the element type breaks.
@@ -125,4 +137,6 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 - Changing the colour palette or the `$colors` map. Only the functions computing them change. The palette is preserved: measured against the pre-change build, every colour resolves to the same 8-bit value in both `paper.css` and `paper.min.css`. An intermediate state during the toolchain replacement shifted five `muted`-grey values by 1/255 — the Sass upgrade stopped rounding colour channels — and the upgraded minifier rounds them back; that is recorded in `CHANGELOG.md` because it was measured rather than assumed.
 - Making dark mode *complete* was originally out of scope, and is no longer. Auditing the theme for task 5.2 found 64 colour declarations fixed at build time rather than read from the theme, so pressed buttons, striped progress bars, table rules and shadows kept their light-theme colours in dark mode. Those now follow the theme. This changes how those components render **in dark mode only** — light mode is untouched, value for value — and it is recorded in `CHANGELOG.md` because this list said it would not happen.
 - Adding `prefers-color-scheme` support. The dark theme stays class-activated; automatic mode is a feature, not a defect fix.
-- Resolving the remaining `npm audit` findings beyond what the toolchain replacement incidentally resolves.
+- Resolving the remaining `npm audit` findings beyond what the toolchain replacement incidentally resolves. This change measures and classifies the remainder (group 17); resolving the reachable findings is split into the `dependency-hardening` change, so an unmergeable upstream bump cannot block the release.
+- Publishing to a package registry. No release pushes to npm or anywhere else; consumption outside GitHub Releases is served from the tagged repository tree by open CDNs. This is a removal, not a deferred follow-up.
+- The documentation's page-chrome accessibility defects (`lang`, landmarks, form labelling, button types) and its style debt (`attr-quotes`, trailing whitespace, inline styles). Split into the `docs-accessibility` and `docs-style-cleanup` follow-up changes. The demos a consumer copies stay in scope as group 12; the surrounding page does not.

@@ -227,6 +227,53 @@ The gates SHALL verify that every custom property the default theme declares is 
 - **THEN** the component renders with a default-theme value
 - **AND** this is a failure of the theme gate rather than a rendering detail to be noted in review
 
+### Requirement: Dependency findings are measured against a recorded baseline
+
+The repository SHALL record its dependency-audit finding count against the count taken before the toolchain replacement, so that a change in dependency risk is measurable rather than assumed.
+
+#### Scenario: The dependency tree changes
+
+- **WHEN** the audit is run after a dependency change
+- **THEN** the current count is compared with the recorded baseline
+
+#### Scenario: The finding count rises
+
+- **WHEN** the number of findings increases without an explanation
+- **THEN** the increase is treated as a regression rather than accepted silently
+
+### Requirement: Every remaining dependency finding is classified by reachability
+
+For every dependency finding the toolchain replacement does not resolve, the repository SHALL record whether it is reachable from the build or development workflow, and SHALL NOT leave a finding unclassified.
+
+#### Scenario: A finding is unreachable
+
+- **WHEN** a finding cannot be reached by any build or development command
+- **THEN** the reason is recorded rather than the finding silently accepted
+
+#### Scenario: A finding is reachable
+
+- **WHEN** a finding can be reached by a build or development command
+- **THEN** it is recorded as reachable for resolution
+
+#### Scenario: A finding is left unclassified
+
+- **WHEN** a finding remains unclassified after the audit
+- **THEN** the classification is incomplete
+
+### Requirement: The documentation site is deployed from the verified build
+
+The documentation site SHALL be published by an automated workflow from the same build the repository's gates verify, and SHALL NOT be published from an unverified or hand-uploaded tree.
+
+#### Scenario: The documentation site is published
+
+- **WHEN** the documentation site is deployed
+- **THEN** the published pages are the output of the gated build
+
+#### Scenario: The site is uploaded by hand
+
+- **WHEN** the documentation is published outside the gated workflow
+- **THEN** that is treated as a defect, since it bypasses the gates
+
 ### Requirement: A release is produced by a tag, and only from a verified tree
 
 A release SHALL be triggered by pushing a version tag. The tag SHALL be the single source of truth for the release's version, and no artifact SHALL be published before the repository's own gates pass. A version disagreement SHALL fail the release rather than warn.
@@ -275,3 +322,35 @@ A release SHALL publish a defined set of artifacts, and SHALL fail rather than p
 
 - **WHEN** a consumer needs to determine which build a downloaded artifact came from
 - **THEN** the release records the repository and commit it was built from
+
+### Requirement: Released artifacts are served from the tagged repository without a package registry
+
+A release SHALL be consumable over the open internet without a package registry. The released stylesheets SHALL be served by open CDNs that resolve them directly from the tagged repository tree, and the release SHALL verify that each documented CDN URL serves the tagged build. Because the CDNs read the repository tree rather than the GitHub Release attachments, a release SHALL commit the artifacts it publishes at the tag.
+
+#### Scenario: A third-party site links the CDN URL
+
+- **WHEN** a website links the documented CDN URL for a released version
+- **THEN** it receives the stylesheet built from that tag
+- **AND** no package registry is involved
+
+#### Scenario: Artifacts are attached but not committed
+
+- **WHEN** a release attaches the stylesheets to the GitHub Release but the tagged tree does not contain them
+- **THEN** the CDN URL for that tag does not resolve to the released artifact
+- **AND** the release is incomplete even though the GitHub Release download succeeds
+
+#### Scenario: The CDN serves a stale build
+
+- **WHEN** the artifact at a documented CDN URL differs from the artifact attached to the release for that tag
+- **THEN** verification fails
+
+#### Scenario: A documented CDN URL uses a mutable alias
+
+- **WHEN** a documented CDN URL uses `@latest`, a partial version, a branch or a commit instead of an exact tag
+- **THEN** verification fails, because such a URL can drift and the CDNs cannot reliably purge it
+
+#### Scenario: A corrected release is needed
+
+- **WHEN** a released artifact must be superseded
+- **THEN** the correction is published under a new tag rather than by mutating the existing tag's URL
+- **AND** no documented URL depends on a mutable alias or a cache purge

@@ -6,11 +6,13 @@ Defines the documentation site as reference implementation. The markup a framewo
 
 That asymmetry — copied examples matter more than the page around them — is why the two are held to separate recorded results rather than one shared count.
 
+This change is scoped to the demo region, which reaches zero. The page template's own accessibility defects (`lang`, landmarks, form labelling, button types) and the site's style debt (`attr-quotes`, trailing whitespace, inline styles) are deferred to the `docs-accessibility` and `docs-style-cleanup` follow-up changes; the requirements that state them are not part of this delta.
+
 ## ADDED Requirements
 
 ### Requirement: Documentation markup is valid and accessible
 
-Every page the documentation build produces SHALL satisfy the committed accessibility and validity rules, except where an exclusion is recorded as a deliberate framework exception.
+Every page the documentation build produces SHALL satisfy the committed accessibility and validity rules, except where an exclusion is recorded as a deliberate framework exception. Until the `docs-accessibility` follow-up change lands, the page-chrome region satisfies this requirement within its recorded baseline rather than at zero; the demo region satisfies it at zero.
 
 #### Scenario: A page is built
 
@@ -29,39 +31,6 @@ Every page the documentation build produces SHALL satisfy the committed accessib
 - **THEN** the site root is included alongside nested pages
 - **AND** the file set does not depend on shell glob semantics
 
-### Requirement: Documentation is self-describing to assistive technology
-
-Pages SHALL declare their language, and landmark regions SHALL be distinguishable from one another when a page contains more than one of the same kind.
-
-#### Scenario: A page declares no language
-
-- **WHEN** a generated page omits its language
-- **THEN** verification fails
-
-#### Scenario: A page repeats a landmark
-
-- **WHEN** a page contains more than one landmark of the same kind
-- **THEN** each is given a non-empty, unique accessible name
-
-### Requirement: Form controls in examples are labelled and uniquely identified
-
-Form controls appearing in documentation SHALL have an associated label, and controls of the same kind on one page SHALL NOT share a name.
-
-#### Scenario: An example repeats a control name
-
-- **WHEN** two or more controls on one page share a `name`
-- **THEN** verification fails
-
-#### Scenario: An example omits a control type
-
-- **WHEN** a button in an example omits its `type`
-- **THEN** verification fails
-
-#### Scenario: A group of controls has no description
-
-- **WHEN** a `fieldset` in an example has no `legend`
-- **THEN** verification fails
-
 ### Requirement: Recorded exclusions are deliberate
 
 Where a rule is not enforced, the reason SHALL be recorded in the repository. A disabled rule SHALL be distinguishable from a rule that was never considered.
@@ -75,21 +44,6 @@ Where a rule is not enforced, the reason SHALL be recorded in the repository. A 
 
 - **WHEN** a rule is switched off rather than its violations fixed
 - **THEN** the count of violations it was hiding is recorded so the debt is visible
-
-### Requirement: Style debt does not outlive its introduction
-
-Markup that is valid but stylistically inconsistent with the rest of the site SHALL be brought into line, and the recorded baseline SHALL be tightened in the same change, so that the baseline never becomes a permanent ceiling.
-
-#### Scenario: A dominant style rule is fixed
-
-- **WHEN** the recorded baseline is dominated by one stylistic rule
-- **THEN** that rule is brought into line across the templates
-- **AND** the baseline is tightened in the same change
-
-#### Scenario: A cleanup lands without tightening the baseline
-
-- **WHEN** a change reduces a violation count
-- **THEN** the change is incomplete until the recorded ceiling matches the new count
 
 ### Requirement: Copied examples reach zero, independently of the page around them
 

@@ -92,7 +92,7 @@
 
 *Duplicate selectors are **real** in this stylesheet rather than a parsing artefact — `html` appears four times, `a` twice, because the reset and component layers each style them. Keying on selector alone kept only the last, so a change to the first `html` rule would have been invisible. Rules are keyed on (selector, occurrence) and the key *sequence* is compared as well, so a reordering is caught even when every declaration matches.*
 
-*Verified to fail, not merely to pass — five cases: a palette rewrite (`html.dark { --primary }: #000 -> #fff`), a missing custom property in the dark theme, a change to the first of four `html` rules specifically, a cascade reordering with identical declarations, and the `@import` removal planned for group 15. An unmodified build reports 0 differences and exits 0.*
+*Verified to fail, not merely to pass — five cases: a palette rewrite (`html.dark { --primary }: #000 -> #fff`), a missing custom property in the dark theme, a change to the first of four `html` rules specifically, a cascade reordering with identical declarations, and a hypothetical `@import` removal (the 3.0 migration this change deliberately defers). An unmodified build reports 0 differences and exits 0.*
 
 *Duplicate-selector and reordering detection are what make this a gate rather than a diff: both are invisible to a name-only or per-selector comparison, and both change what the stylesheet does.*
 
@@ -227,7 +227,7 @@
 
 ***4.11 — the lockfile and `npm ci`.*** *The rewrite to `lockfileVersion` 3 had already happened as a side effect of the Sass bump at 4.3, which is why `4.11` was recorded there as needing only its verification. `npm ci` now installs the pinned tree cleanly, and the build, the declaration record and `lint:src` all pass afterwards — so the lockfile is not merely present but sufficient on its own.*
 
-***The audit improvement is now measurable, which is what 4.2 recorded its baseline for.*** *The count went from **73 findings to 18**: critical **2 → 0**, high 22 → 17, moderate 48 → 1, low 1 → 0. The remaining four direct dependencies carrying findings are `chokidar` and three `stylelint` packages. Nothing here ships — `dependencies` is empty and consumers use the prebuilt stylesheet — so the remainder belongs to task 16 rather than blocking this group.*
+***The audit improvement is now measurable, which is what 4.2 recorded its baseline for.*** *The count went from **73 findings to 18**: critical **2 → 0**, high 22 → 17, moderate 48 → 1, low 1 → 0. The remaining four direct dependencies carrying findings are `chokidar` and three `stylelint` packages. Nothing here ships — `dependencies` is empty and consumers use the prebuilt stylesheet — so the remainder is classified in group 17 and its resolution belongs to the `dependency-hardening` change rather than blocking this group.*
 
 ***4.12 — install scripts.*** *The concern was that a replacement might reintroduce the `hugo-bin`/`pre-commit` failure: a **required** dependency whose install script the package manager refuses to run, leaving the package installed but non-functional. Two packages in the tree do declare install scripts, and neither is that:*
 
@@ -305,7 +305,7 @@
 
 ***The documentation gate caught this twice, which is the whole reason 5.4 said the toggle is held to it.*** *The first attempt failed with 4240 → 4306 errors: `attr-quotes` +33 and `no-trailing-whitespace` +33, one of each per page, because header markup is on every page. Both were defects in the toggle, not baseline drift, and both were mine:*
 
-- *the `<script>` tag used single-quoted attributes, where the site's house style is double quotes — the same style deviation group 14 exists to clean up, so it was fixed rather than absorbed;*
+- *the `<script>` tag used single-quoted attributes, where the site's house style is double quotes — the same style deviation the `docs-style-cleanup` follow-up change exists to clean up, so it was fixed rather than absorbed;*
 - *an **indented HTML comment** that Hugo strips, leaving its leading whitespace behind as a blank-but-indented line. Replaced with a Hugo template comment, `{{- /* … */ -}}`, which trims the surrounding whitespace and leaves nothing. Worth recording because the failure is invisible in the source: the comment reads as documentation and the violation appears only in the rendered output.*
 
 *Verified: `make check-docs` reports **4240 errors at baseline, none new**, and the button is present on all 33 pages.*
@@ -328,22 +328,27 @@
 
 ## 6. Release Pipeline
 
-*Capability: `build-verification`, `release-documentation`. Replaces the manual procedure in `DISTRIBUTING.md`: hand-edit the version in three files, commit, tag, then create the release in the GitHub UI and drag `dist/` into "Attach Binaries". Nothing verifies those version numbers agree, so a release can be labelled `1.8.3` while built from `1.8.2` sources, and a forgotten edit ships a stale download link. **GitHub Releases only** — `npm publish` stays a documented manual step, because a release that half-succeeds is worse than either channel alone.*
+*Capability: `build-verification`, `release-documentation`. Replaces the manual procedure in `DISTRIBUTING.md`: hand-edit the version in three files, commit, tag, then create the release in the GitHub UI and drag `dist/` into "Attach Binaries". Nothing verifies those version numbers agree, so a release can be labelled `1.8.3` while built from `1.8.2` sources, and a forgotten edit ships a stale download link. **GitHub Releases only — a release publishes to no package registry.** There is no `npm publish` step and no other tie-in to the npm registry: the artifact set is attached to the GitHub Release, and third-party sites consume it through open CDNs that serve the tagged repository tree (jsDelivr primary, Statically fallback). A release that pushed to a registry and a CDN would have two independent failure modes and a half-published state, so the registry path is removed rather than kept as a manual step.*
 
-- [ ] 6.1 Make the tag the single source of truth for a release's version, and add a gate failing when `package.json`'s version disagrees with it. A mismatch is a failure, not a warning
-- [ ] 6.2 Add `.github/workflows/release.yml`, triggered on a `v*` tag, that runs `make check` before publishing anything — so no release is cut from a tree that fails its own gates, reusing the single entry point rather than restating the sequence in a second place
-- [ ] 6.3 Define the released artifact set explicitly: `paper.css`, `paper.min.css`, and an SCSS source archive
-- [ ] 6.4 Verify the source archive is built from the tagged commit's `src/` and contains the entry point a Sass consumer needs — it is not optional once `@import` is gone (task 4.3), so a CSS-only release would break the source-consumption path the docs describe
-- [ ] 6.5 Attach the artifacts to the GitHub Release for the tag, and verify a dry run produces all three and nothing else
-- [ ] 6.6 Require `CHANGELOG.md` to carry an entry for the released version, and fail the release when it does not — an undocumented release is the exact failure this change exists to prevent
-- [ ] 6.7 Treat a prerelease tag such as `v2.0.0-rc.1` as a prerelease rather than as `2.0.0`, so a release candidate is never published as the stable version or made the `latest` release, and verify the version comparison accepts prerelease forms
-- [ ] 6.8 Attach provenance metadata to the release so a downloaded artifact can be tied back to this repository and the commit it was built from
-- [ ] 6.9 Move the documentation's version to a single source the docs build reads, and remove the literals from `docs/content/_index.md`
-- [ ] 6.10 Add a gate failing when the documented version disagrees with the released tag, so drift is a build failure rather than a stale download link
-- [ ] 6.11 Repoint every download and build URL in the documentation at **this** repository. `docs/content/_index.md` currently points its GitHub Releases buttons at `github.com/rhyneav/papercss` and its clone URL at `github.com/papercss/papercss` — both the upstream project, so the documented download and build instructions hand users someone else's framework
-- [ ] 6.12 Update `README.md` to name the released artifacts and the repository they come from, including the SCSS source path for consumers building from source
-- [ ] 6.13 Rewrite `DISTRIBUTING.md` as the tag-and-watch procedure, and record the manual `npm publish` step as still manual, with the reason
-- [ ] 6.14 Verify a release end to end on a real prerelease tag: artifacts downloadable, `CHANGELOG.md` entry present, documented URLs resolving to the tagged artifacts
+- [x] 6.1 Make the tag the single source of truth for a release's version, and add a gate failing when `package.json`'s version disagrees with it. A mismatch is a failure, not a warning
+- [x] 6.2 Add `.github/workflows/release.yml`, triggered on a `v*` tag, that runs `make check` before publishing anything — so no release is cut from a tree that fails its own gates, reusing the single entry point rather than restating the sequence in a second place
+- [x] 6.3 Define the released artifact set explicitly: `paper.css`, `paper.min.css`, and an SCSS source archive
+- [x] 6.4 Verify the source archive is built from the tagged commit's `src/` and contains the entry point a Sass consumer needs — it is not optional once `@import` is gone (task 4.3), so a CSS-only release would break the source-consumption path the docs describe
+- [x] 6.6 Require `CHANGELOG.md` to carry an entry for the released version, and fail the release when it does not — an undocumented release is the exact failure this change exists to prevent
+- [x] 6.7 Treat a prerelease tag such as `v2.0.0-rc.1` as a prerelease rather than as `2.0.0`, so a release candidate is never published as the stable version or made the `latest` release, and verify the version comparison accepts prerelease forms
+- [x] 6.8 Attach provenance metadata to the release so a downloaded artifact can be tied back to this repository and the commit it was built from
+- [x] 6.9 Move the documentation's version to a single source the docs build reads, and remove the literals from `docs/content/_index.md`
+- [x] 6.10 Add a gate failing when the documented version disagrees with the released tag, so drift is a build failure rather than a stale download link
+- [x] 6.11 Repoint every download and build URL in the documentation at **this** repository. `docs/content/_index.md` currently points its GitHub Releases buttons at `github.com/rhyneav/papercss` and its clone URL at `github.com/papercss/papercss` — both the upstream project, so the documented download and build instructions hand users someone else's framework
+- [x] 6.12 Update `README.md` to name the released artifacts and the repository they come from, including the SCSS source path for consumers building from source. **Remove the npm quick-start entirely** — `npm install papercss` and `yarn add papercss` are registry paths this repository no longer supports — and repoint the `package.json` repository, homepage and bugs metadata at this repository rather than upstream
+- [x] 6.13 Rewrite `DISTRIBUTING.md` as the tag-and-watch procedure. **Remove the `npm publish` step** rather than recording it as manual, state that no npm-registry publication is part of a release, and document how the open CDNs pick up the tag
+- [x] 6.15 Define the npm-free consumer paths a release supports — the GitHub Release download and the open CDNs serving the artifact from the tag — and add a gate that fails if the documentation describes a consumption path requiring the npm registry, since no release publishes to it
+- [x] 6.16 Verify the tagged commit's tree contains `dist/paper.css` and `dist/paper.min.css`. The CDNs serve the repository tree at the ref, not the GitHub Release attachments, so a release that attaches artifacts without committing them is downloadable from GitHub and absent from every CDN
+- [x] 6.17 Document the canonical CDN URLs — `https://cdn.jsdelivr.net/gh/<owner>/<repo>@<tag>/dist/paper.min.css` as primary and `https://cdn.statically.io/gh/<owner>/<repo>@<tag>/dist/paper.min.css` as fallback — and add a post-release smoke check that fetches both for the tagged version and matches the response to the released artifact
+- [x] 6.18 Document that an exact-tag CDN URL is immutable by design — the CDN permanently caches a tagged file, so a corrected or re-tagged release is served under a new tag rather than by mutating an existing one, and there is no purge step because every documented URL is an exact tag. Add a gate that fails when a documented CDN URL uses a mutable alias (`@latest`, a partial version, a branch, or a commit) rather than an exact tag, and verify it fails on an aliased URL and passes on the exact-tag URLs this repository documents
+- [x] 6.19 Remove the npm-based consumption path from `docs/content/_index.md`: the NPM install section, the `node_modules/papercss/...` locations, and the unpkg/npm CDN snippet, replacing the CDN guidance with the jsDelivr GitHub-tag URL. The registry path is no longer satisfiable, so leaving it documented is a defect
+- [x] 6.20 Remove `npm publish`-only artifacts (`package.json` publish fields if any, `.npmignore`) so the repository does not advertise a publication channel it does not use, and verify nothing in the build or gates depends on them
+- [x] 6.21 Record the no-registry distribution policy in `AGENTS.md` — not in the user-facing `CONTRIBUTING.md` — so a future agent or maintainer does not reintroduce an npm publication step
 
 ## 7. Release Documentation
 
@@ -405,26 +410,6 @@
 - [ ] 12.3 Verify the demo baseline reaches zero without disabling a rule to absorb a violation, and that every disabled rule states why
 - [ ] 12.4 Verify a demo copied verbatim reports no violation without the documentation's own scaffolding around it
 
-## 13. Documentation Page Chrome as Reference Implementation
-
-*Capability: `docs-markup`. The template's own defects: language declaration, landmarks, and form labelling.*
-
-- [ ] 13.1 Add the missing `lang` attribute to the base template, and verify `element-required-attributes` reaches zero in the chrome region
-- [ ] 13.2 Give each landmark on a page with more than one of the same kind a unique accessible name, and verify `unique-landmark` reaches zero
-- [ ] 13.3 Give every form control in the documentation an associated label and a non-duplicate name, and verify `wcag/h71` and `form-dup-name` reach zero
-- [ ] 13.4 Add `type` to every button in the documentation and convert the `input`-as-button examples to real buttons, and verify `no-implicit-button-type` and `prefer-button` reach zero
-- [ ] 13.5 Remove redundant `for` attributes and close all implicitly-closed elements, and verify `no-redundant-for` and `no-implicit-close` reach zero
-- [ ] 13.6 Tighten the chrome region's recorded baseline in this same change, and verify CI fails on any subsequent increase in **either** region
-
-## 14. Style Cleanup and Baseline Tightening
-
-*Capability: `docs-markup`. The recorded baseline is 97% these two rules. They are style, not correctness, but leaving them makes every future gate run unreadable.*
-
-- [ ] 14.1 Convert the documentation's single-quoted attributes to double quotes across the templates and content, and verify `attr-quotes` reaches zero with the rule left enabled — it is a house style, not a defect, so switching it off would be a one-line diff that permanently weakens the gate
-- [ ] 14.2 Strip the template-internal whitespace that leaks into the rendered documentation, and verify `no-trailing-whitespace` reaches zero
-- [ ] 14.3 Move inline presentation in the documentation out of markup, and verify `no-inline-style` reaches zero
-- [ ] 14.4 Tighten both regions' recorded baselines in this same change, and verify every disabled rule in the committed configuration states why it is disabled
-
 ## 15. Font Loading
 
 *Capability: `component-contract`. Changes the framework's default network behavior.*
@@ -443,10 +428,32 @@
 - [ ] 16.3 Document the breaking changes with before-and-after markup for each, pointing at `UPGRADE.md` as the canonical location rather than restating them in a second place that can drift
 - [ ] 16.4 Document the verification workflow for contributors, and verify the documented command runs the same gates as continuous integration
 
-## 17. Remaining Dependency Findings
+## 17. Dependency Audit Classification
 
-*Capability: `build-verification`. Deliberately last. The toolchain replacement in group 4 resolves most of the 92 findings, so this group is only what is left over.*
+*Capability: `build-verification`. Closes the group 4 audit story without taking on resolution risk. Group 4 already measured the before/after count; this group records it and classifies the remainder by reachability. Resolving the reachable findings is the separate `dependency-hardening` change, so an unmergeable upstream bump cannot block this release.*
 
-- [ ] 17.1 Record the post-replacement `npm audit` finding count against the baseline taken in 4.2, so the remaining debt is measurable
-- [ ] 17.2 For each remaining finding, record whether it is reachable from this repository's build or development workflow
-- [ ] 17.3 Resolve the reachable ones and confirm the rest cannot affect a consumer, since consumers use the prebuilt stylesheet and never run this tree
+- [ ] 17.1 Record the post-replacement `npm audit` finding count against the 4.2 baseline (73 findings before the replacement: 2 critical, 22 high, 48 moderate, 1 low; 18 after: 0 critical, 17 high, 1 moderate), and verify the comparison is reproducible and the delta is explained
+- [ ] 17.2 For each remaining finding, record whether it is reachable from the build or development workflow, naming the command or path that reaches it, and verify no finding is left unclassified
+
+## 18. Documentation Site Deployment
+
+*Capability: `build-verification`, `release-documentation`. The documentation is this framework's primary teaching surface, so it is published to a repository-owned address rather than left resolving to the upstream project's domain. GitHub Pages hosts it at **https://papercss.r15cookie.com**, built by the same gates that verify every other artifact.*
+
+- [ ] 18.1 Add a GitHub Pages workflow that builds the documentation through the gated build and publishes the generated output, reusing `make check`'s sequence rather than restating it, and verify the published page set is the same set `make check-docs` validates
+- [ ] 18.2 Set `docs/config.toml`'s `baseURL` to `https://papercss.r15cookie.com/` and add `docs/static/CNAME` containing that host, and verify the built pages emit the canonical URL for their assets and links and that the published output contains the `CNAME` file
+- [ ] 18.3 **[Manual — owner: ssmiller25]** When the site is ready to be announced, configure the GitHub Pages custom domain in the repository settings, add the DNS record in the `r15cookie.com` zone pointing `papercss.r15cookie.com` at GitHub Pages (a `CNAME` to `<owner>.github.io`), and enable **Enforce HTTPS** once the certificate is issued. Verify `https://papercss.r15cookie.com` serves the published site over HTTPS. This is done at deploy time rather than committed, because the domain and certificate depend on repository settings this change does not control
+- [ ] 18.4 Update `README.md` to name `https://papercss.r15cookie.com` as the canonical documentation URL, replacing the upstream `getpapercss.com` and `develop.getpapercss.com` references, and verify no repository metadata presents another project's domain as this one's
+- [ ] 18.5 Update the documentation templates' hardcoded canonical links — the OpenGraph/Twitter URL in `docs/layouts/partials/head/opengraph.html` and any other absolute reference — to the new address, and verify no built page or metadata still presents `getpapercss.com` as this project's site
+
+## 19. Release Cutover and End-to-End Verification
+
+*Capability: `build-verification`, `release-documentation`. These tasks cannot run until the pipeline and every earlier group are in place on `main` and the release workflow is live — which is not true until this change is merged. They are therefore last, and none runs from a feature branch. This group absorbs the former tasks 6.5 (dry run) and 6.14 (end-to-end), moved here because they are the only section-6 work that cannot be executed earlier.*
+
+- [ ] 19.1 Merge this change into `main` through a pull request — never a direct push — so `make check` runs on the merge commit, and verify every required check is green before merging
+- [ ] 19.2 With the pipeline live on `main`, dispatch the `Release` workflow in dry-run mode (`workflow_dispatch` with `dry_run: true`) and verify it assembles the full artifact set — `paper.css`, `paper.min.css`, `papercss-<version>-src.tar.gz`, `provenance.json` — and publishes nothing
+- [ ] 19.3 Press the first tag through the GitHub release process: create a **draft** release for `v2.0.0-rc.1` (which creates the tag and triggers the `Release` workflow), watch `make check` run, and verify the workflow attaches the artifacts and publishes the draft only after the gates pass
+- [ ] 19.4 Verify the prerelease end to end: artifacts downloadable, the `CHANGELOG.md` entry present, documented download and clone URLs resolving to the tagged artifacts, the `jsDelivr` and `Statically` CDN URLs serving the tagged build, and the release marked as a prerelease and not offered as current
+- [ ] 19.5 Publish the stable `v2.0.0` release once the prerelease is verified, and verify the documented download and CDN URLs resolve to `2.0.0`
+- [ ] 19.6 If the candidate needs further integration or compatibility fixes, cut a dedicated follow-up branch from `main` (for example `release/2.0.1`), land the fixes with their own gates and a `2.0.1` changelog entry, and release `v2.0.1` as a new tag — never mutate the published `v2.0.0` tag
+
+*The page-chrome and style-cleanup groups that an earlier draft bundled here are now separate changes: `docs-accessibility` and `docs-style-cleanup`. The dependency group is split by risk: group 17 measures and classifies here, and resolving the reachable findings is the `dependency-hardening` change.*
