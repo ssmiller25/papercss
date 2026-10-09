@@ -2271,15 +2271,18 @@ textarea[disabled] {
 .form-group .paper-switch-tile-card {
   background-color: transparent;
   border-color: transparent;
+  display: block;
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
   transition: all 600ms;
   width: 100%;
 }
-.form-group .paper-switch-tile-card div {
+.form-group .paper-switch-tile-card .paper-switch-tile-card-front,
+.form-group .paper-switch-tile-card .paper-switch-tile-card-back {
   backface-visibility: hidden;
   box-shadow: 2px 8px 8px -5px var(--shadow-color-hover);
+  display: block;
   height: 100%;
   line-height: 70px;
   position: absolute;

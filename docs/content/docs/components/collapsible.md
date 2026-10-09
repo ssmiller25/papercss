@@ -8,7 +8,7 @@ Collapsibles are elements that expand when you click on them. You can hide/revea
 {{< demo >}}
 <div class="row">
   <div class="collapsible">
-    <input id="collapsible1" type="checkbox" name="collapsible">
+    <input id="collapsible1" type="checkbox" name="collapsible1">
     <label for="collapsible1">First</label>
     <div class="collapsible-body">
       <span>
@@ -17,7 +17,7 @@ Collapsibles are elements that expand when you click on them. You can hide/revea
     </div>
   </div>
   <div class="collapsible">
-    <input id="collapsible2" type="checkbox" name="collapsible">
+    <input id="collapsible2" type="checkbox" name="collapsible2">
     <label for="collapsible2">Second</label>
     <div class="collapsible-body">
       <span>
@@ -26,7 +26,7 @@ Collapsibles are elements that expand when you click on them. You can hide/revea
     </div>
   </div>
   <div class="collapsible">
-    <input id="collapsible3" type="checkbox" name="collapsible">
+    <input id="collapsible3" type="checkbox" name="collapsible3">
     <label for="collapsible3">Third</label>
     <div class="collapsible-body">
       <span>
@@ -35,7 +35,7 @@ Collapsibles are elements that expand when you click on them. You can hide/revea
     </div>
   </div>
   <div class="collapsible">
-    <input id="collapsible4" type="checkbox" name="collapsible">
+    <input id="collapsible4" type="checkbox" name="collapsible4">
     <label for="collapsible4">Fourth</label>
     <div class="collapsible-body">
       <span>
@@ -52,28 +52,28 @@ Collapsibles are elements that expand when you click on them. You can hide/revea
 ```html
 <div class="row">
   <div class="collapsible">
-    <input id="collapsible1" type="checkbox" name="collapsible">
+    <input id="collapsible1" type="checkbox" name="collapsible1">
     <label for="collapsible1">First</label>
     <div class="collapsible-body">
       <span>Bacon ipsum dolor sit amet landjaeger sausage brisket, jerky drumstick fatback boudin ball tip turducken...</span>
     </div>
   </div>
   <div class="collapsible">
-    <input id="collapsible2" type="checkbox" name="collapsible">
+    <input id="collapsible2" type="checkbox" name="collapsible2">
     <label for="collapsible2">Second</label>
     <div class="collapsible-body">
       <span>Bacon ipsum dolor sit amet beef venison beef ribs kielbasa. Sausage pig leberkas, t-bone sirloin shoulder bresaola...</span>
     </div>
   </div>
   <div class="collapsible">
-    <input id="collapsible3" type="checkbox" name="collapsible">
+    <input id="collapsible3" type="checkbox" name="collapsible3">
     <label for="collapsible3">Third</label>
     <div class="collapsible-body">
       <span>Bacon ipsum dolor sit amet landjaeger sausage brisket, jerky drumstick fatback boudin ball tip turducken...</span>
     </div>
   </div>
   <div class="collapsible">
-    <input id="collapsible4" type="checkbox" name="collapsible">
+    <input id="collapsible4" type="checkbox" name="collapsible4">
     <label for="collapsible4">Fourth</label>
     <div class="collapsible-body">
       <span>Bacon ipsum dolor sit amet beef venison beef ribs kielbasa. Sausage pig leberkas, t-bone sirloin shoulder bresaola...</span>

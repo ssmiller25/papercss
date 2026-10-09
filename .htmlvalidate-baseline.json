@@ -4,29 +4,16 @@
   "demo": {
     "regions": 49,
     "pages": 22,
-    "total": 85,
-    "byRule": {
-      "attr-quotes": 5,
-      "element-permitted-content": 3,
-      "form-dup-name": 8,
-      "no-implicit-button-type": 18,
-      "no-implicit-close": 8,
-      "no-inline-style": 4,
-      "no-raw-characters": 2,
-      "no-redundant-for": 7,
-      "prefer-button": 4,
-      "unique-landmark": 3,
-      "void-style": 15,
-      "wcag/h71": 8
-    }
+    "total": 0,
+    "byRule": {}
   },
   "chrome": {
     "pages": 33,
-    "total": 4146,
+    "total": 4142,
     "byRule": {
       "attr-quotes": 2770,
       "element-required-attributes": 33,
-      "form-dup-name": 7,
+      "form-dup-name": 3,
       "no-inline-style": 33,
       "no-trailing-whitespace": 1303
     }

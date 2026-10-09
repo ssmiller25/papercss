@@ -405,10 +405,10 @@
 
 *Capability: `docs-markup`. The demos are what a reader copies, so this region reaches zero on its own merits and is not credited with the page chrome's progress.*
 
-- [ ] 12.1 Correct the documented navbar toggle markup that produces `element-permitted-content`, and verify the demo region's count reaches zero for that rule
-- [ ] 12.2 Correct every remaining validity or accessibility defect located in a demo, and verify the demo region's baseline reaches zero with the chrome region unchanged
-- [ ] 12.3 Verify the demo baseline reaches zero without disabling a rule to absorb a violation, and that every disabled rule states why
-- [ ] 12.4 Verify a demo copied verbatim reports no violation without the documentation's own scaffolding around it
+- [x] 12.1 Correct the documented navbar toggle markup that produces `element-permitted-content`, and verify the demo region's count reaches zero for that rule
+- [x] 12.2 Correct every remaining validity or accessibility defect located in a demo, and verify the demo region's baseline reaches zero with the chrome region unchanged
+- [x] 12.3 Verify the demo baseline reaches zero without disabling a rule to absorb a violation, and that every disabled rule states why
+- [x] 12.4 Verify a demo copied verbatim reports no violation without the documentation's own scaffolding around it
 
 ## 15. Font Loading
 

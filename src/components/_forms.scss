@@ -306,15 +306,22 @@ select {
   .paper-switch-tile-card {
     background-color: transparent;
     border-color: transparent;
+    // The card and its faces are documented as `<span>`, since a `<label>` may
+    // only contain phrasing content. The card must be block-level to keep the
+    // box the `<div>` it replaced had; the faces are styled by class, so a
+    // consumer's existing `<div>` markup keeps rendering.
+    display: block;
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
     transition: all 600ms;
     width: 100%;
 
-    div {
+    .paper-switch-tile-card-front,
+    .paper-switch-tile-card-back {
       backface-visibility: hidden;
       box-shadow: 2px 8px 8px -5px var(--shadow-color-hover);
+      display: block;
       height: 100%;
       line-height: 70px;
       position: absolute;

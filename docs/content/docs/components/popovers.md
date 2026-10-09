@@ -37,7 +37,7 @@ But you can also popover on pretty much any element you want, it can be on a but
 {{< demo >}}
 <div class="row flex-center">
   <div class="sm-6 col">
-    <button popover-top="Popover on top">Popover on top and on a button!</button>
+    <button type="button" popover-top="Popover on top">Popover on top and on a button!</button>
   </div>
 </div>
 {{< /demo >}}
@@ -45,7 +45,7 @@ But you can also popover on pretty much any element you want, it can be on a but
 #### Code:
 
 ```html
-<button popover-top="Popover on top">Popover on top and on a button!</button>
+<button type="button" popover-top="Popover on top">Popover on top and on a button!</button>
 ```
 
 

@@ -56,6 +56,13 @@ The styling is identical. If your own CSS selects the bars by element — for
 example `label div` — update it to target `.barN`; a selector already based on
 the class needs no change.
 
+The same substitution applies to the **switch tile**. Its card and its front
+and back faces were documented as `<div>`s inside a `<label>` and are now
+`<span>`s, for the same reason. The framework styles the card and the faces by
+class, so existing markup keeps rendering unchanged; only a selector written
+against the element type (for example `.paper-switch-tile-card div`) needs to
+target the class instead.
+
 #### The collapsible toggle is now focusable
 
 **What it was.** The checkbox that drives a collapsible

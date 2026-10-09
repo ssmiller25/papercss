@@ -15,7 +15,7 @@ Here's what some of the components look like:
   <input type="text" placeholder="Nice input" id="paperInputs1">
 </div>
 
-<button>
+<button type="button">
   Button
 </button>
 

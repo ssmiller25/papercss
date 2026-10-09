@@ -4,7 +4,7 @@ description: PaperCSS Navbar
 ---
 
 {{< demo >}}
-<nav class="border fixed split-nav">
+<nav class="border fixed split-nav" aria-label="Primary">
   <div class="nav-brand">
     <h3><a href="/">Get PaperCSS</a></h3>
   </div>
@@ -25,7 +25,7 @@ description: PaperCSS Navbar
   </div>
 </nav>
 
-<nav class="border split-nav">
+<nav class="border split-nav" aria-label="Secondary">
   <div class="nav-brand">
     <h3><a href="#">Get PaperCSS</a></h3>
   </div>
@@ -52,7 +52,7 @@ description: PaperCSS Navbar
 Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the whole page. It's also mobile responsive and will show a hamburger menu on small screens. No JavaScript required!
 
 ```html
-<nav class="border fixed split-nav">
+<nav class="border fixed split-nav" aria-label="Primary">
   <div class="nav-brand">
     <h3><a href="#">Get PaperCSS</a></h3>
   </div>
@@ -77,7 +77,7 @@ Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the 
 ### Not Split Navbar
 
 {{< demo >}}
-<nav class="border">
+<nav class="border" aria-label="Site">
   <div class="nav-brand">
     <h3><a href="#">Get PaperCSS</a></h3>
   </div>
@@ -102,7 +102,7 @@ Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the 
 #### Code:
 
 ```html
-<nav class="border fixed">
+<nav class="border fixed" aria-label="Site">
   <div class="nav-brand">
     <h4><a href="#">Get PaperCSS</a></h4>
   </div>

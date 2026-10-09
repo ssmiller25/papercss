@@ -34,9 +34,11 @@ See `UPGRADE.md` for the before/after of each.
   which is invalid: a `label` may only contain phrasing content, so the
   demonstrated markup produced an `element-permitted-content` error on every
   page that copied it. The documented markup is now `<span class="barN">`. The
-  framework styles the bars by class and makes them block-level, so nothing
-  renders differently and a consumer selector based on `.barN` needs no change;
-  one written against the element type does. See `UPGRADE.md`.
+  same applies to the switch tile, whose card and faces are now `<span>`s. The
+  framework styles the bars and the tile by class and makes them block-level, so
+  nothing renders differently and a consumer selector based on `.barN` or the
+  tile classes needs no change; one written against the element type does. See
+  `UPGRADE.md`.
 
 ### Build
 

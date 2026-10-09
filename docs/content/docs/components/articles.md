@@ -21,8 +21,8 @@ description: PaperCSS Articles
   </p>
 
   <div class="row">
-    <button>Read More</button>
-    <button>5 Comments</button>
+    <button type="button">Read More</button>
+    <button type="button">5 Comments</button>
   </div>
 </article>
 {{< /demo >}}
@@ -37,8 +37,8 @@ description: PaperCSS Articles
   <p>Lorem...</p>
 
   <div class="row">
-    <button>Read More</button>
-    <button>5 Comments</button>
+    <button type="button">Read More</button>
+    <button type="button">5 Comments</button>
   </div>
 </article>
 ```
