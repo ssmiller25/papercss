@@ -3273,6 +3273,11 @@ nav .nav-brand h6 {
     width: 100%;
   }
 }
+@media only screen and (min-width: 769px) {
+  nav .collapsible > input {
+    display: none;
+  }
+}
 nav .collapsible input[id^=collapsible]:checked ~ div.collapsible-body {
   margin: 0;
   max-height: 960px;
