@@ -79,7 +79,7 @@
 
 *So the target is the current **1.x**, and the work is much smaller than planned: fix the two `/` division sites in `src/layout/_flexbox.scss`, and migrate the 76 built-in calls so the color-function warnings go away. **`@import` stays**, which is the significant consequence — the 109 `!default` overrides keep working, so **2.0 ships with no Sass-consumer break** and no new configuration mechanism is needed. The `@use` migration remains available as separate work when 3.0.0 forces it.*
 
-- [x] 4.1 Record the resolved declaration set for every selector in `dist/paper.css` — property **and** value — so the replacement can be verified for equivalence rather than by byte comparison. A set of property names alone is not acceptable, because it would pass a wholesale palette rewrite (see task 5.1)
+- [x] 4.1 Record the resolved declaration set for every selector in `dist/paper.css` — property **and** value — so the replacement can be verified for equivalence rather than by byte comparison. A set of property names alone is not acceptable, because it would pass a wholesale palette rewrite (see the dark theme requirement in `component-contract`)
 *4.1 delivered `scripts/record-css-declarations.mjs` and the committed record `.css-declarations.json`: **596 rules, 1603 declarations**, sha256 `7a7be54e`. Values are recorded, not just property names — a name-only record would produce an identical result for a toolchain change that rewrote every colour in the palette, which is the specific failure the record exists to prevent.*
 
 *Writing the parser surfaced three bugs worth recording, because each would have made the comparison quietly incomplete rather than failing:*
@@ -247,15 +247,20 @@
 
 *The fragility is structural rather than scheduled, which is why the gate is still worth building. Dark mode is one `html.dark` block at `src/core/_config.scss:247` generated over a shared theme map; every component reads the result through `var(--…)`. So there is no per-component dark styling to lose and none to catch a loss — one missing custom property degrades every component reading it, and nothing in the pipeline notices, because a missing custom property is not invalid CSS. That is the same failure mode as `padding: none`: a declaration that looks right and does nothing. Recording the values turns "did the theme survive this upgrade" into a build result rather than a reviewer's recollection — which matters most at 3.0.0, when someone else does the migration.*
 
-- [ ] 5.1 Derive the theme's recorded property set from task 4.1's full resolved declaration set rather than recording it independently — `html` and `html.dark` are just two rules in it. Recording it separately would risk capturing post-migration values, which is the one thing a baseline must not be. Values, not just names: a presence check passes a palette rewrite
-- [ ] 5.2 Add a gate asserting `html.dark` declares every custom property `html` declares, and verify it fails when one is removed
-- [ ] 5.3 Add a gate asserting the `html.dark` block exists in the built stylesheet, and verify it fails when the block is dropped
-- [ ] 5.4 Verify the theme's resolved values after task 4.4's migration, against the set scoped in 5.1. **No migration happens here** — 4.4 rewrites all 76 built-in calls, which includes these 56, and doing it twice would mean the second pass silently became the reference. This task is the assertion that the framework's most visible surface came through the toolchain change unchanged
-- [ ] 5.5 Handle the `lighten()`-on-`rgba` cases explicitly during 4.4 — `lighten()` lightens the colour channels and leaves alpha alone, and the maintained equivalents do not all agree on that — and verify `--white-dark-light-80`'s alpha channel is unchanged. This is the one place 4.4's "declarations match" check is too coarse to catch a mistake on its own
-- [ ] 5.6 Verify the build emits no theme-related deprecation warning
-- [ ] 5.7 Render each component from the documentation's dark-mode page in both themes, and verify every one resolves from the theme it should
-- [ ] 5.8 Confirm activation is still a single class on the root element, and update the documentation if the mechanism moved
-- [ ] 5.9 Record in `UPGRADE.md` that the dark theme's activation and property surface are unchanged, so a consumer can confirm nothing about their dark styling moved
+*Audited once group 4 landed, and reduced from nine tasks to three. Six were already satisfied by work the toolchain group had to do anyway. They are listed here rather than silently deleted, so the reasoning survives archiving — and so nobody re-adds a gate that already exists under another name.*
+
+- ***5.1 (derive the theme's property set from the record)*** — *the committed `.css-declarations.json` already carries `html` and `html.dark` as ordinary rules, 48 declarations each, with values. Nothing was recorded separately, which was the task's whole point.*
+- ***5.3 (gate that the `html.dark` block exists)*** — *4.10's declaration-set comparison covers it: deleting the block from `dist/paper.css` reports `- html.dark #1` and fails. Verified, not assumed.*
+- ***5.4 (theme values unchanged after the 4.4 migration)*** — *4.4's verification was exactly this, and it reported 0 differences against the record.*
+- ***5.5 (`rgba` handling during 4.4)*** — *done in 4.4. `adjust-lightness` replaced the calls and was checked against `rgba` input specifically, where `--white-dark-light-80` keeps its alpha.*
+- ***5.6 (no theme-related deprecation warning)*** — *the build emits only the accepted `import` warnings; `color-functions` and `global-builtin` went at 4.4.*
+- ***5.8 (activation is still one class on the root)*** — *`html.dark` is in the record and the mechanism is unchanged; `docs/content/docs/utilities/dark-mode.md` still documents adding `.dark` to the `<html>` tag.*
+
+*What remains is the part group 4 could not cover: an invariant the record catches only transiently, a check no declaration comparison can make, and the consumer-facing statement.*
+
+- [ ] 5.1 Add a gate asserting `html.dark` declares every custom property `html` declares, and verify it fails when one is removed. The record catches a property removed from either rule, but only until it is re-baselined — after that an `html`-only addition leaves `html.dark` silently incomplete, which is the invariant the `component-contract` requirement states. A comparative check is not the same as a historical one
+- [ ] 5.2 Render each component from the documentation's dark-mode page in both themes, and verify every one resolves from the theme it should. Neither the record nor the completeness gate can see a component that hardcodes a colour instead of reading a custom property, which is the failure this catches
+- [ ] 5.3 Record in `UPGRADE.md` that the dark theme's activation and property surface are unchanged, so a consumer can confirm nothing about their dark styling moved. Depends on `UPGRADE.md` existing, which happens at task 7.5
 
 ## 6. Release Pipeline
 
