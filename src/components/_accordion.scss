@@ -51,6 +51,18 @@
     }
   }
 
+  // Keyboard focus lands on the visually-hidden input, so the indicator is
+  // drawn on the visible control it is paired with. `:focus-visible` shows it
+  // for keyboard navigation without drawing a ring on a pointer click. The
+  // outline uses the theme's primary colour so it is visible in both themes.
+  > input:focus-visible + label,
+  > input:focus-visible + button {
+    @include color('outline-color', 'primary');
+    outline-offset: 2px;
+    outline-style: dashed;
+    outline-width: 2px;
+  }
+
   > label {
     @include color('color', 'primary');
     @include color('border-bottom-color', 'muted-light');

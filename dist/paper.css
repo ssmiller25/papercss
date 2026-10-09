@@ -1313,6 +1313,14 @@ table.table-alternating tbody tr:nth-of-type(even) {
   opacity: 1;
   padding: 0.75rem;
 }
+.collapsible > input:focus-visible + label,
+.collapsible > input:focus-visible + button {
+  outline-color: #41403e;
+  outline-color: var(--primary);
+  outline-offset: 2px;
+  outline-style: dashed;
+  outline-width: 2px;
+}
 .collapsible > label {
   color: #41403e;
   color: var(--primary);
