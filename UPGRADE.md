@@ -6,16 +6,15 @@ This is written as changes land rather than reconstructed at the end, so it can
 be ahead of a given commit. `CHANGELOG.md` records what has actually shipped;
 this records what to do about it.
 
-Each section states what something was, what it is now, why it changed, and the
-substitution a consumer needs to make. If you find one out of step with the
-release, that is a defect in this file.
+Each breaking change below states what something was, what it is now, why it
+changed, and the substitution a consumer needs to make. If you find one out of
+step with the release, that is a defect in this file.
 
 ## 2.0.0
 
-The following changes can alter a page that upgrades to 2.0. Each states its
-before, its after, why, and what to do.
+### Breaking changes
 
-### The documented toggle markup changes from `<div>` to `<span>`
+#### The documented toggle markup changes from `<div>` to `<span>`
 
 **What it was.** The navbar and collapsible toggle bars were documented as
 `<div class="bar1">`, `<div class="bar2">`, `<div class="bar3">` inside a
@@ -57,7 +56,7 @@ The styling is identical. If your own CSS selects the bars by element — for
 example `label div` — update it to target `.barN`; a selector already based on
 the class needs no change.
 
-### The collapsible toggle is now focusable
+#### The collapsible toggle is now focusable
 
 **What it was.** The checkbox that drives a collapsible
 (`input[id^=collapsible]`) was hidden with `display: none`.
@@ -75,7 +74,7 @@ off-screen, not `display: none`. The identifier contract
 (`input[id^=collapsible]`) is unchanged, so markup that worked before still
 works.
 
-### A tall collapsible body is no longer clipped
+#### A tall collapsible body is no longer clipped
 
 **What it was.** An expanded collapsible body had `max-height: 960px`.
 
@@ -89,7 +88,7 @@ no ellipsis — content was lost silently.
 body, set your own `max-height` on `.collapsible-body` (or its content) to get
 that behaviour back.
 
-### The framework no longer loads Google Fonts by default
+#### The framework no longer loads Google Fonts by default
 
 **What it was.** The shipped stylesheet contained a Google Fonts
 `@import url(...)`, so every consumer's page blocked rendering on a third-party
@@ -99,7 +98,9 @@ request.
 request. A consumer can opt back in through the documented configuration.
 
 **Why.** A distributed framework should not add a render-blocking third-party
-request the consumer did not ask for. Making it opt-in is the correct default.
+request the consumer did not ask for. Making it opt-in is the correct default
+for a new consumer, but it removes a request an existing page may have relied
+on.
 
 **What to do.** If you relied on PaperCSS to load the fonts, load them yourself:
 
@@ -114,7 +115,9 @@ or, when building from source, set the font source before importing `styles`
 (see `$font-src` in `src/core/_config.scss`). If you do not use the framework's
 fonts, nothing changes.
 
-### Dark mode now themes every component
+### Other changes (not breaking)
+
+#### Dark mode now themes every component
 
 **What changed.** Dark mode used to theme only the *base* colours of each
 component. Colours derived from them — a button's pressed state, the dark stripe
@@ -153,7 +156,7 @@ To theme the new ones, add them alongside the others; the twelve are
 A text highlight is yellow by definition rather than by theme, so it is not
 themed, and its declaration says so.
 
-### Not a breaking change: the build toolchain
+#### The build toolchain was replaced
 
 The build toolchain was replaced (Sass, PostCSS, autoprefixer, cssnano,
 stylelint). This is **not** a breaking change for consumers. The Sass

@@ -128,7 +128,7 @@ None. This project has no existing specs; `openspec list --specs` is empty.
 - **BREAKING** for the toggle markup: `<div class="barN">` becomes `<span class="barN">`. Both are class-styled, so existing CSS keeps working, but any consumer selector written against the element type breaks.
 - **BREAKING** for consumers who pin `< 2.0`: the `display: none` removal means the checkbox input is now focusable, so a stylesheet that assumed it was invisible may need adjusting.
 - **BREAKING** for consumers relying on the 960px cap: tall bodies now expand fully, changing layout for long content.
-- The Google Fonts change is opt-in-by-default-off and therefore not breaking, but consumers who relied on PaperCSS to pull the fonts must now link them.
+- **BREAKING** for consumers who relied on PaperCSS to pull the web fonts: the Google Fonts `@import` is removed from the default build, so a page that depended on it must link the fonts itself. The new default is opt-in-by-default-off, which is correct for a new consumer, but it removes a request an existing page may have relied on.
 - `docs/config.toml` moving to goldmark changes rendering of raw HTML in documentation pages. This is internal to the docs site.
 - **Unchanged and verified as unchanged:** the dark theme's activation mechanism, its property surface, and every resolved colour value.
 
