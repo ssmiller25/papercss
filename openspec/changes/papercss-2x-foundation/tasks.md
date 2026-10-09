@@ -292,7 +292,7 @@
 
 *Verified: the completeness gate reports 60 dark properties covering all 60 on `html`; the declaration record reports 0 differences after re-baselining; two consecutive builds are byte-identical. The `component-contract` requirement this establishes — **components read their colours from the theme** — states the rule for the future, including that a colour identical in both themes is still expressed as a property, so a theme can decide it.*
 
-- [ ] 5.3 Record in `UPGRADE.md` that the dark theme's activation and property surface are unchanged, so a consumer can confirm nothing about their dark styling moved. Depends on `UPGRADE.md` existing, which happens at task 7.5
+- [x] 5.3 Record the dark theme's status in `UPGRADE.md`, so a consumer can tell what moved and what did not. **The task originally said "unchanged", and 5.2 changed it** — activation is unchanged, the property surface grew additively from 48 to 60, and component rendering changed in dark mode only. The note records what actually happened rather than the original expectation
 
 - [x] 5.4 Add a **light/dark toggle to the documentation site header**, so any page can be switched live rather than the theme only being demonstrable on one page. Verify it applies the framework's `.dark` class to the root element, is reachable and operable by keyboard, and states the current mode rather than relying on appearance alone. The existing `Dark Mode` page stays exactly as it is and is not replaced by this — the toggle is what makes the theme reviewable while browsing. Its markup is page chrome, so it is held to the documentation gate like any other: if it adds a violation, that is a defect in the toggle rather than a baseline to raise
 
@@ -309,6 +309,21 @@
 - *an **indented HTML comment** that Hugo strips, leaving its leading whitespace behind as a blank-but-indented line. Replaced with a Hugo template comment, `{{- /* … */ -}}`, which trims the surrounding whitespace and leaves nothing. Worth recording because the failure is invisible in the source: the comment reads as documentation and the violation appears only in the rendered output.*
 
 *Verified: `make check-docs` reports **4240 errors at baseline, none new**, and the button is present on all 33 pages.*
+
+
+*5.3 landed, and its premise was wrong by the time it was reached — worth recording, because the task as written would have documented something untrue.*
+
+***It said the property surface was unchanged. 5.2 changed it.*** *The surface grew from 48 custom properties to 60. The task was written before that decision, so recording "unchanged" would have told consumers the opposite of the truth about their dark styling. The note records the actual state: activation unchanged, the surface grown additively, and rendering changed in dark mode only.*
+
+*`UPGRADE.md` is created here, because this task depended on it existing and the dependency had to be satisfied somehow. Task 7.5 now adds the remaining sections to a file that already exists rather than creating a new one — and per this change's own principle, the dark-theme section is written at the moment the dark-theme change lands rather than reconstructed later.*
+
+*What the entry says, and why each part is there:*
+
+- ***activation is unchanged** — the one part of the original task that held. Dark mode is still `.dark` on `<html>`, so a consumer who had it working keeps it working.*
+- ***the surface grew, nothing removed** — every pre-existing property keeps its value in both themes, so an override of `--primary` or any other existing property is unaffected. The twelve new names are listed, because a custom theme is additive rather than broken but does need to know what is now themeable.*
+- ***rendering changed in dark mode only, and light mode is untouched** — the claim a consumer actually needs to check against their own pages. Verified rather than asserted: no property on `html` changed value.*
+- ***what to do** — usually nothing, which is the honest answer. The exception is a consumer who wrote dark-mode overrides *because* those components were wrong; those may now be redundant.*
+- ***the `mark` exception** — stated, because a reader who scans the property list will notice a literal colour remains and should not have to guess whether it was missed.*
 
 
 ## 6. Release Pipeline
