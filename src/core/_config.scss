@@ -4,8 +4,17 @@
 
 @use 'sass:map';
 
-// The src for fonts (false to disable)
-$font-src: 'https://fonts.googleapis.com/css?family=Neucha|Patrick+Hand+SC&display=swap' !default;
+// The web font source. Disabled by default so the shipped stylesheet makes no
+// third-party request: a distributed framework should not block rendering on a
+// host the consumer did not ask for. A consumer who wants the framework's fonts
+// opts in by assigning a stylesheet URL before importing:
+//
+//   $font-src: 'https://fonts.googleapis.com/css?family=Neucha|Patrick+Hand+SC&display=swap';
+//   @import 'styles';
+//
+// With it left false the font stack falls back to `sans-serif` (see
+// `$header-font` and `$body-font`).
+$font-src: false !default;
 
 // Imports
 @if $font-src {

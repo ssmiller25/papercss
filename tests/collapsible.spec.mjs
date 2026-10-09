@@ -13,17 +13,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CSS = path.join(ROOT, "dist", "paper.css");
 const TALL_LINES = 120;
 
-// The built stylesheet still imports the Google Fonts stylesheet; stub it so
-// the tests do not depend on the network.
-async function stubExternalRequests(page) {
-  await page.route("**/fonts.googleapis.com/**", (route) =>
-    route.fulfill({ status: 200, contentType: "text/css", body: "" })
-  );
-  await page.route("**/fonts.gstatic.com/**", (route) => route.abort());
-}
-
+// The built stylesheet makes no third-party request (the web fonts are opt-in),
+// so the fixtures below need no network stubbing.
 async function load(page, html) {
-  await stubExternalRequests(page);
   await page.setContent(html);
   await page.addStyleTag({ path: CSS });
 }

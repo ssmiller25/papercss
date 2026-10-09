@@ -40,6 +40,14 @@ See `UPGRADE.md` for the before/after of each.
   tile classes needs no change; one written against the element type does. See
   `UPGRADE.md`.
 
+- **The framework no longer loads Google Fonts by default.** The shipped
+  stylesheet contained a Google Fonts `@import`, so every consumer's page
+  blocked rendering on a third-party request. The default is now off: the
+  stylesheet initiates no remote font request, and the font stack falls back to
+  `sans-serif`. A consumer who wants the framework's fonts can opt in when
+  building from source by assigning `$font-src` before the import, or link the
+  fonts directly. See `UPGRADE.md`.
+
 ### Build
 
 - **The generated stylesheet is not byte-identical, but every colour is

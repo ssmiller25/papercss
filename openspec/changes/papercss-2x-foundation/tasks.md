@@ -414,10 +414,10 @@
 
 *Capability: `component-contract`. Changes the framework's default network behavior.*
 
-- [ ] 15.1 Default the font source to disabled so the shipped stylesheet initiates no third-party request, and verify the built stylesheet contains no `@import url(...)` to a remote origin
-- [ ] 15.2 Provide a documented way for a consumer who wants the framework's fonts to load them, and verify the opt-in is discoverable from the configuration
-- [ ] 15.3 Verify the font stack still degrades acceptably with the framework fonts absent
-- [ ] 15.4 Record the behavior change in `UPGRADE.md` with the migration stated, and in the `2.0.0` section of `CHANGELOG.md`
+- [x] 15.1 Default the font source to disabled so the shipped stylesheet initiates no third-party request, and verify the built stylesheet contains no `@import url(...)` to a remote origin
+- [x] 15.2 Provide a documented way for a consumer who wants the framework's fonts to load them, and verify the opt-in is discoverable from the configuration
+- [x] 15.3 Verify the font stack still degrades acceptably with the framework fonts absent
+- [x] 15.4 Record the behavior change in `UPGRADE.md` with the migration stated, and in the `2.0.0` section of `CHANGELOG.md`
 
 ## 16. Documentation of the Framework Contract
 
