@@ -17,6 +17,7 @@ A copy maintained by [ssmiller25](https://r15cookie.com) or the original [PaperC
 - [Quick-start](#quick-start)
 - [Content of the framework](#content-of-the-framework)
 - [Documentation](#documentation)
+- [Releases and upgrading](#releases-and-upgrading)
 - [Customizing](#customizing)
 - [Contributing](#contributing)
 - [About](#about)
@@ -47,6 +48,13 @@ You can also play with original, source files, written in SCSS, in `src/`. Every
 You can view the docs at [getpapercss.com](https://www.getpapercss.com). Those are directly from the `master` branch; this means those features are stable and ready to be used in your project.
 
 You can also view the develop branch at [develop.getpapercss.com](https://develop.getpapercss.com), this includes new features that are coming soon in the master branch. Be warned, a feature in develop can be removed without any prevention.
+
+## Releases and upgrading
+
+Every release is published on the [releases page](https://github.com/ssmiller25/papercss/releases). Two documents matter when you upgrade:
+
+- [CHANGELOG.md](CHANGELOG.md) — what changed in each release.
+- [UPGRADE.md](UPGRADE.md) — for each breaking change, its before and after, why it changed, and the substitution to make.
 
 ## Customizing
 
