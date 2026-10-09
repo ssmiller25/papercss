@@ -20,6 +20,11 @@ nav {
     border-bottom-right-radius: 15px 3px;
     border-bottom-style: solid;
     border-bottom-width: 5px;
+    // The bars are documented as `<span>`, so they must be made block-level to
+    // keep the size, margin and border of the `<div>` they replaced. The
+    // element type was never load-bearing - the framework styles `.barN` by
+    // class - but the default `display` of a `div` was.
+    display: block;
     margin: 6px 0;
     transition: 0.4s;
     width: 2rem;

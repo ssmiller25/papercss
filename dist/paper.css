@@ -3194,6 +3194,7 @@ nav .bar3 {
   border-bottom-right-radius: 15px 3px;
   border-bottom-style: solid;
   border-bottom-width: 5px;
+  display: block;
   margin: 6px 0;
   transition: 0.4s;
   width: 2rem;

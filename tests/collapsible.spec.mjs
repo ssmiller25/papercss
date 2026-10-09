@@ -165,6 +165,38 @@ test.describe("navbar", () => {
     });
   });
 
+  // The documented bars changed from `<div>` to `<span>`. A consumer's
+  // selectors are written against the class, so they must keep matching the new
+  // element type. This asserts both that the framework's own `.barN` rule still
+  // styles the spans and that a consumer's class-based rule does too - the
+  // element type is not what selects them.
+  test("class-based bar selectors still match the span markup", async ({ page }) => {
+    await page.addStyleTag({
+      content:
+        ".bar1 { border-top: 7px solid red; } .bar2 { border-top: 8px solid red; } .bar3 { border-top: 9px solid red; }",
+    });
+    const bars = page.locator('label[for="collapsible0"] .bar1, label[for="collapsible0"] .bar2, label[for="collapsible0"] .bar3');
+    await expect(bars).toHaveCount(3);
+    const measured = await bars.evaluateAll((els) =>
+      els.map((el) => {
+        const style = getComputedStyle(el);
+        return {
+          display: style.display,
+          width: style.width,
+          topBorder: style.borderTopWidth,
+          background: style.backgroundColor,
+        };
+      })
+    );
+    for (const [index, bar] of measured.entries()) {
+      expect(bar.display).toBe("block");
+      // `width: 2rem` against the framework's 20px root font size.
+      expect(bar.width).toBe("40px");
+      expect(bar.topBorder).toBe(`${7 + index}px`);
+      expect(bar.background).not.toBe("rgba(0, 0, 0, 0)");
+    }
+  });
+
   test("small viewport: focusable toggle reveals a tall menu in full", async ({ page }) => {
     await page.setViewportSize({ width: 500, height: 700 });
     await withoutTransitions(page);

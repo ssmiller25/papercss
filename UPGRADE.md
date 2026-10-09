@@ -21,8 +21,8 @@ step with the release, that is a defect in this file.
 `<label>`.
 
 **What it is now.** The documented markup uses `<span class="bar1">` and so on.
-The framework styles the bars by class, not by element, so the stylesheet is
-unchanged.
+The framework styles the bars by class rather than by element type, so a
+consumer stylesheet written against `.barN` needs no change.
 
 **Why.** A `<label>` may only contain phrasing content, so a `<div>` there is
 invalid HTML. The framework was teaching markup that produced an

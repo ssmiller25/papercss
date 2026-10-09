@@ -386,11 +386,11 @@
 
 *Capability: `component-contract`, `docs-markup`. **Breaking** — documented element type changes.*
 
-- [ ] 10.1 Change the documented toggle bars from `div` to `span`, and update the framework's own selectors so the styling is unchanged
-- [ ] 10.2 Update the navbar and collapsible documentation so the demonstrated markup matches, in both the live demo and the code sample
-- [ ] 10.3 Verify the built documentation reports no `element-permitted-content` violation in the demo region
-- [ ] 10.4 Verify a consumer's existing class-based selectors still match after the element type changes
-- [ ] 10.5 Record the substitution in `UPGRADE.md`, naming both the before and after markup, and in the `2.0.0` section of `CHANGELOG.md`
+- [x] 10.1 Change the documented toggle bars from `div` to `span`, and update the framework's own selectors so the styling is unchanged
+- [x] 10.2 Update the navbar and collapsible documentation so the demonstrated markup matches, in both the live demo and the code sample
+- [x] 10.3 Verify the built documentation reports no `element-permitted-content` violation in the demo region
+- [x] 10.4 Verify a consumer's existing class-based selectors still match after the element type changes
+- [x] 10.5 Record the substitution in `UPGRADE.md`, naming both the before and after markup, and in the `2.0.0` section of `CHANGELOG.md`
 
 ## 11. Documentation Gate Partition
 

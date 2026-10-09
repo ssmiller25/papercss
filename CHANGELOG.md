@@ -26,8 +26,17 @@ See `UPGRADE.md` for the before/after of each.
   navbar body had `max-height: 960px`, so content taller than that was cut off
   with no scroll and no ellipsis. The cap is gone — the body is now a grid row
   that animates between `0fr` and `1fr` — so an expanded body reveals its full
-  height. A body that relied on the cap to constrain its height now expands
-  fully. See `UPGRADE.md`.
+   height. A body that relied on the cap to constrain its height now expands
+   fully. See `UPGRADE.md`.
+
+- **The documented toggle markup changes from `<div>` to `<span>`.** The navbar
+  and collapsible documentation showed `<div class="bar1">` inside a `<label>`,
+  which is invalid: a `label` may only contain phrasing content, so the
+  demonstrated markup produced an `element-permitted-content` error on every
+  page that copied it. The documented markup is now `<span class="barN">`. The
+  framework styles the bars by class and makes them block-level, so nothing
+  renders differently and a consumer selector based on `.barN` needs no change;
+  one written against the element type does. See `UPGRADE.md`.
 
 ### Build
 
