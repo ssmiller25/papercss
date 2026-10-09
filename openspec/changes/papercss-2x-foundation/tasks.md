@@ -355,7 +355,7 @@
 *Capability: `release-documentation`. The repository recorded nothing for its 24 earlier tagged releases, so `CHANGELOG.md` began at 2.0.0. The 2.0.0 section is written as changes land; the 1.x history is reconstructed from the tags and marked as such.*
 
 - [x] 7.1 Reconstruct `CHANGELOG.md` from the repository's 25 tags, with a dated entry and user-visible changes for each, and identify the entries as reconstructed rather than presenting them as contemporaneous
-- [ ] 7.2 Verify the reconstructed `1.9.2` entry matches what 1.9.2 actually shipped, since that is the version consumers migrate *from*
+- [x] 7.2 Verify the reconstructed `1.9.2` entry matches what 1.9.2 actually shipped, since that is the version consumers migrate *from*
 - [ ] 7.3 Where a tag's changes cannot be established, record the gap explicitly rather than omitting the release
 - [ ] 7.4 Open a `2.0.0` section in `CHANGELOG.md` and add an entry per change as it lands
 - [ ] 7.5 Create `UPGRADE.md` with one section per breaking change — toggle element type, toggle focusability, collapsible height cap, default font loading — each stating before, after, why, and the substitution. Note that the toolchain replacement is **not** among them: the Sass configuration mechanism is unchanged (task 4.5), so a consumer who configures the palette by assigning before `@import` needs no change at all

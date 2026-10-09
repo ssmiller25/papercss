@@ -80,10 +80,11 @@ See `UPGRADE.md` for the before/after of each.
 
 _Reconstructed._
 
-- Matched transition lengths across components and removed the now-unused
-  transition macro.
-- Fixed popovers appearing when hovering their hidden pseudo-element, by
-  setting their visibility.
+- Fixed popovers appearing when hovering their hidden pseudo-element: the
+  popover now sets `visibility`, and its transition is retimed to 235ms so the
+  show/hide still animates but the invisible popover no longer captures hover.
+  This is the only user-visible change in the release; the transition-length
+  commits against `_popovers.scss` netted into it.
 
 ## 1.9.1 — 2022-12-26
 
