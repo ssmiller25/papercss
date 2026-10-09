@@ -4,6 +4,7 @@ description: PaperCSS Tables
 ---
 ### Regular
 
+{{< demo >}}
 <table>
   <thead>
     <tr>
@@ -34,9 +35,11 @@ description: PaperCSS Tables
     </tr>
   </tbody>
 </table>
+{{< /demo >}}
 
 ### Hover
 
+{{< demo >}}
 <table class="table-hover">
   <thead>
     <tr>
@@ -67,9 +70,11 @@ description: PaperCSS Tables
     </tr>
   </tbody>
 </table>
+{{< /demo >}}
 
 ### Alternating
 
+{{< demo >}}
 <table class="table-alternating">
   <thead>
     <tr>
@@ -100,6 +105,7 @@ description: PaperCSS Tables
     </tr>
   </tbody>
 </table>
+{{< /demo >}}
 
 #### Code:
 ```html

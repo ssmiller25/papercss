@@ -7,6 +7,7 @@ The container is usually at the root of the HTML and holds all of the content in
 different sizes to make setting your content within a certain max-width easy. Don't forget to add the `.paper` class to
 give you site some extra paper flair!
 
+{{< demo >}}
 <div class='paper container margin-bottom-large'>
   <h4>Responsive Container!</h4>
   <p>The default</p>
@@ -51,3 +52,4 @@ give you site some extra paper flair!
     erat posuere. Curabitur ac turpis aliquam, malesuada elit suscipit, blandit dolor.
   </p>
 </div>
+{{< /demo >}}

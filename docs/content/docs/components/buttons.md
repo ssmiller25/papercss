@@ -5,6 +5,7 @@ description: PaperCSS Buttons
 
 Inspired by [Imperfect Buttons](https://codepen.io/tmrDevelops/pen/VeRvKX)
 
+{{< demo >}}
 <button class="btn-large">Large</button>
 <button>Default</button>
 <button class="btn-small">Small</button>
@@ -18,6 +19,7 @@ Inspired by [Imperfect Buttons](https://codepen.io/tmrDevelops/pen/VeRvKX)
 
 <button class="disabled">Disabled</button>
 <button disabled>Disabled</button>
+{{< /demo >}}
 
 #### Code:
 
@@ -38,11 +40,13 @@ Inspired by [Imperfect Buttons](https://codepen.io/tmrDevelops/pen/VeRvKX)
 
 ### Colors
 
+{{< demo >}}
 <input type="button" class="paper-btn btn-primary" value="Primary"/>
 <input type="button" class="btn-secondary" value="Secondary"/>
 <button class="btn-success">Success</button>
 <button class="btn-warning">Warning</button>
 <button class="btn-danger">Danger</button>
+{{< /demo >}}
 
 #### Code:
 
@@ -56,11 +60,13 @@ Inspired by [Imperfect Buttons](https://codepen.io/tmrDevelops/pen/VeRvKX)
 
 ### Outline colors
 
+{{< demo >}}
 <input type="button" class="paper-btn btn-primary-outline" value="Primary"/>
 <input type="button" class="btn-secondary-outline" value="Secondary"/>
 <button class="btn-success-outline">Success</button>
 <button class="btn-warning-outline">Warning</button>
 <a href="#" class="paper-btn btn-danger-outline">Danger</a>
+{{< /demo >}}
 
 #### Code:
 

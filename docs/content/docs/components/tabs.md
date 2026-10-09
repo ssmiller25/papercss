@@ -2,6 +2,7 @@
 title: Tabs
 description: PaperCSS Tabs
 ---
+{{< demo >}}
 <div class="row flex-spaces tabs">
   <input id="tab1" type="radio" name="tabs" checked>
   <label for="tab1">Tab 1</label>
@@ -54,6 +55,7 @@ description: PaperCSS Tabs
     </p>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 

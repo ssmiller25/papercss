@@ -2,6 +2,7 @@
 title: Forms
 description: PaperCSS Forms
 ---
+{{< demo >}}
 <div class="form-group">
   <label for="paperInputs1">Input</label>
   <input type="text" placeholder="Nice input" id="paperInputs1">
@@ -173,6 +174,7 @@ description: PaperCSS Forms
     <output id="output" for="percentage">50%</output>
   </div>
 </fieldset>
+{{< /demo >}}
 
 #### Code:
 

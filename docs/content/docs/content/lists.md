@@ -5,6 +5,7 @@ description: PaperCSS Lists
 
 ### Ordered Lists
 
+{{< demo >}}
 <ol>
   <li>Do this</li>
   <li>Then this</li>
@@ -32,9 +33,11 @@ description: PaperCSS Lists
   </li>
   <li>But don't forget this</li>
 </ol>
+{{< /demo >}}
 
 ### Unordered Lists
 
+{{< demo >}}
 <ul>
   <li>Let's try this</li>
   <li>Let's try this again
@@ -59,15 +62,18 @@ description: PaperCSS Lists
   </li>
   <li>And now we're are the top!</li>
 </ul>
+{{< /demo >}}
 
 ### Inline List
 
+{{< demo >}}
 <ul class="inline">
   <li>Item 1</li>
   <li>Item 2</li>
   <li>Item 3</li>
   <li>Item 4</li>
 </ul>
+{{< /demo >}}
 
 #### Codes:
 

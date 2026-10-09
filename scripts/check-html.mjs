@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
  * Validate the documentation this repository builds and compare the result
- * against the committed error baseline in .htmlvalidate-baseline.json.
+ * against the committed baselines in .htmlvalidate-baseline.json.
  *
  * Run through `make check`, or directly:
  *
@@ -30,6 +30,24 @@
  * reached a downstream consumer and produced 96 validity errors across its
  * pages. So the docs are gated like any other shipped artifact.
  *
+ * Demos and page chrome are held to separate baselines
+ * ----------------------------------------------------
+ * One ceiling covering both lets a gain in the template pay for a regression
+ * in a demo. The demos are what a reader copies; the chrome is not. So the
+ * live demos are wrapped in the `demo` shortcode, which emits empty marker
+ * spans around each one, and this script splits every violation by whether its
+ * line falls inside a marked demo region or outside it. The two regions are
+ * counted and ratcheted independently, so a violation in either fails only its
+ * own baseline.
+ *
+ * The demo-region count is part of the demo baseline
+ * --------------------------------------------------
+ * A demo that stops rendering - or stops being marked - would silently shrink
+ * the gated set, which is the same class of failure as a baseline nobody
+ * tightens. So the number of demo regions is recorded, and a change to it is
+ * reported as a structural change rather than passing as a reduction. A gate
+ * that can be satisfied by validating less is not a gate.
+ *
  * What this script adds, because no tool above offers it
  * -------------------------------------------------------
  *   Discovery     Walking the built tree rather than using a shell glob, so the
@@ -44,11 +62,11 @@
  *                 aggregate and therefore lets a gain in one rule pay for a
  *                 regression in another.
  *
- * The baseline is a ratchet, not a target. Lower it with
- * `node scripts/check-html.mjs --update` (or `make check-update-baseline`) once
- * counts have actually dropped. A passing run never raises or lowers a ceiling
- * on its own - otherwise the recorded debt creeps upward one "improvement" at a
- * time and stops meaning anything.
+ * The baselines are a ratchet, not a target. Lower them with
+ * `node scripts/check-html.mjs --update` (or `make check-docs-update-baseline`)
+ * once counts have actually dropped. A passing run never raises or lowers a
+ * ceiling on its own - otherwise the recorded debt creeps upward one
+ * "improvement" at a time and stops meaning anything.
  */
 
 import { spawnSync } from "node:child_process";
@@ -64,6 +82,11 @@ const SITE = path.join(ROOT, "public");
 const CONFIG = path.join(ROOT, ".htmlvalidate.json");
 const BASELINE = path.join(ROOT, ".htmlvalidate-baseline.json");
 const ALIAS_REFRESH = /<meta\b[^>]*http-equiv\s*=\s*["']?refresh/i;
+// The `demo` shortcode emits these around each live demo. Attribute order and
+// quote style are not assumed, so a template edit cannot silently stop the
+// partition from matching.
+const DEMO_START = /data-docs-demo\s*=\s*["']start["']/;
+const DEMO_END = /data-docs-demo\s*=\s*["']end["']/;
 
 const update = process.argv.slice(2).includes("--update");
 
@@ -84,6 +107,48 @@ function collectHtml(dir, found = []) {
   return found;
 }
 
+// The line ranges, per file, that sit inside a marked demo. Lines are 1-based to
+// match html-validate's report; the marker lines themselves are excluded, so a
+// violation is attributed to the demo only when it is strictly between a start
+// and its end.
+function demoRegions(file) {
+  const lines = readFileSync(file, "utf8").split("\n");
+  const regions = [];
+  let open = null;
+  lines.forEach((line, index) => {
+    const lineNo = index + 1;
+    if (DEMO_START.test(line)) {
+      if (open !== null) fail(`${path.relative(ROOT, file)}: nested demo start at line ${lineNo}`);
+      open = lineNo;
+    } else if (DEMO_END.test(line)) {
+      if (open === null) fail(`${path.relative(ROOT, file)}: demo end without a start at line ${lineNo}`);
+      regions.push([open, lineNo]);
+      open = null;
+    }
+  });
+  if (open !== null) fail(`${path.relative(ROOT, file)}: demo start at line ${open} is never closed`);
+  return regions;
+}
+
+function sortedByRule(byRule) {
+  return Object.fromEntries(Object.entries(byRule).sort(([a], [b]) => a.localeCompare(b)));
+}
+
+function summarise(label, total, byRule, baseline) {
+  console.log(`${label}: ${total} errors (baseline ${baseline.total})`);
+  for (const rule of Object.keys(byRule).sort((a, b) => byRule[b] - byRule[a] || a.localeCompare(b))) {
+    const count = byRule[rule];
+    const allowed = baseline.byRule[rule] ?? 0;
+    const mark = count > allowed ? "REGRESSION" : count < allowed ? "improved  " : "at baseline";
+    console.log(`  ${mark}  ${rule}: ${count} (baseline ${allowed})`);
+  }
+  for (const rule of Object.keys(baseline.byRule).sort()) {
+    if (!(rule in byRule)) {
+      console.log(`  resolved    ${rule}: 0 (baseline ${baseline.byRule[rule]})`);
+    }
+  }
+}
+
 let generated;
 try {
   generated = collectHtml(SITE);
@@ -100,6 +165,20 @@ const aliases = generated.length - pages.length;
 
 if (pages.length === 0) {
   fail("no pages found - the redirect-stub filter may be matching too broadly");
+}
+
+const regionMap = new Map();
+let demoRegionCount = 0;
+let demoPageCount = 0;
+for (const file of pages) {
+  const regions = demoRegions(file);
+  regionMap.set(file, regions);
+  demoRegionCount += regions.length;
+  if (regions.length > 0) demoPageCount += 1;
+}
+
+if (demoRegionCount === 0) {
+  fail("no demo regions found - the `demo` shortcode markers are missing from the built output");
 }
 
 // `html-validate` exits non-zero whenever it reports anything, so a non-zero
@@ -137,30 +216,53 @@ try {
   fail(`html-validate produced no parsable report (exit ${run.status})\n${run.stderr || report.slice(0, 2000)}`);
 }
 
-const byRule = {};
+const demoByRule = {};
+const chromeByRule = {};
+let demoTotal = 0;
+let chromeTotal = 0;
 for (const result of results) {
+  const regions = regionMap.get(result.filePath) || [];
   for (const message of result.messages) {
     if (message.severity !== 2) continue;
-    byRule[message.ruleId] = (byRule[message.ruleId] || 0) + 1;
+    const inDemo = regions.some(([start, end]) => message.line > start && message.line < end);
+    if (inDemo) {
+      demoByRule[message.ruleId] = (demoByRule[message.ruleId] || 0) + 1;
+      demoTotal += 1;
+    } else {
+      chromeByRule[message.ruleId] = (chromeByRule[message.ruleId] || 0) + 1;
+      chromeTotal += 1;
+    }
   }
 }
-const total = Object.values(byRule).reduce((sum, count) => sum + count, 0);
 
 if (update) {
   writeFileSync(
     BASELINE,
     `${JSON.stringify(
       {
-        total,
         pages: pages.length,
         aliasesExcluded: aliases,
-        byRule: Object.fromEntries(Object.entries(byRule).sort(([a], [b]) => a.localeCompare(b))),
+        demo: {
+          regions: demoRegionCount,
+          pages: demoPageCount,
+          total: demoTotal,
+          byRule: sortedByRule(demoByRule),
+        },
+        chrome: {
+          pages: pages.length,
+          total: chromeTotal,
+          byRule: sortedByRule(chromeByRule),
+        },
       },
       null,
       2
     )}\n`
   );
-  console.log(`Updated ${path.relative(ROOT, BASELINE)}: ${total} errors across ${pages.length} pages`);
+  console.log(
+    `Updated ${path.relative(ROOT, BASELINE)}: ` +
+      `demo ${demoTotal} across ${demoRegionCount} regions on ${demoPageCount} pages, ` +
+      `chrome ${chromeTotal} across ${pages.length} pages`
+  );
   process.exit(0);
 }
 
@@ -171,32 +273,52 @@ try {
   fail(`${path.relative(ROOT, BASELINE)} is missing or unreadable - run with --update to create it`);
 }
 
-const regressions = [];
-if (total > baseline.total) {
-  regressions.push(`total errors: ${total} (baseline ${baseline.total})`);
+if (!baseline.demo || !baseline.chrome) {
+  fail(`${path.relative(ROOT, BASELINE)} is not partitioned - run with --update to regenerate it`);
 }
-for (const rule of new Set([...Object.keys(byRule), ...Object.keys(baseline.byRule)])) {
-  if ((byRule[rule] ?? 0) > (baseline.byRule[rule] ?? 0)) {
-    regressions.push(`${rule}: ${byRule[rule]} (baseline ${baseline.byRule[rule] ?? 0})`);
+
+const regressions = [];
+
+// A change to the number of demos is structural, not an improvement. It means a
+// demo stopped rendering or stopped being marked, so the gate is now covering
+// less than it recorded.
+if (demoRegionCount !== baseline.demo.regions) {
+  regressions.push(
+    `demo regions: ${demoRegionCount} (baseline ${baseline.demo.regions}) - ` +
+      "a change to the number of demos is a structural change, not a reduction"
+  );
+}
+
+if (demoTotal > baseline.demo.total) {
+  regressions.push(`demo total errors: ${demoTotal} (baseline ${baseline.demo.total})`);
+}
+for (const rule of new Set([...Object.keys(demoByRule), ...Object.keys(baseline.demo.byRule)])) {
+  if ((demoByRule[rule] ?? 0) > (baseline.demo.byRule[rule] ?? 0)) {
+    regressions.push(`demo ${rule}: ${demoByRule[rule]} (baseline ${baseline.demo.byRule[rule] ?? 0})`);
   }
 }
 
-console.log(`html-validate: ${total} errors across ${pages.length} pages (${aliases} redirect stubs excluded)`);
-for (const rule of Object.keys(byRule).sort((a, b) => byRule[b] - byRule[a] || a.localeCompare(b))) {
-  const count = byRule[rule];
-  const allowed = baseline.byRule[rule] ?? 0;
-  const mark = count > allowed ? "REGRESSION" : count < allowed ? "improved  " : "at baseline";
-  console.log(`  ${mark}  ${rule}: ${count} (baseline ${allowed})`);
+if (chromeTotal > baseline.chrome.total) {
+  regressions.push(`chrome total errors: ${chromeTotal} (baseline ${baseline.chrome.total})`);
 }
-for (const rule of Object.keys(baseline.byRule).sort()) {
-  if (!(rule in byRule)) {
-    console.log(`  resolved    ${rule}: 0 (baseline ${baseline.byRule[rule]})`);
+for (const rule of new Set([...Object.keys(chromeByRule), ...Object.keys(baseline.chrome.byRule)])) {
+  if ((chromeByRule[rule] ?? 0) > (baseline.chrome.byRule[rule] ?? 0)) {
+    regressions.push(`chrome ${rule}: ${chromeByRule[rule]} (baseline ${baseline.chrome.byRule[rule] ?? 0})`);
   }
 }
+
+console.log(
+  `html-validate: ${demoTotal + chromeTotal} errors across ${pages.length} pages ` +
+    `(${aliases} redirect stubs excluded)`
+);
+console.log(`\n== demo region: ${demoRegionCount} regions on ${demoPageCount} pages ==`);
+summarise("demo", demoTotal, demoByRule, baseline.demo);
+console.log(`\n== page chrome: ${pages.length} pages ==`);
+summarise("chrome", chromeTotal, chromeByRule, baseline.chrome);
 
 if (regressions.length > 0) {
   console.error(`\nHTML error budget exceeded:\n  ${regressions.join("\n  ")}`);
-  console.error("\nFix these, or run `make check-update-baseline` if the baseline itself is wrong.");
+  console.error("\nFix these, or run `make check-docs-update-baseline` if the baseline itself is wrong.");
   process.exit(1);
 }
 

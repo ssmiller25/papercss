@@ -396,10 +396,10 @@
 
 *Capability: `docs-markup`, `build-verification`. Lands before the markup work so the contract-bearing region is separable from the style churn. One ceiling covering both means a template cleanup can mask an invalid demo — which is the failure that reached the downstream theme as 96 errors on 24 pages.*
 
-- [ ] 11.1 Emit an explicit region marker from the shortcode that renders each live demo, so demo markup is identifiable in the built output
-- [ ] 11.2 Partition the built pages at those markers in `scripts/check-html.mjs`, producing two disjoint file sets, and verify the page set is unchanged from the single-set case
-- [ ] 11.3 Record a separate per-rule baseline per region, and verify a violation in either fails only its own baseline
-- [ ] 11.4 Record the demo-region **count** in the baseline, and verify a change to it is reported as a structural change rather than passing as a reduction — a gate satisfied by validating less is not a gate
+- [x] 11.1 Emit an explicit region marker from the shortcode that renders each live demo, so demo markup is identifiable in the built output
+- [x] 11.2 Partition the built pages at those markers in `scripts/check-html.mjs`, producing two disjoint file sets, and verify the page set is unchanged from the single-set case
+- [x] 11.3 Record a separate per-rule baseline per region, and verify a violation in either fails only its own baseline
+- [x] 11.4 Record the demo-region **count** in the baseline, and verify a change to it is reported as a structural change rather than passing as a reduction — a gate satisfied by validating less is not a gate
 
 ## 12. Live Demos as Reference Implementation
 

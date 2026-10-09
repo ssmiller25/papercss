@@ -1,0 +1,19 @@
+{{- /*
+  Renders one live component demo and brackets it with region markers.
+
+  The documentation gate (scripts/check-html.mjs) partitions each built page at
+  these markers so the demos a reader copies are validated separately from the
+  template chrome around them, each against its own recorded baseline.
+
+  The markers are empty, attribute-only spans rather than comments: Hugo strips
+  HTML comments from shortcode output, so a comment marker never reaches the
+  built page. The spans are siblings of the demo, not a wrapper, so no element
+  is added around the example a reader copies.
+
+  Invoke as {{< demo >}} ... {{< /demo >}} with the demo's raw HTML as the inner
+  content. `safeHTML` keeps it raw; the `<>` delimiters already stop Hugo
+  rendering the inner content as Markdown.
+*/ -}}
+<span data-docs-demo="start"></span>
+{{ .Inner | safeHTML }}
+<span data-docs-demo="end"></span>

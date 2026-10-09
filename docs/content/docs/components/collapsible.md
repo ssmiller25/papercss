@@ -5,6 +5,7 @@ description: PaperCSS Collapsibles
 
 Collapsibles are elements that expand when you click on them. You can hide/reveal content back on clicking.
 
+{{< demo >}}
 <div class="row">
   <div class="collapsible">
     <input id="collapsible1" type="checkbox" name="collapsible">
@@ -43,6 +44,7 @@ Collapsibles are elements that expand when you click on them. You can hide/revea
     </div>
   </div>
 </div>
+{{< /demo >}}
 
 
 #### Code:
@@ -84,6 +86,7 @@ Collapsibles are elements that expand when you click on them. You can hide/revea
 
 Use `input type="radio"` when you want to keep only one element collapsed at a time.
 
+{{< demo >}}
 <div class="row">
   <div class="collapsible">
     <input id="collapsible5" type="radio" name="collapsible">
@@ -122,6 +125,7 @@ Use `input type="radio"` when you want to keep only one element collapsed at a t
     </div>
   </div>
 </div>
+{{< /demo >}}
 
 
 #### Code:

@@ -9,6 +9,7 @@ As of version `1.8.0`, PaperCSS supports a dark mode of the framework. Just add 
 
 Here's what some of the components look like:
 
+{{< demo >}}
 <div class="form-group">
   <label for="paperInputs1">Input</label>
   <input type="text" placeholder="Nice input" id="paperInputs1">
@@ -57,6 +58,7 @@ Here's what some of the components look like:
   var html = document.documentElement;
   html.className += 'dark';
 </script>
+{{< /demo >}}
 
 #### Code
 

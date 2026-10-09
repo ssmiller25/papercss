@@ -3,6 +3,7 @@ title: Navbar
 description: PaperCSS Navbar
 ---
 
+{{< demo >}}
 <nav class="border fixed split-nav">
   <div class="nav-brand">
     <h3><a href="/">Get PaperCSS</a></h3>
@@ -44,6 +45,7 @@ description: PaperCSS Navbar
     </div>
   </div>
 </nav>
+{{< /demo >}}
 
 #### Code:
 
@@ -74,6 +76,7 @@ Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the 
 
 ### Not Split Navbar
 
+{{< demo >}}
 <nav class="border">
   <div class="nav-brand">
     <h3><a href="#">Get PaperCSS</a></h3>
@@ -94,6 +97,7 @@ Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the 
     </div>
   </div>
 </nav>
+{{< /demo >}}
 
 #### Code:
 

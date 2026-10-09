@@ -8,10 +8,12 @@ Print files backwards using <kbd>tac</kbd>
 
 To stop a process, hit <kbd>ctrl + c</kbd>
 
+{{< demo >}}
 <pre><code>function add(x, y) {
   return x + y;
 }
 </code></pre>
+{{< /demo >}}
 
 #### Code:
 

@@ -6,6 +6,7 @@ description: PaperCSS Cards
 
 It is possible to not put all the sub-classes like card-title, card-subtitle, card-text, ... But instead the framework will recognize the element properly if it's a h4, h5, p, ... And you need to put all this content on a div with card class.
 
+{{< demo >}}
 <div class="row flex-center">
   <div class="card" style="width: 20rem;">
     <img class="image-top" src="https://picsum.photos/768" alt="Card example image">
@@ -17,6 +18,7 @@ It is possible to not put all the sub-classes like card-title, card-subtitle, ca
     </div>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 
@@ -35,6 +37,7 @@ It is possible to not put all the sub-classes like card-title, card-subtitle, ca
 
 ### Card title, text, links
 
+{{< demo >}}
 <div class="row flex-center">
   <div class="card" style="width: 20rem;">
     <div class="card-body">
@@ -46,6 +49,7 @@ It is possible to not put all the sub-classes like card-title, card-subtitle, ca
     </div>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 
@@ -63,6 +67,7 @@ It is possible to not put all the sub-classes like card-title, card-subtitle, ca
 
 ### Image on top or bottom
 
+{{< demo >}}
 <div class="row flex-center">
   <div class="card" style="width: 20rem;">
     <div class="card-body">
@@ -74,6 +79,7 @@ It is possible to not put all the sub-classes like card-title, card-subtitle, ca
     <img class="image-bottom" src="https://unsplash.it/550/250" alt="Card example image">
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 
@@ -91,6 +97,7 @@ It is possible to not put all the sub-classes like card-title, card-subtitle, ca
 
 ### Header and footer
 
+{{< demo >}}
 <div class="row flex-center">
   <div class="card" style="width: 20rem;">
     <div class="card-header">Header</div>
@@ -103,6 +110,7 @@ It is possible to not put all the sub-classes like card-title, card-subtitle, ca
     <div class="card-footer">Footer</div>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 

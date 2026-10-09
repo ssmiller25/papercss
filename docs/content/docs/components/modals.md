@@ -6,6 +6,7 @@ description: PaperCSS Modals
 
 This can be used to implement modals along with features like title, subtitle, text, button and links. Just use whichever component you need for your modal with proper classes and leave the rest on the framework.
 
+{{< demo >}}
 <div class="row flex-spaces child-borders">
   <label class="paper-btn margin" for="modal-1">Open Modal!</label>
 </div>
@@ -20,6 +21,7 @@ This can be used to implement modals along with features like title, subtitle, t
     <label for="modal-1" class="paper-btn">Nice!</label>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 
@@ -42,6 +44,7 @@ This can be used to implement modals along with features like title, subtitle, t
 
 ### Modal with title, text and links
 
+{{< demo >}}
 <div class="row flex-spaces child-borders">
   <label class="paper-btn margin" for="modal-2">Another Modal!</label>
 </div>
@@ -57,6 +60,7 @@ This can be used to implement modals along with features like title, subtitle, t
     <label for="modal-2" class="modal-link">Close</label>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 
