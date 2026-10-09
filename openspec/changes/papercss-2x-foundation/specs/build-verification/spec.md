@@ -354,3 +354,35 @@ A release SHALL be consumable over the open internet without a package registry.
 - **WHEN** a released artifact must be superseded
 - **THEN** the correction is published under a new tag rather than by mutating the existing tag's URL
 - **AND** no documented URL depends on a mutable alias or a cache purge
+
+### Requirement: Released artifacts are signed and verifiable
+
+A release SHALL be cryptographically verifiable without a long-lived signing key. Every released artifact SHALL carry a build-provenance attestation bound to this repository and the release workflow. A published release SHALL be immutable, so its assets and tag cannot be added to, modified or deleted afterwards, and the release tag SHALL be signed so the repository tree the CDNs serve is covered too.
+
+#### Scenario: A consumer verifies a downloaded artifact
+
+- **WHEN** a consumer checks a downloaded artifact's attestation against this repository and the release workflow
+- **THEN** verification succeeds
+
+#### Scenario: An artifact is substituted after publication
+
+- **WHEN** a released artifact differs from the one the attestation was issued for
+- **THEN** verification fails
+- **AND** the release's immutability prevents the substitution being published in the first place
+
+#### Scenario: A consumer links the CDN URL
+
+- **WHEN** a consumer uses a CDN URL to obtain the stylesheet
+- **THEN** the release tag's signature validates
+- **AND** the served files match the digests recorded in the release's provenance
+
+#### Scenario: A release carries no attestation
+
+- **WHEN** a published release's artifacts have no attestation, or the release is not immutable
+- **THEN** the release is treated as incomplete
+
+#### Scenario: Signing requires a secret to be protected
+
+- **WHEN** the signing mechanism is chosen
+- **THEN** build provenance and release integrity use a short-lived certificate issued to the workflow identity rather than a stored key
+- **AND** only the tag uses a key, and only one the maintainer already holds

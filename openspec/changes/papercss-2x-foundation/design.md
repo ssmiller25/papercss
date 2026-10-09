@@ -265,6 +265,23 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **Consequence.** Canonical links must all agree on the new address, or the site's own metadata points somewhere else: the `baseURL`, the `CNAME`, and the hardcoded OpenGraph/Twitter URL are the three places to check (task 18.5). Until the manual step is done, the workflow still publishes to the default Pages URL, so the site is reachable before the domain is wired; the domain is a cutover, not a prerequisite for the build.
 
+### Decision 16: Releases are signed and immutable, with no long-lived key
+
+**The question.** A release is downloadable but not, by default, verifiable: a consumer cannot tell whether `paper.css` was built by this repository's workflow or substituted somewhere along the way. What signing should a release carry?
+
+**Options considered.**
+
+- **GPG-signed checksums / signed tags.** Rejected. It requires protecting a long-lived private key and rotating it, and it signs a checksum or a git object rather than attesting the release assets — the operational cost exceeds the benefit for a CSS framework.
+- **Cosign keyless bundles.** Viable and deferred. It produces detached `.sigstore.json` bundles attached to the release, verifiable offline, but adds a cosign dependency and per-asset bundle files for a verification path few consumers of a stylesheet will run. It can be added later without redoing this work.
+- **GitHub-native signing.** **Chosen**, in three layers that together cover both consumption paths:
+  1. **Build provenance** — `actions/attest` produces a keyless Sigstore attestation per artifact, bound to this repository and the release workflow through GitHub's OIDC identity. Verified with `gh attestation verify`.
+  2. **Immutable releases** — a repository setting that makes GitHub sign the published release and prevents its assets and tag from being added to, modified or deleted afterwards. Verified with `gh release verify` / `gh release verify-asset`.
+  3. **SSH-signed tags** — the tag is signed with an SSH key registered on the maintainer's GitHub account, so the *repository tree* the CDNs serve is covered. Release attestations do not reach through jsDelivr or Statically, which serve the git tree rather than the Release assets, so the signed tag is the layer that covers a CDN `<link>` consumer.
+
+**Why no long-lived key.** Build provenance and the release attestation are keyless: the signing certificate is short-lived and issued to the workflow's OIDC identity, so there is no secret to leak or rotate. Only the tag uses a key, and it is an SSH key the maintainer already holds for Git rather than a new signing key to manage.
+
+**Consequence.** The consumer-facing verification commands must be documented (task 19.6) and the maintainer setup (task 19.2/19.3) is a repository setting plus a local git configuration, neither of which is committed. Because the CDNs serve the tagged tree, the tag signature is the load-bearing layer for the primary consumption path, and task 19.4 verifies the served files against the release's recorded digests rather than assuming the tag alone is enough.
+
 ## Risks / Trade-offs
 
 **Converting 60 single-quoted attributes touches 11 template files** → Mechanical, and verified by rebuilding and confirming the `attr-quotes` count reaches zero with the rest of the report unchanged. The alternative — disabling the rule — is a smaller diff that permanently weakens the gate.
@@ -287,7 +304,7 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **Reconstructing the changelog depends on the tags being legible** → Twenty-five tags is enough to reconstruct a real history, but a tag whose changes cannot be determined must be recorded as a gap rather than omitted, since a silently missing release is the same failure as no changelog at all.
 
-**Publishing from a tag means a bad tag is a published release** → A mistyped `v2.0.1` cannot be unpublished, only superseded. Mitigated by making the gates run *before* publication rather than after, by requiring a `CHANGELOG.md` entry as a precondition, and by treating the first real release as a prerelease (task 19.4) so the mechanics are proven on something that can be superseded cheaply.
+**Publishing from a tag means a bad tag is a published release** → A mistyped `v2.0.1` cannot be unpublished, only superseded. Mitigated by making the gates run *before* publication rather than after, by requiring a `CHANGELOG.md` entry as a precondition, and by treating the first real release as a prerelease (task 20.4) so the mechanics are proven on something that can be superseded cheaply.
 
 **Repointing the documentation will break inbound links** → The current download URLs point at the upstream project, so consumers following them have been getting upstream's build; correcting them changes where those links resolve. Accepted: the links were wrong, and leaving them wrong to preserve habit is the same failure as the rest of this change.
 
@@ -302,6 +319,10 @@ The deeper cost is that the documentation's download links are **already wrong, 
 **The documentation site's `baseURL` and its deployed address disagree** → Assets and canonical links break or point off-site. Mitigated by setting `baseURL` and `CNAME` together (task 18.2) and by verifying the built pages emit the canonical URL before the domain is wired.
 
 **The custom-domain step depends on settings this repository does not control** → The build and publish can succeed while the domain is not yet serving. Mitigated by making the domain a clearly-owned manual step (task 18.3) and by keeping the pipeline's output reachable at the default Pages URL in the meantime, so the site is never blocked on DNS or certificate issuance.
+
+**Signing depends on repository settings and a local key, not on committed code** → Immutable releases are a repository toggle and SSH signing is a local git configuration, so neither is visible in the tree and neither can be verified by `make check`. Mitigated by making both explicit, owner-owned manual tasks (19.2, 19.3) with a post-release gate (19.5) that fails when a published release is unsigned, so the absence is caught rather than assumed.
+
+**A signed tag covers the CDN-served tree but not the Release attachments, and vice versa** → Release attestations cover what a downloader gets; the tag signature covers what a CDN `<link>` consumer gets. Neither alone covers both paths. Mitigated by using both layers and by task 19.4, which checks the tag signature *and* that the tagged files match the release's recorded digests.
 
 ## Migration Plan
 

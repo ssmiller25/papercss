@@ -184,3 +184,22 @@ The documentation SHALL be published at a stable address owned by this repositor
 - **WHEN** the site is published before the custom domain is registered
 - **THEN** the build and publish still succeed at the default address
 - **AND** the custom domain is a separate deployment step rather than a build prerequisite
+
+### Requirement: The documentation states how a consumer verifies a release
+
+The documentation SHALL state how a consumer verifies a downloaded artifact and the release it came from, using the mechanisms the project actually produces — a build-provenance attestation, an immutable release, and a signed tag. It SHALL NOT document a verification path the project does not produce.
+
+#### Scenario: A consumer wants to verify a release
+
+- **WHEN** a consumer looks for how to verify an artifact
+- **THEN** the documentation gives the exact commands for the mechanisms in use
+
+#### Scenario: A verification path is documented but not produced
+
+- **WHEN** the documentation describes a verification mechanism the release does not provide
+- **THEN** it is treated as a defect
+
+#### Scenario: A verification mechanism is used but undocumented
+
+- **WHEN** the project signs releases by a mechanism the documentation does not mention
+- **THEN** consumers cannot verify, and the omission is treated as a defect
