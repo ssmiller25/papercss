@@ -258,9 +258,25 @@
 
 *What remains is the part group 4 could not cover: an invariant the record catches only transiently, a check no declaration comparison can make, and the consumer-facing statement.*
 
-- [ ] 5.1 Add a gate asserting `html.dark` declares every custom property `html` declares, and verify it fails when one is removed. The record catches a property removed from either rule, but only until it is re-baselined — after that an `html`-only addition leaves `html.dark` silently incomplete, which is the invariant the `component-contract` requirement states. A comparative check is not the same as a historical one
+- [x] 5.1 Add a gate asserting `html.dark` declares every custom property `html` declares, and verify it fails when one is removed. The record catches a property removed from either rule, but only until it is re-baselined — after that an `html`-only addition leaves `html.dark` silently incomplete, which is the invariant the `component-contract` requirement states. A comparative check is not the same as a historical one
+*5.1 landed as `scripts/check-theme.mjs`, wired into `make check` as `check-theme` and placed directly after `check-declarations` — deliberately, because it reads that gate's output and depends on it being current.*
+
+***It reads `.css-declarations.json` rather than parsing the stylesheet itself.*** *That is not a shortcut. The record is not a second source of truth: `check-declarations` fails unless it matches a fresh build, so by the time this runs the record *is* the parsed build. Parsing `dist/paper.css` again would mean a duplicate of the parser that took several corrections to get right — multi-line selectors, at-rule scoping, duplicate selectors — and two copies of a parser that subtle is a worse risk than the indirection.*
+
+***What it checks that the record cannot.*** *`check-declarations` catches a property removed from either theme, but only until the record is re-baselined. After that, a property added to `html` and forgotten in `html.dark` is a change nobody notices: the record updates, every gate passes, and the asymmetry is baked in. A historical check is not a structural one. It asserts the dark set covers the light set, and reports dark-only extras without failing, since the requirement is coverage rather than equality.*
+
+*Three failure modes verified, not just the one the task names:*
+
+- *a single property removed from `html.dark` reports `--primary-dark (declared on html, absent from html.dark)` and exits 1;*
+- *the whole `html.dark` block removed fails with the breaking-change note;*
+- *renaming the light selector fails on an **empty set** rather than passing vacuously. That last guard matters most: every comparison of the form "A covers B" is trivially true when A is empty, so a selector rename would otherwise turn this gate into a no-op that reports success.*
+
+*At present both themes declare the same 48 properties, so the gate reports success with no extras.*
+
 - [ ] 5.2 Render each component from the documentation's dark-mode page in both themes, and verify every one resolves from the theme it should. Neither the record nor the completeness gate can see a component that hardcodes a colour instead of reading a custom property, which is the failure this catches
 - [ ] 5.3 Record in `UPGRADE.md` that the dark theme's activation and property surface are unchanged, so a consumer can confirm nothing about their dark styling moved. Depends on `UPGRADE.md` existing, which happens at task 7.5
+
+- [ ] 5.4 Add a **light/dark toggle to the documentation site header**, so any page can be switched live rather than the theme only being demonstrable on one page. Verify it applies the framework's `.dark` class to the root element, is reachable and operable by keyboard, and states the current mode rather than relying on appearance alone. The existing `Dark Mode` page stays exactly as it is and is not replaced by this — the toggle is what makes the theme reviewable while browsing. Its markup is page chrome, so it is held to the documentation gate like any other: if it adds a violation, that is a defect in the toggle rather than a baseline to raise
 
 ## 6. Release Pipeline
 

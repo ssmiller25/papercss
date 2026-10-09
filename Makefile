@@ -26,6 +26,7 @@ check:   ## Run the full verification gate - build, then lint the stylesheet and
 	@$(MAKE) check-config
 	@$(MAKE) check-dist
 	@$(MAKE) check-declarations
+	@$(MAKE) check-theme
 	@$(MAKE) check-docs
 	@$(MAKE) _verify-dist-committed
 
@@ -60,6 +61,10 @@ check-declarations:   ## Verify the generated stylesheet resolves to the recorde
 .PHONY: check-declarations-update
 check-declarations-update:   ## Re-record the generated stylesheet's declaration set. Only run this when a change to the output is intended; it hides unintended ones
 	node scripts/record-css-declarations.mjs
+
+.PHONY: check-theme
+check-theme:   ## Verify the dark theme declares every custom property the default theme does
+	node scripts/check-theme.mjs
 
 .PHONY: check-docs-update-baseline
 check-docs-update-baseline:   ## Re-measure the documentation HTML baseline. Only run this when the counts have genuinely dropped; it hides regressions you did not fix
