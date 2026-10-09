@@ -88,7 +88,7 @@ a {
 
     &:hover {
       &:active {
-        background-color: adjust-lightness($color-light, -10%);
+        background-color: var(--#{$colorName}-light-dark);
       }
     }
   }
@@ -103,12 +103,12 @@ a {
     @include color('border-color', #{$colorName});
 
     &:hover {
-      background-color: $color-light;
+      background-color: var(--#{$colorName}-light);
     }
 
     &:hover {
       &:active {
-        background-color: adjust-lightness($color-light, -10%);
+        background-color: var(--#{$colorName}-light-dark);
       }
     }
   }

@@ -192,3 +192,31 @@ The framework SHALL make clear which values a consumer can configure and which a
 - **WHEN** the framework's sources move to a system with explicit module boundaries
 - **THEN** internal values become private by construction rather than by convention
 - **AND** any value a consumer can configure today remains configurable, or its loss is declared as breaking with a migration
+
+### Requirement: Components read their colours from the theme
+
+A component's colours SHALL come from the theme's custom properties rather than from values fixed when the stylesheet is built, so that changing the theme changes what the component renders. Where a colour is deliberately independent of the theme, that SHALL be recorded at its declaration rather than left to look like an oversight.
+
+#### Scenario: The theme changes
+
+- **WHEN** the active theme changes
+- **THEN** every component colour that is meant to follow the theme follows it
+- **AND** no component keeps a value fixed at build time
+
+#### Scenario: A component fixes a colour when the stylesheet is built
+
+- **WHEN** a component's colour is computed at build time rather than read from a custom property
+- **THEN** it does not follow the theme, and the component renders a light-theme value while the rest of the page is dark
+- **AND** that is a defect unless the declaration records why the colour is theme-independent
+
+#### Scenario: A colour happens to be the same in both themes
+
+- **WHEN** a colour carries the same value in every theme
+- **THEN** it is still expressed as a custom property, so a theme can decide it
+- **AND** being identical today is not a reason to fix it when the stylesheet is built
+
+#### Scenario: A colour is genuinely theme-independent
+
+- **WHEN** a colour is the same regardless of theme by intent, such as a text highlight
+- **THEN** it may stay literal
+- **AND** the declaration states that this is deliberate

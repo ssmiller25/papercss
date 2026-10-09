@@ -76,6 +76,9 @@ samp {
 dfn {
   font-style: italic
 }
+// normalize.css's own value for <mark>, kept literal on purpose: a highlight is
+// yellow by definition rather than by theme, so it is not a theme colour and
+// theming it would be wrong.
 mark {
   background-color: #ff0;
   color: #000

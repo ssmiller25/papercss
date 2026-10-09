@@ -52,6 +52,28 @@ $muted-dark-10: adjust-lightness($muted, -10%) !default;
 $primary-shaded-70: adjust-lightness($primary, 70%) !default;
 $primary-shaded-50: adjust-lightness($primary, 50%) !default;
 
+// The shade one step darker than each light variant.
+//
+// These were previously computed inline with `adjust-lightness($color-light,
+// -10%)` and emitted as literals, which meant a pressed button or the dark end
+// of a striped progress bar kept the *light* theme's value in dark mode. The
+// name is relative to the light variant rather than to the base, because that
+// is what the colour is: the light variant, darkened by 10%, in whichever theme
+// is active.
+$primary-light-dark: adjust-lightness($primary-light, -10%) !default;
+$secondary-light-dark: adjust-lightness($secondary-light, -10%) !default;
+$success-light-dark: adjust-lightness($success-light, -10%) !default;
+$warning-light-dark: adjust-lightness($warning-light, -10%) !default;
+$danger-light-dark: adjust-lightness($danger-light, -10%) !default;
+$muted-light-dark: adjust-lightness($muted-light, -10%) !default;
+
+// Decorative and table colours, expressed as lightenings of the base.
+// `-25` is the alternating table row text, `-30` the `~~~` rule after an `hr`,
+// and `-60` the table row separator.
+$primary-light-25: adjust-lightness($primary, 25%) !default;
+$primary-light-30: adjust-lightness($primary, 30%) !default;
+$primary-light-60: adjust-lightness($primary, 60%) !default;
+
 $white-dark: rgba(#000, 0.03) !default;
 $white-dark-light-80: adjust-lightness($white-dark, 80%) !default;
 $light-dark: rgba(#000, 0.7) !default;
@@ -69,6 +91,14 @@ $muted-text: $muted-dark-10 !default;
 
 $shadow-color-regular: hsla(0, 0%, 0%, 0.2) !default;
 $shadow-color-hover: hsla(0, 0%, 0%, 0.3) !default;
+
+// Overlays and the stronger shadows used by form controls. These carry the same
+// value in both themes -- a backdrop is dark regardless -- but they are custom
+// properties so the theme can decide, rather than being literals no theme can
+// reach.
+$shadow-color-strong: hsla(0, 0%, 0%, 0.9) !default;
+$modal-backdrop: rgba(#000, 0.6) !default;
+$range-shadow-color: #000 !default;
 
 $primary-inverse: #fff !default;
 
@@ -114,6 +144,17 @@ $dark-muted-dark-10: adjust-lightness($dark-muted, -10%) !default;
 $dark-primary-shaded-70: adjust-lightness($primary, -7%) !default;
 $dark-primary-shaded-50: adjust-lightness($primary, -5%) !default;
 
+$dark-primary-light-dark: adjust-lightness($dark-primary-light, -10%) !default;
+$dark-secondary-light-dark: adjust-lightness($dark-secondary-light, -10%) !default;
+$dark-success-light-dark: adjust-lightness($dark-success-light, -10%) !default;
+$dark-warning-light-dark: adjust-lightness($dark-warning-light, -10%) !default;
+$dark-danger-light-dark: adjust-lightness($dark-danger-light, -10%) !default;
+$dark-muted-light-dark: adjust-lightness($dark-muted-light, -10%) !default;
+
+$dark-primary-light-25: adjust-lightness($dark-primary, 25%) !default;
+$dark-primary-light-30: adjust-lightness($dark-primary, 30%) !default;
+$dark-primary-light-60: adjust-lightness($dark-primary, 60%) !default;
+
 $dark-white-dark: rgba(#fff, 0.03) !default;
 $dark-white-dark-light-80: adjust-lightness($dark-white-dark, 80%) !default;
 $dark-light-dark: rgba(#fff, 0.7) !default;
@@ -131,6 +172,10 @@ $dark-muted-text: $dark-muted-light !default;
 
 $dark-shadow-color-regular: hsla(0, 0%, 0%, 0.2) !default;
 $dark-shadow-color-hover: hsla(0, 0%, 0%, 0.3) !default;
+
+$dark-shadow-color-strong: hsla(0, 0%, 0%, 0.9) !default;
+$dark-modal-backdrop: rgba(#000, 0.6) !default;
+$dark-range-shadow-color: #000 !default;
 
 $dark-primary-inverse: $primary !default;
 
@@ -170,6 +215,15 @@ $theme-map: (
     muted-dark-10:$muted-dark-10,
     primary-shaded-50: $primary-shaded-50,
     primary-shaded-70: $primary-shaded-70,
+    primary-light-dark:$primary-light-dark,
+    secondary-light-dark:$secondary-light-dark,
+    success-light-dark:$success-light-dark,
+    warning-light-dark:$warning-light-dark,
+    danger-light-dark:$danger-light-dark,
+    muted-light-dark:$muted-light-dark,
+    primary-light-25:$primary-light-25,
+    primary-light-30:$primary-light-30,
+    primary-light-60:$primary-light-60,
     white-dark:$white-dark,
     white-dark-light-80:$white-dark-light-80,
     light-dark:$light-dark,
@@ -185,6 +239,9 @@ $theme-map: (
     muted-text:$muted-text,
     shadow-color-regular: $shadow-color-regular,
     shadow-color-hover: $shadow-color-hover,
+    shadow-color-strong: $shadow-color-strong,
+    modal-backdrop: $modal-backdrop,
+    range-shadow-color: $range-shadow-color,
     primary-inverse: $primary-inverse,
   ),
   dark: (
@@ -220,6 +277,15 @@ $theme-map: (
     muted-dark-10:$dark-muted-dark-10,
     primary-shaded-50: $dark-primary-shaded-50,
     primary-shaded-70: $dark-primary-shaded-70,
+    primary-light-dark:$dark-primary-light-dark,
+    secondary-light-dark:$dark-secondary-light-dark,
+    success-light-dark:$dark-success-light-dark,
+    warning-light-dark:$dark-warning-light-dark,
+    danger-light-dark:$dark-danger-light-dark,
+    muted-light-dark:$dark-muted-light-dark,
+    primary-light-25:$dark-primary-light-25,
+    primary-light-30:$dark-primary-light-30,
+    primary-light-60:$dark-primary-light-60,
     white-dark:$dark-white-dark,
     white-dark-light-80:$dark-white-dark-light-80,
     light-dark:$dark-light-dark,
@@ -235,6 +301,9 @@ $theme-map: (
     muted-text:$dark-muted-text,
     shadow-color-regular: $dark-shadow-color-regular,
     shadow-color-hover: $dark-shadow-color-hover,
+    shadow-color-strong: $dark-shadow-color-strong,
+    modal-backdrop: $dark-modal-backdrop,
+    range-shadow-color: $dark-range-shadow-color,
     primary-inverse: $dark-primary-inverse,
   )
 );
@@ -295,8 +364,13 @@ $medium-screen: 992px !default;
 $small-screen: 768px !default;
 $xsmall-screen: 480px !default;
 
-// Sizes for shadows
-$shadow-small: 10px 19px 17px -13px $shadow-color-regular !default;
-$shadow-regular: 15px 28px 25px -18px $shadow-color-regular !default;
-$shadow-large: 20px 38px 34px -26px $shadow-color-regular !default;
-$shadow-hover: 2px 8px 8px -5px $shadow-color-hover !default;
+// Sizes for shadows.
+//
+// The colour is a custom property rather than the Sass value, so shadows follow
+// the theme. Previously `$shadow-regular` baked in `$shadow-color-regular`,
+// which emitted the colour as a literal and left every shadow unchanged in dark
+// mode even though a `--shadow-color-regular` property existed and was themed.
+$shadow-small: 10px 19px 17px -13px var(--shadow-color-regular) !default;
+$shadow-regular: 15px 28px 25px -18px var(--shadow-color-regular) !default;
+$shadow-large: 20px 38px 34px -26px var(--shadow-color-regular) !default;
+$shadow-hover: 2px 8px 8px -5px var(--shadow-color-hover) !default;

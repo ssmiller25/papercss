@@ -22,7 +22,7 @@ table {
   }
 
   tbody tr td {
-    border-top: 1px dashed adjust-lightness($primary, 60%);
+    border-top: 1px dashed var(--primary-light-60);
     line-height: 1.5;
     padding: 8px;
     vertical-align: top;
@@ -33,6 +33,6 @@ table {
   }
 
   &.table-alternating tbody tr:nth-of-type(even) {
-    color: adjust-lightness($primary, 25%);
+    color: var(--primary-light-25);
   }
 }

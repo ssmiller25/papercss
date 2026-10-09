@@ -273,7 +273,25 @@
 
 *At present both themes declare the same 48 properties, so the gate reports success with no extras.*
 
-- [ ] 5.2 Render each component from the documentation's dark-mode page in both themes, and verify every one resolves from the theme it should. Neither the record nor the completeness gate can see a component that hardcodes a colour instead of reading a custom property, which is the failure this catches
+- [x] 5.2 Render each component from the documentation's dark-mode page in both themes, and verify every one resolves from the theme it should. Neither the record nor the completeness gate can see a component that hardcodes a colour instead of reading a custom property, which is the failure this catches
+*5.2 turned out not to be a verification. The gate the task asked for would have failed, because the failure it was meant to catch is not hypothetical — it is the state of the framework. Auditing the theme found **64 colour declarations fixed at build time** rather than read from the theme: pressed button states, the dark end of striped progress bars, table rules, and every shadow. The `color()` mixin themed the base colours, but derived colours were computed by Sass and emitted as literals, so on a dark page a button's pressed state, a striped bar and a table's rules all showed light-theme colours.*
+
+*The components the dark-mode page demonstrates — input, button, progress, table — were therefore the ones affected, which is why the task named them.*
+
+***Fixed rather than recorded, per decision.*** *Twelve custom properties were added, taking the theme surface from 48 to 60:*
+
+- *`--{color}-light-dark` for the six palette colours — the light variant darkened 10%, used by pressed buttons and the darker stripe in gradients. Named relative to the light variant rather than to the base, because that is what it is, and because a base-relative name would compute the wrong dark-theme value.*
+- *`--primary-light-25`, `-30`, `-60` — the alternating table row text, the `~~~` rule after an `hr`, and the table row separator, each previously an inline `adjust-lightness($primary, N%)`.*
+- *`--shadow-color-strong`, `--modal-backdrop`, `--range-shadow-color` — overlays and the stronger shadows used by form controls, which carry the same value in both themes but are now expressible as such.*
+
+*The `shadow()` mixin was the largest single win for the least effort: `$shadow-small/regular/large/hover` baked in `$shadow-color-regular`, so every shadow in the framework stayed light while a themed `--shadow-color-regular` sat unused beside it. They now read the custom property. Likewise `striped-background()` takes a property name rather than a colour, and the button loops read `--{color}-light` and `--{color}-light-dark`.*
+
+***Light mode is untouched.*** *Verified rather than asserted: of every property already declared on `html`, **zero** changed value; the only additions to that rule are the nine new colour properties. Every migrated declaration resolves to the value the literal it replaced held, so nothing renders differently in the default theme. What changes is dark mode — which is the point.*
+
+*`mark` is the one literal left, and deliberately: `_reset.scss` sets `background-color: #ff0; color: #000` from normalize.css, and a text highlight is yellow by definition rather than by theme. The declaration now says so, so it does not read as an oversight.*
+
+*Verified: the completeness gate reports 60 dark properties covering all 60 on `html`; the declaration record reports 0 differences after re-baselining; two consecutive builds are byte-identical. The `component-contract` requirement this establishes — **components read their colours from the theme** — states the rule for the future, including that a colour identical in both themes is still expressed as a property, so a theme can decide it.*
+
 - [ ] 5.3 Record in `UPGRADE.md` that the dark theme's activation and property surface are unchanged, so a consumer can confirm nothing about their dark styling moved. Depends on `UPGRADE.md` existing, which happens at task 7.5
 
 - [ ] 5.4 Add a **light/dark toggle to the documentation site header**, so any page can be switched live rather than the theme only being demonstrable on one page. Verify it applies the framework's `.dark` class to the root element, is reachable and operable by keyboard, and states the current mode rather than relying on appearance alone. The existing `Dark Mode` page stays exactly as it is and is not replaced by this — the toggle is what makes the theme reviewable while browsing. Its markup is page chrome, so it is held to the documentation gate like any other: if it adds a violation, that is a defect in the toggle rather than a baseline to raise

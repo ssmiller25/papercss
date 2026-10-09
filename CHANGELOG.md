@@ -55,6 +55,22 @@ See `UPGRADE.md` for the before/after of each.
 
 ### Fixed
 
+- **Dark mode now themes every component.** Previously 64 colour
+  declarations were computed when the stylesheet was built rather than read
+  from the theme, so on a dark page a button's pressed state, a striped
+  progress bar, a table's rules and **every shadow** kept their *light*
+  colours. All of them now read custom properties, and the theme surface grew
+  from 48 properties to 60 to give them somewhere to read from.
+
+  **This changes how those components render in dark mode.** Light mode is
+  untouched: of every property already declared on `html`, none changed value,
+  and each migrated declaration resolves to the colour the literal it replaced
+  held. Consumers using dark mode will see the difference; it is the intended
+  fix rather than a regression.
+
+  `mark`'s yellow highlight is deliberately left literal — a text highlight is
+  yellow by definition rather than by theme — and its declaration says so.
+
 - `-webkit-text-decoration-skip: objects` dropped from the anchor reset as
   obsolete: it restated a browser default rather than resetting one, and the
   value cannot be carried unprefixed under CSS Text Decoration Level 4.
