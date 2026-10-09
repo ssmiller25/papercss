@@ -20,3 +20,8 @@ npm-debug.log
 /provenance.json
 /papercss-*-src.tar.gz
 /release-verify.txt
+
+# Playwright browser gate output
+/test-results
+/playwright-report
+/blob-report

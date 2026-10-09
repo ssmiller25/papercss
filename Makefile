@@ -30,6 +30,7 @@ check:   ## Run the full verification gate - build, then lint the stylesheet and
 	@$(MAKE) check-docs
 	@$(MAKE) check-consumption
 	@$(MAKE) check-release
+	@$(MAKE) test-browser
 	@$(MAKE) _verify-dist-committed
 
 .PHONY: lint
@@ -79,6 +80,10 @@ check-release:   ## Verify the release is consistent: tag, package.json, documen
 .PHONY: check-cdn
 check-cdn:   ## Post-release: verify the open CDNs serve the released stylesheets (needs network and a published tag; pass TAG=v2.0.0)
 	node scripts/check-cdn.mjs --tag "$(TAG)"
+
+.PHONY: test-browser
+test-browser:   ## Run the browser gate: the component contract in headless Chromium (needs `npx playwright install chromium`)
+	npm run test:browser
 
 .PHONY: check-docs-update-baseline
 check-docs-update-baseline:   ## Re-measure the documentation HTML baseline. Only run this when the counts have genuinely dropped; it hides regressions you did not fix

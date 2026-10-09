@@ -12,6 +12,7 @@ FROM mcr.microsoft.com/devcontainers/base:bookworm
 ARG HUGO_VERSION=0.131.0
 ARG NODE_VERSION=22.23.3
 ARG HTML_VALIDATE_VERSION=11.16.2
+ARG PLAYWRIGHT_VERSION=1.64.0
 
 # Install system dependencies
 RUN sudo apt-get update && \
@@ -64,6 +65,20 @@ RUN cd /tmp && \
 # node_modules.
 RUN sudo npm install -g \
     "html-validate@${HTML_VALIDATE_VERSION}"
+
+# Playwright's own Chromium, for the browser gate (`make test-browser`) and the
+# Playwright MCP server. It is Playwright's browser build, not the system
+# Chrome, so it runs headless without a profile on both this container and a
+# developer's machine. The version here must match @playwright/test in
+# package.json so the project's test runner finds the browser this image
+# installed rather than fetching its own. PLAYWRIGHT_BROWSERS_PATH puts it where
+# the non-root `vscode` user can reach it; the install runs as root so
+# `--with-deps` can apt-get the libraries Chromium needs.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN sudo npm install -g "playwright@${PLAYWRIGHT_VERSION}" && \
+    sudo mkdir -p /ms-playwright && \
+    sudo env PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install --with-deps chromium && \
+    sudo chmod -R 777 /ms-playwright
 
 # Node's install of the project dependencies runs at container create, not build,
 # so an image rebuild is not required when package.json changes.

@@ -17,7 +17,8 @@
     "lint": "npm run lint:src && npm run lint:dist",
     "lint:src": "stylelint \"src/**/*.scss\"",
     "lint:dist": "stylelint --config .stylelint-dist.cjs \"dist/paper.css\" \"dist/paper.min.css\"",
-    "lint:docs": "node scripts/check-html.mjs"
+    "lint:docs": "node scripts/check-html.mjs",
+    "test:browser": "playwright test"
   },
   "repository": {
     "type": "git",
@@ -29,8 +30,8 @@
     "url": "https://github.com/ssmiller25/papercss/issues"
   },
   "homepage": "https://papercss.r15cookie.com",
-  "dependencies": {},
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "autoprefixer": "^10.6.1",
     "chai": "^4.1.2",
     "chalk": "^4.1.0",

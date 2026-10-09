@@ -38,3 +38,20 @@ Do not reintroduce a manual release step or a second version source. See
 
 Run `make check` (or let CI run it). It is the single entry point for the gate
 sequence; do not restate the sequence in a second place that can drift.
+
+## Browser verification
+
+Component behavior that only a layout engine can show — keyboard operability,
+focus, the collapsible height — is checked with Playwright, not by driving a
+system browser:
+
+- `make test-browser` (or `npm run test:browser`) runs
+  `tests/collapsible.spec.mjs` in Playwright's own headless Chromium, and is
+  part of `make check`. The devcontainer installs that browser; on a fresh
+  machine run `npx playwright install chromium` once.
+- Never drive `/Applications/Google Chrome.app` or the system Chrome directly.
+  It uses the real profile and triggers OS prompts; use Playwright's bundled
+  browser instead.
+- For ad-hoc page interaction, a Playwright MCP server is configured in
+  `opencode.json`. Restart opencode after changing that file: config is loaded
+  once at startup.
