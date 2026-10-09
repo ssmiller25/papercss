@@ -25,6 +25,7 @@ check:   ## Run the full verification gate - build, then lint the stylesheet and
 	@$(MAKE) lint
 	@$(MAKE) check-config
 	@$(MAKE) check-dist
+	@$(MAKE) check-declarations
 	@$(MAKE) check-docs
 	@$(MAKE) _verify-dist-committed
 
@@ -51,6 +52,14 @@ check-dist:   ## Check the generated stylesheet for correctness (unknown propert
 .PHONY: check-docs
 check-docs:   ## Validate the built documentation against the recorded error baseline
 	node scripts/check-html.mjs
+
+.PHONY: check-declarations
+check-declarations:   ## Verify the generated stylesheet resolves to the recorded declaration set, property and value
+	node scripts/record-css-declarations.mjs --check
+
+.PHONY: check-declarations-update
+check-declarations-update:   ## Re-record the generated stylesheet's declaration set. Only run this when a change to the output is intended; it hides unintended ones
+	node scripts/record-css-declarations.mjs
 
 .PHONY: check-docs-update-baseline
 check-docs-update-baseline:   ## Re-measure the documentation HTML baseline. Only run this when the counts have genuinely dropped; it hides regressions you did not fix

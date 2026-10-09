@@ -205,7 +205,20 @@
 *Verified as far as this machine allows. `stylelint` is **not on PATH** here, so `make check-dist` passing is proof the gate resolves the project install rather than finding a global one — the strongest available evidence short of the devcontainer itself. `make check-config` and `npm run lint:src` also pass, and `make -n check` confirms the sequence still runs the generated-CSS gate through `check-dist`.*
 
 *This closes the workaround the pipeline was landed with: the two-stylelint split was a direct consequence of the 2019 tree, and section 2 recorded it as deliberate rather than permanent. The group 4 note that explained the split is now historical.*
-- [ ] 4.10 Add the recorded-declaration-set comparison to `make check`, and verify it fails when a declaration's value changes and passes when only formatting changes
+- [x] 4.10 Add the recorded-declaration-set comparison to `make check`, and verify it fails when a declaration's value changes and passes when only formatting changes
+*4.10 landed. Two Makefile targets, following the `check-docs` / `check-docs-update-baseline` pattern:*
+
+- *`check-declarations` runs `node scripts/record-css-declarations.mjs --check`, and is in the `make check` sequence directly after `check-dist`, since both inspect the generated stylesheet.*
+- *`check-declarations-update` re-records. It is a separate named target rather than a flag on the checking target, so regenerating the baseline is a deliberate act someone types, not something that can happen as a side effect of a passing run.*
+
+*Both behaviours the task asks for were verified at the **make** level, not just the script level:*
+
+- ***Passes on a formatting-only change.*** *Indentation changed, trailing whitespace added, blank lines inserted and a comment introduced into `dist/paper.css` all report 0 differences. That is what makes the record usable: the comparison is on resolved declarations, so a reformat is silent and only a value or structure change speaks.*
+- ***Fails on a value change.*** *`--primary: #41403e` → `#41403f` produces `make: *** [check-declarations] Error 1`, naming the rule, the property, and both values, and pointing at `check-declarations-update` and the CHANGELOG.*
+
+*The record was regenerated so its embedded `$comment` refers to `make check-declarations-update` rather than the raw node invocation — the previous text pointed at the node command only because this task had not landed. The digest is computed over the statements and rules rather than the whole file, so it is unchanged, and the diff is exactly one line. The script's usage header and failure message were updated to match.*
+
+*This is the gate that would have caught `padding: none`, and it is the one that made every measurement in this group possible: 4.3's colour-notation change, 4.4's clamping discovery and 4.6's restoration of the palette were all found by comparing against this record rather than by inspection.*
 - [ ] 4.11 Rewrite `package-lock.json` at the current lockfile version, and verify `npm ci` installs the pinned tree from it
 - [ ] 4.12 Confirm no replacement reintroduces an install script the package manager refuses to run. **Also pin the Node version the environment provides**: cssnano 9 and postcss-colormin 9 require Node `^22.22.3 || ^24.15.0 || >=26.0`, while the devcontainer uses a floating `ARG NODE_VERSION=22` — which contradicts the same Dockerfile's claim that every version is "pinned exactly", and now carries a real minimum rather than a harmless floor
 - [ ] 4.13 Record the one-time generated-output difference in `CHANGELOG.md`, since consumers vendoring `dist/paper.css` byte-for-byte will see it
