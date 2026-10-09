@@ -370,7 +370,7 @@
 - [x] 8.2 Style the framework's own focus indicator so keyboard focus is visible on the toggle, and verify the indicator is visible against every surface the component renders on
 - [x] 8.3 Verify the toggle is the expected tab stop and that operating it with the keyboard opens and closes the body
 - [x] 8.4 Verify the same control works in the navbar and in a standalone collapsible, since both are conditioned on the same rule
-- [ ] 8.5 Document the breaking change in `UPGRADE.md` with the substitution a consumer must make if their stylesheet assumed the control was invisible, and record it in the `2.0.0` section of `CHANGELOG.md`
+- [x] 8.5 Document the breaking change in `UPGRADE.md` with the substitution a consumer must make if their stylesheet assumed the control was invisible, and record it in the `2.0.0` section of `CHANGELOG.md`
 
 ## 9. Collapsible Height Cap
 

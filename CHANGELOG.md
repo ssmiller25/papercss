@@ -15,6 +15,13 @@ repository, the gap is recorded rather than the release omitted.
 Entries are added here as each change lands, not reconstructed at the end.
 See `UPGRADE.md` for the before/after of each.
 
+- **The collapsible toggle is now focusable.** The checkbox that opens a
+  collapsible — including the navbar's hamburger — was hidden with
+  `display: none`, which also removed it from the tab order, so it could not be
+  operated by keyboard. It is now visually hidden but focusable, with a visible
+  focus indicator. A stylesheet that assumed the input was invisible may need
+  to account for it being focusable. See `UPGRADE.md`.
+
 ### Build
 
 - **The generated stylesheet is not byte-identical, but every colour is
