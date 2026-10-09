@@ -377,7 +377,7 @@
 *Capability: `component-contract`. **Breaking** — tall bodies now expand fully.*
 
 - [x] 9.1 Replace the fixed `max-height` on the expanded accordion body with an approach that reveals arbitrary content, modeling the pending upstream fix rather than inventing a third approach
-- [ ] 9.2 Apply the same correction to the navbar's collapsible body, and verify the two are not left inconsistent
+- [x] 9.2 Apply the same correction to the navbar's collapsible body, and verify the two are not left inconsistent
 - [ ] 9.3 Verify a body taller than the old threshold is fully visible, and that no part of it is cut off without a means of reaching it
 - [ ] 9.4 Verify the open and closed states still animate and that the transition still runs
 - [ ] 9.5 Record the changed layout for long content in `UPGRADE.md` and in the `2.0.0` section of `CHANGELOG.md`, since a consumer relying on the old cap will see different heights

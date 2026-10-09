@@ -3287,7 +3287,6 @@ nav .nav-brand h6 {
 }
 nav .collapsible input[id^=collapsible]:checked ~ div.collapsible-body {
   margin: 0;
-  max-height: 960px;
   opacity: 1;
   padding: 0;
 }

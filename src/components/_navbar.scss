@@ -132,8 +132,10 @@ nav {
   }
 
   .collapsible input[id^=collapsible]:checked ~ div.collapsible-body {
+    // The height is a grid row (0fr to 1fr) inherited from the accordion rule;
+    // the fixed max-height that used to clip tall menus is gone. The navbar
+    // keeps its own zero padding.
     margin: 0;
-    max-height: 960px;
     opacity: 1;
     padding: 0;
   }
