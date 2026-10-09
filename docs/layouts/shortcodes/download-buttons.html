@@ -1,0 +1,6 @@
+{{- $r := .Page.Site.Data.release -}}
+<div class="row flex-spaces text-center">
+  <a class="paper-btn margin" href="{{ $r.repository }}/releases/download/v{{ $r.version }}/paper.css">CSS File</a>
+  <a class="paper-btn margin" href="{{ $r.repository }}/releases/download/v{{ $r.version }}/paper.min.css">Minified CSS File</a>
+  <a class="paper-btn margin" href="{{ $r.repository }}/releases">GitHub Releases</a>
+</div>

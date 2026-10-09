@@ -27,10 +27,12 @@ A copy maintained by [ssmiller25](https://r15cookie.com) or the original [PaperC
 
 There are several options available:
 
-- You can [download the latest release](https://github.com/ssmiller25/papercss/releases).
+- [Download the latest release](https://github.com/ssmiller25/papercss/releases), which includes the SCSS source archive.
+- Link the stylesheet directly from the CDN. jsDelivr serves it straight from a release tag, so replace `<version>` with one:
+  `https://cdn.jsdelivr.net/gh/ssmiller25/papercss@<version>/dist/paper.min.css`
 - Clone the repo: `git clone https://github.com/ssmiller25/papercss.git`
-- Install with npm: `npm install papercss`
-- Install with yarn: `yarn add papercss`
+
+PaperCSS is not published to a package registry, so there is no install from npm.
 
 ## Content of the framework
 
@@ -38,7 +40,7 @@ We provide compiled CSS (`paper.css`) as well as minified CSS (`paper.min.css`).
 
 You can choose which components you may want to use. Only the components that get imported into `src/styles.scss` will be compiled into `dist/paper.css`.
 
-You can also play with original, source files, written in SCSS, in `src/`.
+You can also play with original, source files, written in SCSS, in `src/`. Every release attaches an SCSS source archive (`papercss-<version>-src.tar.gz`), and `src/` is in the repository, so you can build from source.
 
 ## Documentation
 

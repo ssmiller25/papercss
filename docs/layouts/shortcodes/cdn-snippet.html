@@ -1,0 +1,3 @@
+{{- $r := .Page.Site.Data.release -}}
+{{- $url := printf "https://cdn.jsdelivr.net/gh/%s/%s@v%s/dist/paper.min.css" $r.owner $r.repo $r.version -}}
+<pre><code>&lt;link rel="stylesheet" href="{{ $url }}"&gt;</code></pre>

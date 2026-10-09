@@ -28,6 +28,8 @@ check:   ## Run the full verification gate - build, then lint the stylesheet and
 	@$(MAKE) check-declarations
 	@$(MAKE) check-theme
 	@$(MAKE) check-docs
+	@$(MAKE) check-consumption
+	@$(MAKE) check-release
 	@$(MAKE) _verify-dist-committed
 
 .PHONY: lint
@@ -65,6 +67,18 @@ check-declarations-update:   ## Re-record the generated stylesheet's declaration
 .PHONY: check-theme
 check-theme:   ## Verify the dark theme declares every custom property the default theme does
 	node scripts/check-theme.mjs
+
+.PHONY: check-consumption
+check-consumption:   ## Verify the documentation describes no package-registry consumption path
+	node scripts/check-consumption.mjs
+
+.PHONY: check-release
+check-release:   ## Verify the release is consistent: tag, package.json, documented version, changelog, and artifact set
+	node scripts/check-release.mjs
+
+.PHONY: check-cdn
+check-cdn:   ## Post-release: verify the open CDNs serve the released stylesheets (needs network and a published tag; pass TAG=v2.0.0)
+	node scripts/check-cdn.mjs --tag "$(TAG)"
 
 .PHONY: check-docs-update-baseline
 check-docs-update-baseline:   ## Re-measure the documentation HTML baseline. Only run this when the counts have genuinely dropped; it hides regressions you did not fix

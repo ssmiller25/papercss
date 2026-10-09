@@ -15,3 +15,8 @@ npm-debug.log
 # Hugo build lock file
 /.hugo_build.lock
 /docs/.hugo_build.lock
+
+# Generated at release time and attached to the GitHub Release, never committed
+/provenance.json
+/papercss-*-src.tar.gz
+/release-verify.txt

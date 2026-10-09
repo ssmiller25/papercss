@@ -1,8 +1,11 @@
 {
   "name": "papercss",
-  "version": "1.9.2",
+  "version": "2.0.0",
   "description": "The less formal CSS framework.",
+  "private": true,
   "main": "dist/paper.css",
+  "style": "dist/paper.css",
+  "jsdelivr": "dist/paper.min.css",
   "scripts": {
     "build": "npm run css:build && npm run docs:build",
     "css:build": "node ./build/build.js",
@@ -18,14 +21,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/papercss/papercss.git"
+    "url": "git+https://github.com/ssmiller25/papercss.git"
   },
   "author": "Rhyne Vlaservich <rhyneav@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/papercss/papercss/issues"
+    "url": "https://github.com/ssmiller25/papercss/issues"
   },
-  "homepage": "https://www.getpapercss.com",
+  "homepage": "https://papercss.r15cookie.com",
   "dependencies": {},
   "devDependencies": {
     "autoprefixer": "^10.6.1",

@@ -1,0 +1,104 @@
+name: Release
+
+# A release is a tag, pressed through the GitHub release process: create a
+# draft release for the tag (which creates the tag) and this workflow runs the
+# repository's own gates and, only if they pass, attaches the artifact set and
+# publishes the draft. The tag is the single source of truth for the version;
+# package.json and the version the documentation reads must agree with it
+# (scripts/check-release.mjs, run from `make check`). No step publishes to npm
+# or any other package registry.
+#
+# A plain tag push with no draft release also works: the workflow creates the
+# release itself.
+#
+# Dispatch the workflow with dry_run enabled to build and list the artifact set
+# without creating a release.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and list the release artifact set without publishing
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Verify and publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Tags are needed for the tagged-tree check in check-release.mjs.
+          fetch-depth: 0
+
+      # `make check` is the single source of truth for the gate sequence and
+      # now includes the release-consistency check, so nothing is published
+      # from a tree that fails its own gates. The tag ref makes check-release
+      # compare package.json and the documented version against it.
+      - name: Verify the repository's own gates
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: set -o pipefail && make check 2>&1 | tee release-verify.txt
+
+      - name: Assemble the release artifact set
+        id: artifacts
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          tar -czf "papercss-${VERSION}-src.tar.gz" src package.json LICENSE.md README.md
+          node scripts/write-provenance.mjs
+          echo "files=dist/paper.css dist/paper.min.css papercss-${VERSION}-src.tar.gz provenance.json" >> "$GITHUB_OUTPUT"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/paper.css
+            dist/paper.min.css
+
+      - name: List the artifact set (dry run)
+        if: github.event_name != 'push'
+        run: ls -l ${{ steps.artifacts.outputs.files }}
+
+      - name: Publish the GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A prerelease tag (e.g. v2.0.0-rc.1) is published as a prerelease so
+          # it never becomes the release consumers are offered as current.
+          PRERELEASE=""
+          case "${GITHUB_REF_NAME}" in *-*) PRERELEASE="--prerelease" ;; esac
+          FILES="${{ steps.artifacts.outputs.files }}"
+
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            # A draft release created in the GitHub UI already pressed the tag.
+            # The gates have now passed, so upload the verified artifacts and
+            # publish the draft - nothing is published before this point.
+            gh release upload "${GITHUB_REF_NAME}" $FILES --clobber
+            gh release edit "${GITHUB_REF_NAME}" --draft=false $PRERELEASE
+          else
+            gh release create "${GITHUB_REF_NAME}" $FILES \
+              --title "${GITHUB_REF_NAME}" \
+              --generate-notes \
+              $PRERELEASE
+          fi
+
+      # Post-release: confirm the open CDNs actually serve the tagged build.
+      # The CDNs fetch a new tag lazily, so give them a moment first.
+      - name: Smoke-check the CDNs
+        if: github.event_name == 'push'
+        run: |
+          sleep 30
+          node scripts/check-cdn.mjs --tag "${GITHUB_REF_NAME}"
