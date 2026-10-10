@@ -5,5 +5,13 @@
       {{- .Name -}}
     </a>
   {{ end }}
-  <a href="https://github.com/rhyneav/papercss" target="_blank" class="paper-btn margin">Github</a>
+  <a href="https://github.com/ssmiller25/papercss" target="_blank" class="paper-btn margin">Github</a>
+  {{- /* The light/dark toggle. `aria-pressed` carries the state, applied to
+         <html>; the label stays constant so the button reads as a toggle
+         rather than as two different actions. A Hugo comment rather than an
+         HTML one because a stripped HTML comment leaves its indentation behind
+         as trailing whitespace, which the documentation gate counts. */ -}}
+  <button type="button" class="paper-btn margin" id="theme-toggle" aria-pressed="false">
+    Dark mode
+  </button>
 </div>

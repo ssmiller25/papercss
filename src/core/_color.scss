@@ -1,0 +1,40 @@
+/**
+  PaperCSS colour helpers
+*/
+
+@use 'sass:color';
+@use 'sass:math';
+
+// `adjust-lightness()` replaces the deprecated `lighten()` and `darken()`,
+// which Dart Sass removes in 3.0.0. Their suggested replacement is not
+// equivalent: `lighten()` and `darken()` clamp the resulting lightness to
+// 0-100%, and `color.adjust()` does not.
+//
+// That difference is load-bearing in this framework. `$primary-dark` is
+// `darken($primary, 50%)`, which clamps -25% to 0 and yields `black`. Written
+// as `color.adjust($primary, $lightness: -50%)` it yields
+// `hsl(40, 2.36%, -25%)` -- out of range, and rendered as black only because a
+// browser clamps it back. Seven theme values depend on that clamping, so a
+// naive migration would leave the shipped stylesheet carrying values the
+// source does not intend and hand the behaviour to the rendering engine.
+//
+// Positive amounts lighten, negative amounts darken:
+//
+//     adjust-lightness($primary, 55%)  ==  lighten($primary, 55%)
+//     adjust-lightness($primary, -50%) ==  darken($primary, 50%)
+//
+// Verified value-identical to both, including `rgba` inputs, where the alpha
+// channel is preserved.
+//
+// These are `//` comments rather than `/* */` deliberately: Sass emits loud
+// comments into the built stylesheet, and this rationale is for maintainers
+// rather than for anyone reading dist/paper.css.
+@function adjust-lightness($color, $amount) {
+  $lightness: color.channel($color, 'lightness', $space: hsl);
+
+  @return color.change(
+    $color,
+    $lightness: math.clamp(0%, $lightness + $amount, 100%),
+    $space: hsl
+  );
+}

@@ -9,6 +9,7 @@ The flexgrid is a grid system that supports up to 12 columns per row. Because it
 uses flexbox (rather than just %widths), we also get the benefit of the fun
 parts of flexbox like alignment in more complex ways than normal.
 
+{{< demo >}}
 <div class="demo">
   <div class="row">
     <div class="col-4 col">col-4 col</div>
@@ -78,6 +79,7 @@ parts of flexbox like alignment in more complex ways than normal.
     </div>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 

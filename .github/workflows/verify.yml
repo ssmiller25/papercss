@@ -1,0 +1,76 @@
+name: Verify
+
+on:
+  push:
+    branches: [ main, release20 ]
+  pull_request:
+    branches: [ main, release20 ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pull the pre-built dev container image so `devcontainer up` reuses its
+      # layers instead of rebuilding them. The image is built and pushed by the
+      # Dev Container workflow.
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # The image is built and pushed by the Dev Container workflow. Until it
+      # exists (the first run), build without a cache rather than fail on a
+      # missing one.
+      - name: Find the cached dev container image
+        id: devcontainer-cache
+        run: |
+          image="ghcr.io/${{ github.repository }}/devcontainer"
+          if docker manifest inspect "$image" >/dev/null 2>&1; then
+            echo "cacheFrom=$image" >> "$GITHUB_OUTPUT"
+          else
+            echo "cacheFrom=" >> "$GITHUB_OUTPUT"
+            echo "::notice::No cached dev container image yet; building without a cache"
+          fi
+
+      # `make check` is the single source of truth for the gate sequence, so CI
+      # and local runs cannot drift apart. It builds the stylesheet and the
+      # documentation, lints both, validates the documentation against the
+      # recorded baseline, and requires the tracked dist/ to match a fresh build.
+      - name: Build and verify in devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          # Never push: the Dev Container workflow owns building and pushing the
+          # image; this workflow only consumes it as a layer cache.
+          push: never
+          cacheFrom: ${{ steps.devcontainer-cache.outputs.cacheFrom }}
+          # pipefail so a failing gate still fails the step even though `tee`
+          # is the last command in the pipeline.
+          runCmd: set -o pipefail && make check 2>&1 | tee verify-output.txt
+
+      # A gate nobody reads is not a gate. Post the per-rule table where a
+      # reviewer sees it without opening logs, since the whole point of the
+      # baseline is that improvement is visible over time.
+      - name: Publish the error-budget table
+        if: always()
+        run: |
+          {
+            echo "## Verification"
+            echo
+            echo '```'
+            cat verify-output.txt 2>/dev/null || echo "(no output captured)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

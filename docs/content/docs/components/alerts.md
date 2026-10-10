@@ -4,6 +4,7 @@ description: PaperCSS Alerts
 ---
 ### Simple alerts
 
+{{< demo >}}
 <div class="row flex-spaces">
   <div class="alert alert-primary">
     Alert-primary
@@ -21,6 +22,7 @@ description: PaperCSS Alerts
     Alert-danger
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 
@@ -36,6 +38,7 @@ description: PaperCSS Alerts
 
 ### Dismissible alerts
 
+{{< demo >}}
 <div class="row flex-spaces">
   <input class="alert-state" id="alert-1" type="checkbox">
   <div class="alert alert-primary dismissible">
@@ -63,6 +66,7 @@ description: PaperCSS Alerts
     <label class="btn-close" for="alert-5">X</label>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code:
 

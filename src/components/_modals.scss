@@ -1,6 +1,6 @@
 .modal {
   @include transition(opacity);
-  background: rgba(#000, 0.6);
+  background: var(--modal-backdrop);
   bottom: 0;
   flex: 1 1 auto;
   left: 0;

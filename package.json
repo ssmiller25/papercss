@@ -1,50 +1,50 @@
 {
   "name": "papercss",
-  "version": "1.9.2",
+  "version": "2.0.0",
   "description": "The less formal CSS framework.",
+  "private": true,
   "main": "dist/paper.css",
+  "style": "dist/paper.css",
+  "jsdelivr": "dist/paper.min.css",
   "scripts": {
-    "build": "npm run css:build && npm run hugo:build",
+    "build": "npm run css:build && npm run docs:build",
     "css:build": "node ./build/build.js",
-    "dev": "concurrently --kill-others \"npm run dev:hot-reload\" \"npm run hugo:serve\"",
+    "docs:build": "hugo --source=docs",
+    "dev": "concurrently --kill-others \"npm run dev:hot-reload\" \"npm run dev:docs\"",
     "dev:hot-reload": "node ./build/hot-reload.js",
-    "hugo:build": "hugo -D --source=docs",
-    "hugo:serve": "hugo server --source=docs --disableFastRender",
-    "lint": "npm run stylelint",
-    "start": "npm run hugo:serve",
-    "stylelint": "stylelint src/**/*.scss"
+    "dev:docs": "hugo server --source=docs --disableFastRender",
+    "start": "npm run dev:docs",
+    "lint": "npm run lint:src && npm run lint:dist",
+    "lint:src": "stylelint \"src/**/*.scss\"",
+    "lint:dist": "stylelint --config .stylelint-dist.cjs \"dist/paper.css\" \"dist/paper.min.css\"",
+    "lint:docs": "node scripts/check-html.mjs",
+    "test:browser": "playwright test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/papercss/papercss.git"
+    "url": "git+https://github.com/ssmiller25/papercss.git"
   },
   "author": "Rhyne Vlaservich <rhyneav@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/papercss/papercss/issues"
+    "url": "https://github.com/ssmiller25/papercss/issues"
   },
-  "homepage": "https://www.getpapercss.com",
-  "dependencies": {},
+  "homepage": "https://papercss.r15cookie.com",
   "devDependencies": {
-    "autoprefixer": "^9.8.6",
+    "@playwright/test": "1.64.0",
+    "autoprefixer": "^10.6.1",
     "chai": "^4.1.2",
     "chalk": "^4.1.0",
     "chokidar": "^3.4.2",
     "concurrently": "^5.3.0",
-    "cssnano": "^4.1.10",
-    "hugo-bin": "^0.62.3",
-    "postcss": "^7.0.32",
-    "pre-commit": "^1.2.2",
+    "cssnano": "^9.4.0",
+    "postcss": "^8.5.29",
+    "postcss-colormin": "^9.0.7",
     "rimraf": "^3.0.2",
-    "sass": "^1.26.10",
-    "stylelint": "^13.7.2",
-    "stylelint-config-sass-guidelines": "^7.1.0",
-    "stylelint-config-standard": "^20.0.0",
-    "stylelint-order": "^4.1.0",
-    "stylelint-scss": "^3.18.0",
+    "sass": "^1.105.1",
+    "stylelint": "^17.16.0",
+    "stylelint-config-sass-guidelines": "^13.0.0",
+    "stylelint-scss": "^7.3.0",
     "write": "^2.0.0"
-  },
-  "pre-commit": [
-    "stylelint"
-  ]
+  }
 }

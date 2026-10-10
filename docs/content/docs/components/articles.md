@@ -2,6 +2,7 @@
 title: Articles
 description: PaperCSS Articles
 ---
+{{< demo >}}
 <article class="article">
   <h1 class="article-title">
     <a href="#">Article Title</a>
@@ -20,10 +21,11 @@ description: PaperCSS Articles
   </p>
 
   <div class="row">
-    <button>Read More</button>
-    <button>5 Comments</button>
+    <button type="button">Read More</button>
+    <button type="button">5 Comments</button>
   </div>
 </article>
+{{< /demo >}}
 
 #### Code:
 
@@ -35,8 +37,8 @@ description: PaperCSS Articles
   <p>Lorem...</p>
 
   <div class="row">
-    <button>Read More</button>
-    <button>5 Comments</button>
+    <button type="button">Read More</button>
+    <button type="button">5 Comments</button>
   </div>
 </article>
 ```

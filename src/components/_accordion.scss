@@ -14,26 +14,73 @@
     @include transition;
     border-bottom-style: solid;
     border-bottom-width: 1px;
+    // The collapsed height is a zero-height grid row, not a fixed max-height.
+    // A max-height clips a body taller than it; a row track can animate
+    // between 0fr and 1fr, so an arbitrarily tall body expands in full while
+    // the transition still runs. This models upstream PR #311 rather than
+    // raising the cap to another number that would clip the next tall body.
+    // `grid-auto-rows` is the one addition to that PR: it collapses every row,
+    // not only the first, so a body with more than one child is not left with
+    // its later children showing while "closed" - which the old max-height
+    // hid and a single-track grid would not.
+    display: grid;
+    grid-auto-rows: 0fr;
+    grid-template-rows: 0fr;
     margin: 0;
-    max-height: 0;
     opacity: 0;
     overflow: hidden;
     padding: 0 0.75rem;
+
+    // Grid items default to min-height: auto, which would hold the row at the
+    // content height and block the collapse. This lets the row shrink to 0fr
+    // and clips the content while it does.
+    > * {
+      min-height: 0;
+      overflow: hidden;
+    }
   }
 
   > input {
-    display: none;
+    // Visually hidden, not `display: none`. `display: none` removes the
+    // checkbox from the tab order, so the navbar hamburger and every
+    // collapsible were unreachable by keyboard. This keeps the control
+    // off-screen without removing it from the tab order or from assistive
+    // technology. Pointer behaviour is unchanged: the label still forwards
+    // its click to this checkbox.
+    block-size: 1px;
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    inline-size: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
 
     &:checked + label {
       @include color('color', 'primary');
     }
 
     &[id^='collapsible']:checked~div.collapsible-body {
+      grid-auto-rows: 1fr;
+      grid-template-rows: 1fr;
       margin: 0;
-      max-height: 960px;
       opacity: 1;
       padding: 0.75rem;
     }
+  }
+
+  // Keyboard focus lands on the visually-hidden input, so the indicator is
+  // drawn on the visible control it is paired with. `:focus-visible` shows it
+  // for keyboard navigation without drawing a ring on a pointer click. The
+  // outline uses the theme's primary colour so it is visible in both themes.
+  > input:focus-visible + label,
+  > input:focus-visible + button {
+    @include color('outline-color', 'primary');
+    outline-offset: 2px;
+    outline-style: dashed;
+    outline-width: 2px;
   }
 
   > label {

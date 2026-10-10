@@ -280,13 +280,13 @@ select {
 
     &:hover {
       .paper-switch-tile-card {
-        box-shadow: 2px 8px 4px -5px rgba(0, 0, 0, 0.2);
+        box-shadow: 2px 8px 4px -5px var(--shadow-color-regular);
         transform: rotateX(30deg);
       }
 
       &:checked + .paper-switch-tile-card {
         background-color: transparent;
-        box-shadow: 0 10px 15px -15px rgba(0, 0, 0, 0.9);
+        box-shadow: 0 10px 15px -15px var(--shadow-color-strong);
         transform: rotateX(150deg);
       }
 
@@ -306,15 +306,22 @@ select {
   .paper-switch-tile-card {
     background-color: transparent;
     border-color: transparent;
+    // The card and its faces are documented as `<span>`, since a `<label>` may
+    // only contain phrasing content. The card must be block-level to keep the
+    // box the `<div>` it replaced had; the faces are styled by class, so a
+    // consumer's existing `<div>` markup keeps rendering.
+    display: block;
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
     transition: all 600ms;
     width: 100%;
 
-    div {
+    .paper-switch-tile-card-front,
+    .paper-switch-tile-card-back {
       backface-visibility: hidden;
-      box-shadow: 2px 8px 8px -5px rgba(0, 0, 0, 0.3);
+      box-shadow: 2px 8px 8px -5px var(--shadow-color-hover);
+      display: block;
       height: 100%;
       line-height: 70px;
       position: absolute;
@@ -341,7 +348,7 @@ select {
       border-radius: 18px;
       border-style: solid;
       border-width: 1px;
-      box-shadow: 1px 1px 1px #000, 0 0 1px #0d0d0d;
+      box-shadow: 1px 1px 1px var(--range-shadow-color), 0 0 1px var(--range-shadow-color);
       cursor: pointer;
       height: 8px;
       margin: 10px 0;
@@ -359,7 +366,7 @@ select {
       border-top-left-radius: 1rem 1rem;
       border-top-right-radius: 1rem 0.6rem;
       border-width: 1px;
-      box-shadow: 1px 1px 1px #000, 0 0 1px #0d0d0d;
+      box-shadow: 1px 1px 1px var(--range-shadow-color), 0 0 1px var(--range-shadow-color);
       cursor: pointer;
       height: 36px;
       margin-top: -14px;
@@ -372,7 +379,7 @@ select {
       @include color('border-color', 'primary');
 
       border-radius: 18px;
-      box-shadow: 1px 1px 1px #000, 0 0 1px #0d0d0d;
+      box-shadow: 1px 1px 1px var(--range-shadow-color), 0 0 1px var(--range-shadow-color);
       cursor: pointer;
       height: 8px;
       width: 100%;
@@ -388,7 +395,7 @@ select {
       border-top-left-radius: 1rem 1rem;
       border-top-right-radius: 1rem 0.6rem;
       border-width: 1px;
-      box-shadow: 1px 1px 1px #000, 0 0 1px #0d0d0d;
+      box-shadow: 1px 1px 1px var(--range-shadow-color), 0 0 1px var(--range-shadow-color);
       cursor: pointer;
       height: 36px;
       width: 16px;
@@ -413,7 +420,7 @@ select {
       border-radius: 18px;
       border-style: solid;
       border-width: 1px;
-      box-shadow: 1px 1px 1px #000, 0 0 1px #0d0d0d;
+      box-shadow: 1px 1px 1px var(--range-shadow-color), 0 0 1px var(--range-shadow-color);
     }
 
     &::-ms-thumb {
@@ -427,7 +434,7 @@ select {
       border-top-left-radius: 1rem 1rem;
       border-top-right-radius: 1rem 0.6rem;
       border-width: 1px;
-      box-shadow: 1px 1px 1px #000, 0 0 1px #0d0d0d;
+      box-shadow: 1px 1px 1px var(--range-shadow-color), 0 0 1px var(--range-shadow-color);
       cursor: pointer;
       height: 36px;
       width: 16px;

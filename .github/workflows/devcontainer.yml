@@ -1,0 +1,51 @@
+name: Dev Container
+
+# devcontainers/ci caches by pre-building the dev container image and pushing it
+# to a registry, then reusing it via `cacheFrom`; when `imageName` is set the
+# action also adds the image as a cache source automatically. This workflow owns
+# that build. It runs when the container definition changes (or on demand) and
+# pushes `ghcr.io/<owner>/<repo>/devcontainer`, which the Verify, Release, and
+# Pages workflows pull as a layer cache so they do not rebuild apt, Hugo, Node,
+# or Playwright Chromium on every run.
+on:
+  push:
+    branches: [main, release20]
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/devcontainer.yml"
+  pull_request:
+    paths:
+      - ".devcontainer/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: devcontainer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push the dev container image
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/${{ github.repository }}/devcontainer
+          cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
+          # Push on branch pushes only, so a fork pull request cannot write to
+          # the registry. `filter` is the action's default; stated for clarity.
+          push: filter
+          runCmd: echo "dev container image built"

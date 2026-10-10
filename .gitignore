@@ -8,3 +8,20 @@ npm-debug.log
 # Ignore compiled CSS
 /docs/static/assets/paper.css
 /docs/static/assets/paper.min.css
+
+# Temporary build-comparison directory used by `make check-determinism`
+/.check-tmp
+
+# Hugo build lock file
+/.hugo_build.lock
+/docs/.hugo_build.lock
+
+# Generated at release time and attached to the GitHub Release, never committed
+/provenance.json
+/papercss-*-src.tar.gz
+/release-verify.txt
+
+# Playwright browser gate output
+/test-results
+/playwright-report
+/blob-report

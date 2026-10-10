@@ -3,37 +3,38 @@ title: Navbar
 description: PaperCSS Navbar
 ---
 
-<nav class="border fixed split-nav">
+{{< demo >}}
+<nav class="border fixed split-nav" aria-label="Primary">
   <div class="nav-brand">
     <h3><a href="/">Get PaperCSS</a></h3>
   </div>
   <div class="collapsible">
     <input id="collapsible0" type="checkbox" name="collapsible0">
     <label for="collapsible0">
-      <div class="bar1"></div>
-      <div class="bar2"></div>
-      <div class="bar3"></div>
+      <span class="bar1"></span>
+      <span class="bar2"></span>
+      <span class="bar3"></span>
     </label>
     <div class="collapsible-body">
       <ul class="inline">
         <li><a href="/docs/">Documentation</a></li>
         <li><a href="/about/">About</a></li>
-        <li><a href="https://github.com/rhyneav/papercss" target="_blank">Github</a></li>
+        <li><a href="https://github.com/ssmiller25/papercss" target="_blank">Github</a></li>
       </ul>
     </div>
   </div>
 </nav>
 
-<nav class="border split-nav">
+<nav class="border split-nav" aria-label="Secondary">
   <div class="nav-brand">
     <h3><a href="#">Get PaperCSS</a></h3>
   </div>
   <div class="collapsible">
     <input id="collapsible1" type="checkbox" name="collapsible1">
     <label for="collapsible1">
-      <div class="bar1"></div>
-      <div class="bar2"></div>
-      <div class="bar3"></div>
+      <span class="bar1"></span>
+      <span class="bar2"></span>
+      <span class="bar3"></span>
     </label>
     <div class="collapsible-body">
       <ul class="inline">
@@ -44,22 +45,23 @@ description: PaperCSS Navbar
     </div>
   </div>
 </nav>
+{{< /demo >}}
 
 #### Code:
 
 Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the whole page. It's also mobile responsive and will show a hamburger menu on small screens. No JavaScript required!
 
 ```html
-<nav class="border fixed split-nav">
+<nav class="border fixed split-nav" aria-label="Primary">
   <div class="nav-brand">
     <h3><a href="#">Get PaperCSS</a></h3>
   </div>
   <div class="collapsible">
     <input id="collapsible1" type="checkbox" name="collapsible1">
     <label for="collapsible1">
-      <div class="bar1"></div>
-      <div class="bar2"></div>
-      <div class="bar3"></div>
+      <span class="bar1"></span>
+      <span class="bar2"></span>
+      <span class="bar3"></span>
     </label>
     <div class="collapsible-body">
       <ul class="inline">
@@ -72,18 +74,27 @@ Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the 
 </nav>
 ```
 
+### About the toggle bars
+
+The hamburger's three bars are styled by class — `.bar1`, `.bar2`, `.bar3` — so
+any element type works. The examples use `<span>` because the bars sit inside a
+`<label>`, and a `<label>` may only contain phrasing content: a `<div>` there is
+invalid HTML. Put whichever element is valid where you use the bars; the class
+is what the framework matches, not the tag.
+
 ### Not Split Navbar
 
-<nav class="border">
+{{< demo >}}
+<nav class="border" aria-label="Site">
   <div class="nav-brand">
     <h3><a href="#">Get PaperCSS</a></h3>
   </div>
   <div class="collapsible">
     <input id="collapsible2" type="checkbox" name="collapsible2">
     <label for="collapsible2">
-      <div class="bar1"></div>
-      <div class="bar2"></div>
-      <div class="bar3"></div>
+      <span class="bar1"></span>
+      <span class="bar2"></span>
+      <span class="bar3"></span>
     </label>
     <div class="collapsible-body">
       <ul class="inline">
@@ -94,20 +105,21 @@ Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the 
     </div>
   </div>
 </nav>
+{{< /demo >}}
 
 #### Code:
 
 ```html
-<nav class="border fixed">
+<nav class="border fixed" aria-label="Site">
   <div class="nav-brand">
     <h4><a href="#">Get PaperCSS</a></h4>
   </div>
   <div class="collapsible">
     <input id="collapsible2" type="checkbox" name="collapsible2">
     <label for="collapsible2">
-      <div class="bar1"></div>
-      <div class="bar2"></div>
-      <div class="bar3"></div>
+      <span class="bar1"></span>
+      <span class="bar2"></span>
+      <span class="bar3"></span>
     </label>
     <div class="collapsible-body">
       <ul class="inline">

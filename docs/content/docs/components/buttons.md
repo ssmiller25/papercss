@@ -5,69 +5,75 @@ description: PaperCSS Buttons
 
 Inspired by [Imperfect Buttons](https://codepen.io/tmrDevelops/pen/VeRvKX)
 
-<button class="btn-large">Large</button>
-<button>Default</button>
-<button class="btn-small">Small</button>
+{{< demo >}}
+<button type="button" class="btn-large">Large</button>
+<button type="button">Default</button>
+<button type="button" class="btn-small">Small</button>
 <a href="#" class="paper-btn">Link</a>
 
 <div class="row">
   <div class="col-6 col">
-    <button class="btn-block">Block level</button>
+    <button type="button" class="btn-block">Block level</button>
   </div>
 </div>
 
-<button class="disabled">Disabled</button>
-<button disabled>Disabled</button>
+<button type="button" class="disabled">Disabled</button>
+<button type="button" disabled>Disabled</button>
+{{< /demo >}}
 
 #### Code:
 
 ```html
 <p>Inspired by <a href="https://codepen.io/tmrDevelops/pen/VeRvKX" target="_blank">Imperfect Buttons</a></p>
-<button class="btn-large">Large</button>
-<button>Default</button>
-<button class="btn-small">Small</button>
+<button type="button" class="btn-large">Large</button>
+<button type="button">Default</button>
+<button type="button" class="btn-small">Small</button>
 <a href="#" class="paper-btn">Link</a>
 <div class="row">
   <div class="col-6 col">
-    <button class="btn-block">Block level</button>
+    <button type="button" class="btn-block">Block level</button>
   </div>
 </div>
-<button class="disabled">Disabled</button>
-<button disabled>Disabled</button>
+<button type="button" class="disabled">Disabled</button>
+<button type="button" disabled>Disabled</button>
 ```
 
 ### Colors
 
-<input type="button" class="paper-btn btn-primary" value="Primary"/>
-<input type="button" class="btn-secondary" value="Secondary"/>
-<button class="btn-success">Success</button>
-<button class="btn-warning">Warning</button>
-<button class="btn-danger">Danger</button>
+{{< demo >}}
+<button type="button" class="paper-btn btn-primary">Primary</button>
+<button type="button" class="btn-secondary">Secondary</button>
+<button type="button" class="btn-success">Success</button>
+<button type="button" class="btn-warning">Warning</button>
+<button type="button" class="btn-danger">Danger</button>
+{{< /demo >}}
 
 #### Code:
 
 ```html
-<input type="button" class="paper-btn btn-primary" value="Primary"/>
-<input type="button" class="btn-secondary" value="Secondary"/>
-<button class="btn-success">Success</button>
-<button class="btn-warning">Warning</button>
-<button class="btn-danger">Danger</button>
+<button type="button" class="paper-btn btn-primary">Primary</button>
+<button type="button" class="btn-secondary">Secondary</button>
+<button type="button" class="btn-success">Success</button>
+<button type="button" class="btn-warning">Warning</button>
+<button type="button" class="btn-danger">Danger</button>
 ```
 
 ### Outline colors
 
-<input type="button" class="paper-btn btn-primary-outline" value="Primary"/>
-<input type="button" class="btn-secondary-outline" value="Secondary"/>
-<button class="btn-success-outline">Success</button>
-<button class="btn-warning-outline">Warning</button>
+{{< demo >}}
+<button type="button" class="paper-btn btn-primary-outline">Primary</button>
+<button type="button" class="btn-secondary-outline">Secondary</button>
+<button type="button" class="btn-success-outline">Success</button>
+<button type="button" class="btn-warning-outline">Warning</button>
 <a href="#" class="paper-btn btn-danger-outline">Danger</a>
+{{< /demo >}}
 
 #### Code:
 
 ```html
-<input type="button" class="paper-btn btn-primary-outline" value="Primary"/>
-<input type="button" class="btn-secondary-outline" value="Secondary"/>
-<button class="btn-success-outline">Success</button>
-<button class="btn-warning-outline">Warning</button>
+<button type="button" class="paper-btn btn-primary-outline">Primary</button>
+<button type="button" class="btn-secondary-outline">Secondary</button>
+<button type="button" class="btn-success-outline">Success</button>
+<button type="button" class="btn-warning-outline">Warning</button>
 <a href="#" class="paper-btn btn-danger-outline">Danger</a>
 ```

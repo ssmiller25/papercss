@@ -1,0 +1,106 @@
+name: Pages
+
+# The documentation is this framework's primary teaching surface, so it is
+# published from the same build the gates verify. This workflow runs
+# `make check` - the single gate sequence, so it cannot drift from CI or a
+# local run - in the devcontainer, then uploads the `public/` directory that
+# produced it and deploys it to GitHub Pages. `public/` is the exact directory
+# `make check-docs` (scripts/check-html.mjs) walked and validated, so nothing is
+# published from an unverified tree.
+#
+# The custom domain (papercss.r15cookie.com) and the repository's Pages settings
+# are configured by the owner (see AGENTS.md / the release cutover); until then
+# the workflow publishes to the default Pages URL.
+on:
+  push:
+    branches: [main, release20]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+  pages: write
+  id-token: write
+
+# One Pages deployment at a time, and do not cancel one already in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pull the pre-built dev container image so the build reuses its layers.
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # The image is built and pushed by the Dev Container workflow. Until it
+      # exists (the first run), build without a cache rather than fail.
+      - name: Find the cached dev container image
+        id: devcontainer-cache
+        run: |
+          image="ghcr.io/${{ github.repository }}/devcontainer"
+          if docker manifest inspect "$image" >/dev/null 2>&1; then
+            echo "cacheFrom=$image" >> "$GITHUB_OUTPUT"
+          else
+            echo "cacheFrom=" >> "$GITHUB_OUTPUT"
+            echo "::notice::No cached dev container image yet; building without a cache"
+          fi
+
+      # `make check` builds and validates the documentation as part of its
+      # sequence; the `public/` it leaves behind is what gets published.
+      - name: Build and verify in devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          # Never push: the Dev Container workflow owns building and pushing the
+          # image; this workflow only consumes it as a layer cache.
+          push: never
+          cacheFrom: ${{ steps.devcontainer-cache.outputs.cacheFrom }}
+          runCmd: set -o pipefail && make check 2>&1 | tee pages-verify.txt
+
+      # The page set uploaded below is the one `make check-docs` validated. This
+      # only asserts that the verified output is present and non-empty, so a
+      # build that silently produced nothing cannot be published.
+      - name: Confirm the verified output exists
+        run: |
+          test -f public/index.html || { echo "public/ has no built site"; exit 1; }
+          echo "verified output: $(find public -name '*.html' | wc -l) HTML files"
+
+      - name: Publish the verification output
+        if: always()
+        run: |
+          {
+            echo "## Documentation build"
+            echo
+            echo '```'
+            cat pages-verify.txt 2>/dev/null || echo "(no output captured)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the built site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

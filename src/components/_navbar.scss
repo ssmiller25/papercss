@@ -20,6 +20,11 @@ nav {
     border-bottom-right-radius: 15px 3px;
     border-bottom-style: solid;
     border-bottom-width: 5px;
+    // The bars are documented as `<span>`, so they must be made block-level to
+    // keep the size, margin and border of the `<div>` they replaced. The
+    // element type was never load-bearing - the framework styles `.barN` by
+    // class - but the default `display` of a `div` was.
+    display: block;
     margin: 6px 0;
     transition: 0.4s;
     width: 2rem;
@@ -120,9 +125,22 @@ nav {
     }
   }
 
+  .collapsible > input {
+    // The navbar's toggle is only rendered on small screens; above the small
+    // breakpoint its label is display: none and the nav is fully expanded, so
+    // the control has no function. Remove it from the tab order there rather
+    // than leave a keyboard user on an invisible control. On small screens the
+    // visually-hidden accordion rule keeps it focusable.
+    @include resp(null, $small-screen + 1px) {
+      display: none;
+    }
+  }
+
   .collapsible input[id^=collapsible]:checked ~ div.collapsible-body {
+    // The height is a grid row (0fr to 1fr) inherited from the accordion rule;
+    // the fixed max-height that used to clip tall menus is gone. The navbar
+    // keeps its own zero padding.
     margin: 0;
-    max-height: 960px;
     opacity: 1;
     padding: 0;
   }
@@ -137,7 +155,11 @@ nav {
   }
 
   div.collapsible-body {
-    padding: none;
+    // Was `padding: none`, which is not a valid padding value. Browsers drop
+    // the declaration silently, so the rule appeared to work and did nothing.
+    // Intended value is 0, matching the `:checked ~ div.collapsible-body`
+    // padding above; the navbar's collapsible body carries no inner padding.
+    padding: 0;
   }
 
   .collapsible label {

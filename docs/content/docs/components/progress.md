@@ -9,6 +9,7 @@ Progress components are built with two HTML elements:
 
 ### Basic usage
 
+{{< demo >}}
 <div class="row">
   <div class="progress margin-bottom">
     <div class="bar w-0"></div>
@@ -26,6 +27,7 @@ Progress components are built with two HTML elements:
     <div class="bar w-100"></div>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code
 
@@ -53,6 +55,7 @@ Note how we can specify the width using `.w-50`, `.w-75`, etc. If a width class 
 
 ### Backgrounds
 
+{{< demo >}}
 <div class="row">
   <div class="progress margin-bottom">
     <div class="bar w-25"></div>
@@ -73,6 +76,7 @@ Note how we can specify the width using `.w-50`, `.w-75`, etc. If a width class 
     <div class="bar muted w-100"></div>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code
 
@@ -101,6 +105,7 @@ Note how we can specify the width using `.w-50`, `.w-75`, etc. If a width class 
 
 ### Labels
 
+{{< demo >}}
 <div class="row">
   <div class="progress margin-bottom">
     <div class="bar w-25">25%</div>
@@ -121,6 +126,7 @@ Note how we can specify the width using `.w-50`, `.w-75`, etc. If a width class 
     <div class="bar muted w-100">100%</div>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code
 
@@ -149,6 +155,7 @@ Note how we can specify the width using `.w-50`, `.w-75`, etc. If a width class 
 
 ### Striped
 
+{{< demo >}}
 <div class="row">
   <div class="progress margin-bottom">
     <div class="bar striped w-25"></div>
@@ -169,6 +176,7 @@ Note how we can specify the width using `.w-50`, `.w-75`, etc. If a width class 
     <div class="bar striped muted w-100"></div>
   </div>
 </div>
+{{< /demo >}}
 
 #### Code
 

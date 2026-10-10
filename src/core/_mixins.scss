@@ -2,6 +2,8 @@
   PaperCSS Mixins
 */
 
+@use 'sass:string';
+
 /**
   Assign a border style to a component selector.
   @param    integer
@@ -67,7 +69,7 @@
   Useful helper mixins
 */
 @mixin hr-after() {
-  color: lighten($primary, 30%);
+  color: var(--primary-light-30);
   content: '~~~';
   display: block;
   font-size: 1.5rem;
@@ -140,10 +142,10 @@
 
 //function for string replacement
 @function str-replace($string, $search, $replace: '') {
-  $index: str-index($string, $search);
+  $index: string.index($string, $search);
 
   @if $index {
-    @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+    @return string.slice($string, 1, $index - 1) + $replace + str-replace(string.slice($string, $index + string.length($search)), $search, $replace);
   }
 
   @return $string;
@@ -153,7 +155,16 @@
   Sets a striped background on a component
   @param    string
 */
-@mixin striped-background($base-color) {
-  $color-dark: darken($base-color, 10%);
-  background: repeating-linear-gradient(45deg, $base-color, $base-color 0.25rem, $color-dark 0.25rem, $color-dark 0.5rem);
+@mixin striped-background($name) {
+  // $name is a custom-property name (eg. `primary-light`), not a colour. Both
+  // stripes are read from the active theme, so a striped bar follows dark mode;
+  // previously the base was a Sass value and the darker stripe was computed from
+  // it, emitting light-theme literals that stayed in dark mode.
+  background: repeating-linear-gradient(
+    45deg,
+    var(--#{$name}),
+    var(--#{$name}) 0.25rem,
+    var(--#{$name}-dark) 0.25rem,
+    var(--#{$name}-dark) 0.5rem
+  );
 }

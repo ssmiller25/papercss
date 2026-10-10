@@ -1,0 +1,21 @@
+{
+  "pages": 33,
+  "aliasesExcluded": 0,
+  "demo": {
+    "regions": 49,
+    "pages": 22,
+    "total": 0,
+    "byRule": {}
+  },
+  "chrome": {
+    "pages": 33,
+    "total": 4142,
+    "byRule": {
+      "attr-quotes": 2770,
+      "element-required-attributes": 33,
+      "form-dup-name": 3,
+      "no-inline-style": 33,
+      "no-trailing-whitespace": 1303
+    }
+  }
+}

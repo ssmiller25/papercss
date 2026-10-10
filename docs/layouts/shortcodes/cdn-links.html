@@ -1,0 +1,5 @@
+{{- $r := .Page.Site.Data.release -}}
+<ul>
+  <li><a href="https://cdn.jsdelivr.net/gh/{{ $r.owner }}/{{ $r.repo }}@v{{ $r.version }}/dist/paper.css">https://cdn.jsdelivr.net/gh/{{ $r.owner }}/{{ $r.repo }}@v{{ $r.version }}/dist/paper.css</a></li>
+  <li><a href="https://cdn.jsdelivr.net/gh/{{ $r.owner }}/{{ $r.repo }}@v{{ $r.version }}/dist/paper.min.css">https://cdn.jsdelivr.net/gh/{{ $r.owner }}/{{ $r.repo }}@v{{ $r.version }}/dist/paper.min.css</a></li>
+</ul>

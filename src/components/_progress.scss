@@ -22,7 +22,7 @@
     width: 0%;
 
     &.striped {
-      @include striped-background($primary-light);
+      @include striped-background('primary-light');
     }
 
     @each $colorName, $color, $color-light in $colors {
@@ -30,7 +30,7 @@
         @include color('background-color', #{$colorName}-light);
   
         &.striped {
-          @include striped-background($color-light);
+          @include striped-background('#{$colorName}-light');
         }
       }
     }
