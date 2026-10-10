@@ -280,7 +280,7 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **Why no long-lived key.** Build provenance and the release attestation are keyless: the signing certificate is short-lived and issued to the workflow's OIDC identity, so there is no secret to leak or rotate. Only the tag uses a key, and it is an SSH key the maintainer already holds for Git rather than a new signing key to manage.
 
-**Consequence.** The consumer-facing verification commands must be documented (task 19.6) and the maintainer setup (task 19.2/19.3) is a repository setting plus a local git configuration, neither of which is committed. Because the CDNs serve the tagged tree, the tag signature is the load-bearing layer for the primary consumption path, and task 19.4 verifies the served files against the release's recorded digests rather than assuming the tag alone is enough.
+**Consequence.** The consumer-facing verification commands must be documented (task 19.5) and the maintainer setup (task 19.2/19.3) is a repository setting plus a local git configuration, neither of which is committed. Because the CDNs serve the tagged tree, the tag signature is the load-bearing layer for the primary consumption path, and task 20.4 verifies the served files against the release's recorded digests rather than assuming the tag alone is enough.
 
 ## Risks / Trade-offs
 
@@ -320,9 +320,9 @@ The deeper cost is that the documentation's download links are **already wrong, 
 
 **The custom-domain step depends on settings this repository does not control** → The build and publish can succeed while the domain is not yet serving. Mitigated by making the domain a clearly-owned manual step (task 18.3) and by keeping the pipeline's output reachable at the default Pages URL in the meantime, so the site is never blocked on DNS or certificate issuance.
 
-**Signing depends on repository settings and a local key, not on committed code** → Immutable releases are a repository toggle and SSH signing is a local git configuration, so neither is visible in the tree and neither can be verified by `make check`. Mitigated by making both explicit, owner-owned manual tasks (19.2, 19.3) with a post-release gate (19.5) that fails when a published release is unsigned, so the absence is caught rather than assumed.
+**Signing depends on repository settings and a local key, not on committed code** → Immutable releases are a repository toggle and SSH signing is a local git configuration, so neither is visible in the tree and neither can be verified by `make check`. Mitigated by making both explicit, owner-owned manual tasks (19.2, 19.3) with a post-release gate (19.4) that fails when a published release is unsigned, so the absence is caught rather than assumed.
 
-**A signed tag covers the CDN-served tree but not the Release attachments, and vice versa** → Release attestations cover what a downloader gets; the tag signature covers what a CDN `<link>` consumer gets. Neither alone covers both paths. Mitigated by using both layers and by task 19.4, which checks the tag signature *and* that the tagged files match the release's recorded digests.
+**A signed tag covers the CDN-served tree but not the Release attachments, and vice versa** → Release attestations cover what a downloader gets; the tag signature covers what a CDN `<link>` consumer gets. Neither alone covers both paths. Mitigated by using both layers and by task 20.4, which checks the tag signature *and* that the tagged files match the release's recorded digests.
 
 ## Migration Plan
 
