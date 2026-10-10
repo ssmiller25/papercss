@@ -38,6 +38,14 @@ jobs:
       - name: Build and verify in devcontainer
         uses: devcontainers/ci@v0.3
         with:
+          # Never push the dev container image: there is no imageName and no
+          # registry login. The action's `push` input defaults to `filter`, which
+          # would attempt a push and fail in the post-job cleanup.
+          push: never
+          # Reuse the image build layers (apt, Hugo, Node, Playwright Chromium)
+          # from the GitHub Actions cache instead of rebuilding them each run.
+          cacheFrom: type=gha,scope=devcontainer
+          cacheTo: type=gha,scope=devcontainer,mode=max,ignore-error=true
           runCmd: set -o pipefail && make check 2>&1 | tee pages-verify.txt
 
       # The page set uploaded below is the one `make check-docs` validated. This

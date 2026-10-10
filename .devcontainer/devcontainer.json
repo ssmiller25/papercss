@@ -13,6 +13,6 @@
 			]
 		}
 	},
-	"postCreateCommand": "npm install && make check",
+	"postCreateCommand": "npm install",
 	"remoteUser": "vscode"
 }
