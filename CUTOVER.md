@@ -1,7 +1,8 @@
 # 2.0 cutover runbook
 
-> **Temporary.** This file exists only for the 2.0 cutover. The 2.0.1 follow-up
-> removes it and archives the `papercss-2x-foundation` OpenSpec change (step 8).
+> **Temporary.** This file exists only for the 2.0 cutover. The stable 2.0.0
+> release (step 6) removes it and archives the `papercss-2x-foundation` OpenSpec
+> change, in the same commit the `v2.0.0` tag is created on.
 
 The ordered procedure for cutting this fork's first release. It follows
 `DISTRIBUTING.md`; where the two differ, this file is the specific 2.0 sequence
@@ -72,10 +73,28 @@ Then confirm by hand:
   assets).
 - The documented download and clone URLs resolve to the tagged artifacts.
 
-## 5. Publish the stable `v2.0.0` (20.5)
+## 5. Lock the Pages environment to `main` (20.5)
 
-Once rc.1 is verified, replace `## 2.0.0 — unreleased` in `CHANGELOG.md` with a
-dated heading, commit, merge to `main`, then push the signed stable tag:
+Remove `release20` from the `github-pages` environment's deployment branches and
+tags (Settings → Environments → `github-pages` → Deployment branches and tags),
+leaving `main`. Confirm a push to `main` still deploys and a push to `release20`
+is rejected.
+
+## 6. Publish the stable `v2.0.0` and clean up (20.6)
+
+Once rc.1 is verified and every task is complete, this is the final release of
+the change, so it also removes the runbook and archives the change. In one
+commit on `main`:
+
+1. Replace `## 2.0.0 — unreleased` in `CHANGELOG.md` with a dated heading.
+2. Delete `CUTOVER.md` (this file).
+3. Archive the OpenSpec change, so its spec deltas land in `openspec/specs/`:
+
+   ```sh
+   openspec archive papercss-2x-foundation
+   ```
+
+Commit and merge to `main`, then push the signed stable tag:
 
 ```sh
 git tag -s v2.0.0 -m v2.0.0
@@ -84,29 +103,12 @@ gh run watch
 ```
 
 Verify as in step 4 with `TAG=v2.0.0`, and confirm the documented download and
-CDN URLs now resolve to `2.0.0`.
+CDN URLs now resolve to `2.0.0`. The `v2.0.0` tag therefore carries the tree
+without `CUTOVER.md` and with the change archived.
 
-## 6. Follow-up fixes, if needed (20.6)
+## 7. Follow-up fixes, if needed (20.7)
 
 If 2.0.0 needs integration or compatibility fixes, do **not** mutate its tag.
 Cut a follow-up branch from `main` (for example `release/2.0.1`), land the fixes
 with their own gates and a `2.0.1` changelog entry, and release `v2.0.1` as a
 new tag.
-
-## 7. Lock the Pages environment to `main` (20.7)
-
-Remove `release20` from the `github-pages` environment's deployment branches and
-tags (Settings → Environments → `github-pages` → Deployment branches and tags),
-leaving `main`. Confirm a push to `main` still deploys and a push to `release20`
-is rejected.
-
-## 8. Remove this runbook and archive the change (2.0.1)
-
-In the 2.0.1 work:
-
-1. Delete `CUTOVER.md` (this file).
-2. Archive the OpenSpec change, so its spec deltas land in `openspec/specs/`:
-   ```sh
-   openspec archive papercss-2x-foundation
-   ```
-3. Land both on `main` and release `v2.0.1` as in steps 5–6.
