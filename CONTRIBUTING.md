@@ -50,10 +50,11 @@ deliberately:
   declarations. Run it only when a change to the output is intended.
 - `make test-browser` runs just the Playwright component-contract gate.
 
-Dependency risk is recorded in [DEPENDENCIES.md](DEPENDENCIES.md): the `npm
-audit` count against the pre-toolchain baseline, and each remaining finding
-classified by whether a build or development command reaches it. Update that
-file when the dependency tree changes.
+Dependency risk is audited live, not snapshotted: run `make audit` and compare
+the result against the pre-toolchain baseline. PaperCSS has no runtime
+dependencies; everything in `devDependencies` is build and development tooling,
+so a finding here does not reach a consumer who uses `dist/paper.css`. See
+`AGENTS.md` for how to classify a finding.
 
 ### Opening the pull request
 

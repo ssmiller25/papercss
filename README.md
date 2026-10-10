@@ -39,6 +39,10 @@ PaperCSS is not published to a package registry, so there is no install from npm
 
 We provide compiled CSS (`paper.css`) as well as minified CSS (`paper.min.css`).
 
+The framework has no runtime dependencies: `dist/paper.css` is self-contained,
+and everything in `package.json`'s `devDependencies` is build and development
+tooling.
+
 You can choose which components you may want to use. Only the components that get imported into `src/styles.scss` will be compiled into `dist/paper.css`.
 
 You can also play with original, source files, written in SCSS, in `src/`. Every release attaches an SCSS source archive (`papercss-<version>-src.tar.gz`), and `src/` is in the repository, so you can build from source.

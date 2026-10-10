@@ -39,6 +39,28 @@ Do not reintroduce a manual release step or a second version source. See
 Run `make check` (or let CI run it). It is the single entry point for the gate
 sequence; do not restate the sequence in a second place that can drift.
 
+## Dependencies
+
+PaperCSS has **no runtime dependencies**: `package.json`'s `dependencies` is
+empty, and consumers use the prebuilt `dist/paper.css` and never run this tree.
+Everything in `devDependencies` is build or development tooling, so a finding
+there does not reach a consumer.
+
+Do not commit a snapshot of the `npm audit` result — it goes stale as the
+advisory database and the dependency tree change. Audit live when a task needs
+it:
+
+- `make audit` runs `npm audit` against the current tree. Compare the count
+  with the pre-toolchain baseline (**73 findings: 2 critical, 22 high, 48
+  moderate, 1 low**); an unexplained increase is a regression, not something to
+  accept silently.
+- Classify each finding by tracing it to its top-level dependency with
+  `npm explain <package>`, then asking whether a build or development command
+  uses that dependency (a `package.json` script, or an import under `build/`,
+  `scripts/`, `tests/`, or the stylelint config). A finding reachable that way
+  is for the `dependency-hardening` change to resolve; one that is not is
+  justified, not chased.
+
 ## Browser verification
 
 Component behavior that only a layout engine can show — keyboard operability,

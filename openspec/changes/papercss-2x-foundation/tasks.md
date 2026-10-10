@@ -430,10 +430,10 @@
 
 ## 17. Dependency Audit Classification
 
-*Capability: `build-verification`. Closes the group 4 audit story without taking on resolution risk. Group 4 already measured the before/after count; this group records it and classifies the remainder by reachability. Resolving the reachable findings is the separate `dependency-hardening` change, so an unmergeable upstream bump cannot block this release.*
+*Capability: `build-verification`. Closes the group 4 audit story without taking on resolution risk. Group 4 already measured the before/after count; this group audits the current tree against it and classifies the remainder by reachability, live rather than as a committed snapshot that goes stale. Resolving the reachable findings is the separate `dependency-hardening` change, so an unmergeable upstream bump cannot block this release.*
 
-- [x] 17.1 Record the post-replacement `npm audit` finding count against the 4.2 baseline (73 findings before the replacement: 2 critical, 22 high, 48 moderate, 1 low; 18 after: 0 critical, 17 high, 1 moderate), and verify the comparison is reproducible and the delta is explained
-- [x] 17.2 For each remaining finding, record whether it is reachable from the build or development workflow, naming the command or path that reaches it, and verify no finding is left unclassified
+- [x] 17.1 Run a live `npm audit` against the current tree and compare it with the 4.2 baseline (73 findings before the replacement: 2 critical, 22 high, 48 moderate, 1 low; 18 when measured: 0 critical, 17 high, 1 moderate), and verify the comparison is reproducible and the delta is explained
+- [x] 17.2 For each remaining finding, classify live whether it is reachable from the build or development workflow, naming the command or path that reaches it, and verify no finding is left unclassified
 
 ## 18. Documentation Site Deployment
 

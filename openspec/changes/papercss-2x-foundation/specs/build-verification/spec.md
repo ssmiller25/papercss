@@ -227,14 +227,14 @@ The gates SHALL verify that every custom property the default theme declares is 
 - **THEN** the component renders with a default-theme value
 - **AND** this is a failure of the theme gate rather than a rendering detail to be noted in review
 
-### Requirement: Dependency findings are measured against a recorded baseline
+### Requirement: Dependency findings are audited live against the baseline
 
-The repository SHALL record its dependency-audit finding count against the count taken before the toolchain replacement, so that a change in dependency risk is measurable rather than assumed.
+The repository SHALL audit its dependency findings against the count taken before the toolchain replacement, run live against the current tree rather than from a committed snapshot, so that a change in dependency risk is measurable rather than assumed.
 
 #### Scenario: The dependency tree changes
 
 - **WHEN** the audit is run after a dependency change
-- **THEN** the current count is compared with the recorded baseline
+- **THEN** the current count is compared with the baseline
 
 #### Scenario: The finding count rises
 
@@ -243,17 +243,17 @@ The repository SHALL record its dependency-audit finding count against the count
 
 ### Requirement: Every remaining dependency finding is classified by reachability
 
-For every dependency finding the toolchain replacement does not resolve, the repository SHALL record whether it is reachable from the build or development workflow, and SHALL NOT leave a finding unclassified.
+For every dependency finding the toolchain replacement does not resolve, the audit SHALL classify whether it is reachable from the build or development workflow, at the time it is run, and SHALL NOT leave a finding unclassified.
 
 #### Scenario: A finding is unreachable
 
 - **WHEN** a finding cannot be reached by any build or development command
-- **THEN** the reason is recorded rather than the finding silently accepted
+- **THEN** the reason is stated rather than the finding silently accepted
 
 #### Scenario: A finding is reachable
 
 - **WHEN** a finding can be reached by a build or development command
-- **THEN** it is recorded as reachable for resolution
+- **THEN** it is classified as reachable for resolution
 
 #### Scenario: A finding is left unclassified
 
