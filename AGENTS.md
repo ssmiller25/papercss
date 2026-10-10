@@ -21,8 +21,9 @@ consumption path and on a mutable CDN alias.
 
 ## Release model
 
-A release is a tag, pressed through the GitHub release process. The tag is the
-single source of truth:
+A release is a tag, created and pushed locally (SSH-signed, so the GitHub UI
+cannot produce it). The tag push runs the release workflow, which creates the
+GitHub Release only after the gates pass. The tag is the single source of truth:
 
 - `package.json`'s `version`, `docs/data/release.json`'s `version`, and a
   `CHANGELOG.md` section must all agree with the tag;

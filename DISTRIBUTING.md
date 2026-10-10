@@ -1,10 +1,10 @@
 # Distributing PaperCSS
 
-A release is a tag, pressed through the GitHub release process.
-`.github/workflows/release.yml` runs the repository's own gates and, only if they
-pass, attaches the artifact set to the release and publishes it. Nothing is
-published by hand, and nothing is published to npm or any other package
-registry.
+A release is a tag, created and pushed locally and SSH-signed (see **Signing a
+release**). `.github/workflows/release.yml` runs the repository's own gates and,
+only if they pass, creates the GitHub Release and attaches the artifact set.
+Nothing is published by hand, and nothing is published to npm or any other
+package registry.
 
 ## Cutting a release
 
@@ -18,18 +18,18 @@ The tag is the single source of truth. Do not publish anything by hand.
 2. Commit the final source and the regenerated `dist/`.
 3. Merge to `main` through a pull request and confirm the **Verify** workflow is
    green. Do not tag from a feature branch.
-4. Press the tag through the GitHub release process: create a **draft** release
-   for the tag, for example `v2.0.0`. Creating the release creates the tag, and
-   the tag push triggers the **Release** workflow:
+4. Create and push the **signed** tag, which triggers the **Release** workflow.
+   The GitHub UI cannot produce a signed tag, so create it locally:
 
    ```sh
-   gh release create v2.0.0 --draft --target main --title v2.0.0 --generate-notes
+   git tag -s v2.0.0 -m v2.0.0
+   git push origin v2.0.0
    ```
 
 5. Watch the **Release** workflow complete. It runs `make check`; only when the
-   gates pass does it upload the artifact set and publish the draft. If the
-   gates fail, the release stays a draft with no artifacts — fix the tree and
-   delete and re-push the tag rather than publishing a failed build.
+   gates pass does it create the release and attach the artifact set. If the
+   gates fail, no release is created — fix the tree and delete and re-push the
+   tag rather than publishing a failed build.
 6. Confirm the pipeline is fully green and the artifacts are attached before
    announcing the release.
 
@@ -72,9 +72,8 @@ Every release is verifiable without a long-lived signing key:
   git config user.signingkey ~/.ssh/id_ed25519.pub
   ```
 
-  Create the tag with `git tag -s v2.0.0 -m v2.0.0` and push it (or create the
-  draft release from the signed tag). GitHub shows it as **Verified**, and
-  `git verify-tag v2.0.0` checks it locally.
+  Create the tag with `git tag -s v2.0.0 -m v2.0.0` and push it. GitHub shows
+  it as **Verified**, and `git verify-tag v2.0.0` checks it locally.
 
 Cosign bundles and GPG-signed checksums are deliberately **not** used; see
 `AGENTS.md` for why.
@@ -88,10 +87,11 @@ The first release of a major line has an order later releases do not:
 2. With the pipeline live on `main`, dispatch the **Release** workflow in
    dry-run mode and confirm it assembles the full artifact set and publishes
    nothing.
-3. Press a prerelease tag (`v2.0.0-rc.1`) through a draft release and verify it
-   end to end: artifacts downloadable, changelog entry present, documented
-   download and clone URLs resolving, both CDNs serving the build, and the
-   release marked as a prerelease rather than current.
+3. Create and push the **signed** prerelease tag (`git tag -s v2.0.0-rc.1 -m
+   v2.0.0-rc.1 && git push origin v2.0.0-rc.1`) and verify it end to end:
+   artifacts downloadable, changelog entry present, documented download and
+   clone URLs resolving, both CDNs serving the build, and the release marked as
+   a prerelease rather than current.
 4. Publish the stable `v2.0.0` once the candidate is verified.
 
 If the candidate needs integration or compatibility fixes, do **not** mutate its

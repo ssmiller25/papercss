@@ -1,15 +1,16 @@
 name: Release
 
-# A release is a tag, pressed through the GitHub release process: create a
-# draft release for the tag (which creates the tag) and this workflow runs the
-# repository's own gates and, only if they pass, attaches the artifact set and
-# publishes the draft. The tag is the single source of truth for the version;
-# package.json and the version the documentation reads must agree with it
-# (scripts/check-release.mjs, run from `make check`). No step publishes to npm
-# or any other package registry.
+# A release is a tag, created and pushed locally (SSH-signed, so the GitHub UI
+# cannot produce it). The tag push runs this workflow, which runs the
+# repository's own gates and, only if they pass, creates the GitHub Release and
+# attaches the artifact set. If a draft release already exists for the tag, the
+# workflow fills it in and publishes it instead. The tag is the single source of
+# truth for the version; package.json and the version the documentation reads
+# must agree with it (scripts/check-release.mjs, run from `make check`). No step
+# publishes to npm or any other package registry.
 #
-# A plain tag push with no draft release also works: the workflow creates the
-# release itself.
+# Dispatch the workflow with dry_run enabled to build and list the artifact set
+# without creating a release.
 #
 # Dispatch the workflow with dry_run enabled to build and list the artifact set
 # without creating a release.
@@ -114,7 +115,7 @@ jobs:
           FILES="${{ steps.artifacts.outputs.files }}"
 
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
-            # A draft release created in the GitHub UI already pressed the tag.
+            # A draft release already exists for the tag (created separately).
             # The gates have now passed, so upload the verified artifacts and
             # publish the draft - nothing is published before this point.
             gh release upload "${GITHUB_REF_NAME}" $FILES --clobber
