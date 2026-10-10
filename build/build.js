@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const sass = require('sass');
 const write = require('write');
 const rimraf = require('rimraf');
@@ -10,6 +11,23 @@ const colormin = require('postcss-colormin');
 const constants = require('./constants');
 const log = require('./log');
 
+// The bundled typefaces are committed inputs, not generated: the build only
+// reproduces them beside the stylesheet, so a relative `url('fonts/...')` in
+// the CSS resolves from a CDN, the documentation site, or an extracted release
+// download alike. `OFL.txt` rides along so the fonts' licence travels with them.
+function copyFonts() {
+  fs.mkdirSync(constants.FONT_DIST_DIR, { recursive: true });
+  fs.mkdirSync(constants.FONT_DOCS_DIR, { recursive: true });
+
+  for (const name of fs.readdirSync(constants.FONT_SRC_DIR)) {
+    const from = path.join(constants.FONT_SRC_DIR, name);
+    if (!fs.statSync(from).isFile()) continue;
+
+    fs.copyFileSync(from, path.join(constants.FONT_DIST_DIR, name));
+    fs.copyFileSync(from, path.join(constants.FONT_DOCS_DIR, name));
+  }
+}
+
 async function build() {
   log('Starting PaperCSS build...');
   log('Cleaning "dist/, docs/static/assets/paper.css" folder...');
@@ -19,6 +37,10 @@ async function build() {
   if (fs.existsSync(constants.PAPER_DOCS_PATH)) {
     fs.unlinkSync(constants.PAPER_DOCS_PATH);
   }
+
+  // Remove the copied fonts too, so a file dropped from src/fonts/ cannot linger
+  // in the documentation assets after a build.
+  rimraf.sync(constants.FONT_DOCS_DIR, { disableGlob: true });
 
   log('Compiling SCSS to CSS, entrypoint:', constants.ENTRYPOINT_PATH);
 
@@ -58,6 +80,10 @@ async function build() {
   write(constants.PAPER_DIST_PATH, autoprefixedCSS.css);
   write(constants.PAPER_DIST_MIN_PATH, minifiedCSS.css);
   write(constants.PAPER_DOCS_PATH, autoprefixedCSS.css);
+
+  log('Copying fonts to dist/ and docs/ folders...');
+
+  copyFonts();
 
   log('Build done!');
 }

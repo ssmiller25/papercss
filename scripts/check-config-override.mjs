@@ -30,6 +30,11 @@
  *              the output stopped containing `--primary` at all, the override
  *              assertion would fail but a careless rewrite could invert it.
  *
+ * A third block checks the font-delivery contract the same way: the default
+ * emits the bundled @font-face rules, `$font-src: false` emits none, and a URL
+ * value is imported as an alternative source. All three use `!default`, so a
+ * regression in one is the same class of defect as a broken colour override.
+ *
  * The check compiles its own fixture rather than reading dist/paper.css,
  * because the point is to exercise the *consumer's* path, which the shipped
  * stylesheet does not represent.
@@ -105,7 +110,67 @@ if (builtin !== DEFAULT_PRIMARY) {
   ]);
 }
 
+// 3. The font-delivery contract: the default build emits the framework's own
+//    @font-face rules, `false` emits none, and any other value is imported as
+//    an alternative source. All three ride on the same `!default` mechanism as
+//    the palette, so they are checked here beside it.
+const DEFAULT_FONT_URL = 'fonts/neucha-latin.woff2';
+const defaultCss = compile('');
+
+if (!/@font-face\s*\{/.test(defaultCss)) {
+  fail([
+    'error: the default build emits no @font-face, so a drop-in consumer does',
+    "       not get the framework's typefaces.",
+    '',
+    '       Either the bundled font default was removed, in which case restore',
+    '       it or record the change, or the fixture no longer reads $font-src.',
+  ]);
+}
+
+if (!defaultCss.includes(DEFAULT_FONT_URL)) {
+  fail([
+    'error: the default build does not reference the bundled font files.',
+    `       expected a url containing ${DEFAULT_FONT_URL}`,
+    '',
+    '       The default should resolve $font-src to the files shipped beside',
+    '       the stylesheet, not to a remote source.',
+  ]);
+}
+
+const disabledCss = compile('$font-src: false;\n');
+
+if (/@font-face\s*\{/.test(disabledCss) || disabledCss.includes(DEFAULT_FONT_URL)) {
+  fail([
+    'error: $font-src: false still emits font files.',
+    '',
+    '       A consumer who disables the fonts must get a stylesheet that',
+    '       references no typeface file, so the stack falls back.',
+  ]);
+}
+
+const ALT_FONT_SRC = 'https://example.invalid/fonts.css';
+const redirectedCss = compile(`$font-src: '${ALT_FONT_SRC}';\n`);
+
+if (!redirectedCss.includes(ALT_FONT_SRC) || !/@import url\(/.test(redirectedCss)) {
+  fail([
+    'error: assigning $font-src to a URL no longer imports it.',
+    `       expected an @import url(...) naming ${ALT_FONT_SRC}`,
+    '',
+    '       The alternative-source path must keep working, so a consumer can',
+    '       redirect the fonts without editing the framework.',
+  ]);
+}
+
+if (redirectedCss.includes(DEFAULT_FONT_URL)) {
+  fail([
+    'error: a consumer-supplied $font-src URL still emits the bundled files.',
+    '',
+    '       The redirect must replace the bundled fonts, not add to them.',
+  ]);
+}
+
 process.stdout.write(
   `configuration contract holds: ${SENTINEL} assigned before the import wins, ` +
-    `and ${DEFAULT_PRIMARY} is the default when it is not\n`
+    `${DEFAULT_PRIMARY} is the default when it is not, and the font default ` +
+    `emits the bundled files while false disables them and a URL redirects\n`
 );

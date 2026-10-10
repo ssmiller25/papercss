@@ -25,6 +25,12 @@ const version = tag.replace(/^v/, "");
 const candidates = [
   "dist/paper.css",
   "dist/paper.min.css",
+  "dist/fonts/neucha-cyrillic.woff2",
+  "dist/fonts/neucha-latin.woff2",
+  "dist/fonts/patrick-hand-sc-vietnamese.woff2",
+  "dist/fonts/patrick-hand-sc-latin-ext.woff2",
+  "dist/fonts/patrick-hand-sc-latin.woff2",
+  "dist/fonts/OFL.txt",
   `papercss-${version}-src.tar.gz`,
 ];
 

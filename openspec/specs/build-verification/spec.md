@@ -303,7 +303,7 @@ A release SHALL be triggered by pushing a version tag. The tag SHALL be the sing
 
 ### Requirement: Published artifacts are a defined, complete set
 
-A release SHALL publish a defined set of artifacts, and SHALL fail rather than publish an incomplete set. The set SHALL include everything the documentation tells consumers to obtain. Published artifacts SHALL be traceable to the repository and commit they were built from.
+A release SHALL publish a defined set of artifacts, and SHALL fail rather than publish an incomplete set. The set SHALL include everything the documentation tells consumers to obtain, and every asset the published stylesheet loads at runtime — including any typeface files and the licence notice that must travel with them. Published artifacts SHALL be traceable to the repository and commit they were built from.
 
 #### Scenario: A documented artifact is missing
 
@@ -317,6 +317,12 @@ A release SHALL publish a defined set of artifacts, and SHALL fail rather than p
 - **THEN** the release publishes a source archive containing that source
 - **AND** a release carrying only compiled CSS does not satisfy the documented path
 
+#### Scenario: An asset the stylesheet loads at runtime is missing
+
+- **WHEN** a release omits a typeface file the published stylesheet references
+- **THEN** the release fails
+- **AND** a set carrying only the stylesheets does not satisfy the published artifact set
+
 #### Scenario: An artifact's origin is unprovable
 
 - **WHEN** a consumer needs to determine which build a downloaded artifact came from
@@ -324,7 +330,7 @@ A release SHALL publish a defined set of artifacts, and SHALL fail rather than p
 
 ### Requirement: Released artifacts are served from the tagged repository without a package registry
 
-A release SHALL be consumable over the open internet without a package registry. The released stylesheets SHALL be served by open CDNs that resolve them directly from the tagged repository tree, and the release SHALL verify that each documented CDN URL serves the tagged build. Because the CDNs read the repository tree rather than the GitHub Release attachments, a release SHALL commit the artifacts it publishes at the tag.
+A release SHALL be consumable over the open internet without a package registry. The released stylesheets, and every asset they load at runtime, SHALL be served by open CDNs that resolve them directly from the tagged repository tree, and the release SHALL verify that each documented CDN URL serves the tagged build. Because the CDNs read the repository tree rather than the GitHub Release attachments, a release SHALL commit the artifacts and referenced assets it publishes at the tag.
 
 #### Scenario: A third-party site links the CDN URL
 
@@ -336,6 +342,12 @@ A release SHALL be consumable over the open internet without a package registry.
 
 - **WHEN** a release attaches the stylesheets to the GitHub Release but the tagged tree does not contain them
 - **THEN** the CDN URL for that tag does not resolve to the released artifact
+- **AND** the release is incomplete even though the GitHub Release download succeeds
+
+#### Scenario: A referenced asset is attached but not committed
+
+- **WHEN** a release attaches a typeface file the stylesheet references but the tagged tree does not contain it
+- **THEN** the CDN URL the stylesheet resolves that asset to does not resolve
 - **AND** the release is incomplete even though the GitHub Release download succeeds
 
 #### Scenario: The CDN serves a stale build

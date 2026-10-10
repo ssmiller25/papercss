@@ -46,8 +46,19 @@ const RELEASE_DATA = path.join(ROOT, "docs", "data", "release.json");
 const CHANGELOG = path.join(ROOT, "CHANGELOG.md");
 
 // The released artifact set, defined once. The release workflow publishes this
-// same list; anything else in dist/ is not part of a release.
-const ARTIFACTS = ["dist/paper.css", "dist/paper.min.css"];
+// same list; anything else in dist/ is not part of a release. The typeface files
+// are here because the stylesheet loads them at runtime: a release that omits
+// them is incomplete even though paper.css downloads fine.
+const ARTIFACTS = [
+  "dist/paper.css",
+  "dist/paper.min.css",
+  "dist/fonts/neucha-cyrillic.woff2",
+  "dist/fonts/neucha-latin.woff2",
+  "dist/fonts/patrick-hand-sc-vietnamese.woff2",
+  "dist/fonts/patrick-hand-sc-latin-ext.woff2",
+  "dist/fonts/patrick-hand-sc-latin.woff2",
+  "dist/fonts/OFL.txt",
+];
 
 const args = process.argv.slice(2);
 function argValue(name) {

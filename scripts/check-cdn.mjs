@@ -20,7 +20,16 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const RELEASE_DATA = path.join(ROOT, "docs", "data", "release.json");
-const ARTIFACTS = ["dist/paper.css", "dist/paper.min.css"];
+const ARTIFACTS = [
+  "dist/paper.css",
+  "dist/paper.min.css",
+  "dist/fonts/neucha-cyrillic.woff2",
+  "dist/fonts/neucha-latin.woff2",
+  "dist/fonts/patrick-hand-sc-vietnamese.woff2",
+  "dist/fonts/patrick-hand-sc-latin-ext.woff2",
+  "dist/fonts/patrick-hand-sc-latin.woff2",
+  "dist/fonts/OFL.txt",
+];
 
 const args = process.argv.slice(2);
 function argValue(name) {
@@ -44,7 +53,9 @@ const hosts = [
 const failures = [];
 
 for (const artifact of ARTIFACTS) {
-  const local = readFileSync(path.join(ROOT, artifact), "utf8");
+  // Read and compare as bytes: the typeface files are binary, and decoding them
+  // as UTF-8 would corrupt the comparison and could pass a differing file.
+  const local = readFileSync(path.join(ROOT, artifact));
   for (const host of hosts) {
     const url = `${host.base}/${artifact}`;
     try {
@@ -53,8 +64,8 @@ for (const artifact of ARTIFACTS) {
         failures.push(`${host.name} ${url} -> HTTP ${response.status}`);
         continue;
       }
-      const served = await response.text();
-      if (served !== local) {
+      const served = Buffer.from(await response.arrayBuffer());
+      if (!served.equals(local)) {
         failures.push(`${host.name} ${url} does not match the released ${artifact}`);
         continue;
       }

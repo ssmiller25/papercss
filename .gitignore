@@ -9,6 +9,9 @@ npm-debug.log
 /docs/static/assets/paper.css
 /docs/static/assets/paper.min.css
 
+# Ignore the fonts copied into the docs' assets (the committed copy is src/fonts/)
+/docs/static/assets/fonts/
+
 # Temporary build-comparison directory used by `make check-determinism`
 /.check-tmp
 

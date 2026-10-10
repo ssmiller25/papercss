@@ -122,6 +122,10 @@ or, when building from source, set the font source before importing `styles`
 (see `$font-src` in `src/core/_config.scss`). If you do not use the framework's
 fonts, nothing changes.
 
+> **Updated in 2.0.1.** The framework now ships these two fonts and loads them by
+> default, so the `<link>` above is no longer needed — adding it now loads the
+> fonts twice. Omit it unless you deliberately want a different source.
+
 ### Other changes (not breaking)
 
 #### Dark mode now themes every component

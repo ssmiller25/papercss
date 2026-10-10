@@ -39,9 +39,12 @@ PaperCSS is not published to a package registry, so there is no install from npm
 
 We provide compiled CSS (`paper.css`) as well as minified CSS (`paper.min.css`).
 
-The framework has no runtime dependencies: `dist/paper.css` is self-contained,
-and everything in `package.json`'s `devDependencies` is build and development
-tooling.
+The framework has no runtime dependencies. `dist/paper.css` is self-contained
+apart from the typeface files it ships beside it: the stylesheet references
+`dist/fonts/` by a relative path, so the framework's intended look needs no
+extra step — a consumer who includes the stylesheet gets the fonts from the same
+source they took the stylesheet from. Everything in `package.json`'s
+`devDependencies` is build and development tooling.
 
 You can choose which components you may want to use. Only the components that get imported into `src/styles.scss` will be compiled into `dist/paper.css`.
 

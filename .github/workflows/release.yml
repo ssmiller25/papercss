@@ -86,7 +86,7 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           tar -czf "papercss-${VERSION}-src.tar.gz" src package.json LICENSE.md README.md
           node scripts/write-provenance.mjs
-          echo "files=dist/paper.css dist/paper.min.css papercss-${VERSION}-src.tar.gz provenance.json" >> "$GITHUB_OUTPUT"
+          echo "files=dist/paper.css dist/paper.min.css dist/fonts/* papercss-${VERSION}-src.tar.gz provenance.json" >> "$GITHUB_OUTPUT"
 
       - name: Attest build provenance
         uses: actions/attest@v4
@@ -96,6 +96,7 @@ jobs:
           subject-path: |
             dist/paper.css
             dist/paper.min.css
+            dist/fonts/*
             papercss-*-src.tar.gz
             provenance.json
 

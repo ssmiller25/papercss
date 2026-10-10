@@ -4,20 +4,31 @@
 
 @use 'sass:map';
 
-// The web font source. Disabled by default so the shipped stylesheet makes no
-// third-party request: a distributed framework should not block rendering on a
-// host the consumer did not ask for. A consumer who wants the framework's fonts
-// opts in by assigning a stylesheet URL before importing:
+// The web font source. The default ships the framework's own typefaces, so a
+// consumer who includes the stylesheet gets the intended look with no extra
+// step. The files are served from the same source as the stylesheet itself, so
+// this reintroduces no request to a host the consumer did not choose. Set it
+// before importing to change the source or turn the fonts off entirely:
 //
+//   $font-src: false;               // no fonts; the stack falls back
 //   $font-src: 'https://fonts.googleapis.com/css?family=Neucha|Patrick+Hand+SC&display=swap';
 //   @import 'styles';
 //
-// With it left false the font stack falls back to `sans-serif` (see
-// `$header-font` and `$body-font`).
-$font-src: false !default;
+// The value is one of:
+//   'bundled' (default) - emit the framework's own @font-face rules, pointing
+//                         at the files shipped in `fonts/` beside the
+//                         stylesheet (see content/_font-face.scss);
+//   false                - emit no fonts; the font stack falls back to a
+//                         generic family (see `$header-font` and `$body-font`);
+//   <a stylesheet URL>   - import that source instead of the bundled files.
+//
+// The alternative-source import is emitted here, in the first partial, because
+// a CSS `@import` must precede every rule. The bundled @font-face rules have no
+// such constraint and live in content/_font-face.scss.
+$font-src: 'bundled' !default;
 
 // Imports
-@if $font-src {
+@if $font-src != false and $font-src != 'bundled' {
   @import url($font-src);
 }
 

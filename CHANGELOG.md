@@ -8,6 +8,24 @@ when the earlier releases shipped, so the history from 1.9.2 down to 0.0.0 is
 entry says so. Where a tag's changes could not be established from the
 repository, the gap is recorded rather than the release omitted.
 
+## 2.0.1 — 2026-10-10
+
+### Other changes (not breaking)
+
+- **The framework ships its own web fonts and loads them by default again.**
+  2.0.0 removed the Google Fonts `@import` without replacing it, so a consumer
+  who included the stylesheet and changed nothing got `sans-serif` — the theme
+  stopped looking like itself out of the box. The stylesheet now carries
+  `@font-face` rules for Neucha and Patrick Hand SC whose `url()` resolves to
+  files shipped beside it, so a drop-in consumer gets the intended typography
+  with no extra step, from the same source they already chose for the
+  stylesheet rather than from Google. The generated stylesheet gains five
+  `@font-face` rules; the Latin subsets are small (Neucha 11.9 KB, Patrick Hand
+  SC 14.3 KB). No selector or directive changes, so this is a patch.
+
+  **If you added the Google `<link>` from the 2.0 `UPGRADE.md`, remove it.** The
+  fonts load automatically now, and leaving the link in loads them twice.
+
 ## 2.0.0 — 2026-10-10
 
 ### Breaking changes

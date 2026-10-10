@@ -61,7 +61,17 @@ try {
   }
 
   const assets = readdirSync(dir);
-  const expected = ["paper.css", "paper.min.css", "provenance.json"];
+  const expected = [
+    "paper.css",
+    "paper.min.css",
+    "neucha-cyrillic.woff2",
+    "neucha-latin.woff2",
+    "patrick-hand-sc-vietnamese.woff2",
+    "patrick-hand-sc-latin-ext.woff2",
+    "patrick-hand-sc-latin.woff2",
+    "OFL.txt",
+    "provenance.json",
+  ];
   const archive = assets.find((name) => /^papercss-.*-src\.tar\.gz$/.test(name));
   const subjects = [...expected.filter((name) => assets.includes(name)), ...(archive ? [archive] : [])];
 
