@@ -29,6 +29,7 @@ permissions:
   packages: read
   id-token: write
   attestations: write
+  artifact-metadata: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -87,11 +88,15 @@ jobs:
           echo "files=dist/paper.css dist/paper.min.css papercss-${VERSION}-src.tar.gz provenance.json" >> "$GITHUB_OUTPUT"
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest@v4
         with:
+          # Every released artifact, not only the stylesheets: the SCSS source
+          # archive and the provenance record are released too.
           subject-path: |
             dist/paper.css
             dist/paper.min.css
+            papercss-*-src.tar.gz
+            provenance.json
 
       - name: List the artifact set (dry run)
         if: github.event_name != 'push'

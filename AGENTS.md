@@ -34,6 +34,22 @@ single source of truth:
 Do not reintroduce a manual release step or a second version source. See
 `DISTRIBUTING.md` for the cutover procedure.
 
+## Signed releases
+
+A release is signed in three GitHub-native layers, all keyless except the tag:
+
+- `actions/attest` produces a keyless build-provenance attestation for every
+  released artifact, bound to this repository and the release workflow.
+- Immutable releases make GitHub sign the published release and prevent its
+  assets and tag from being added to, modified or deleted afterwards.
+- The tag is SSH-signed with a key the maintainer already holds for Git.
+
+Cosign keyless bundles and GPG-signed checksums are deliberately **not** used:
+they add a dependency, or a long-lived key to protect and rotate, for a
+verification path few consumers of a stylesheet will run, and either can be
+added later without redoing this work. Do not add them without revisiting that
+decision.
+
 ## Verify before shipping
 
 Run `make check` (or let CI run it). It is the single entry point for the gate

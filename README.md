@@ -62,6 +62,27 @@ Every release is published on the [releases page](https://github.com/ssmiller25/
 the documentation point to it rather than restating the before/after, so there
 is only one place to keep correct.
 
+### Verifying a release
+
+A release is verifiable, not merely downloadable. Every released artifact
+carries a keyless build-provenance attestation bound to this repository and the
+release workflow, the release is immutable, and the tag is SSH-signed:
+
+```sh
+# Is this file the one this repository's release workflow built?
+gh attestation verify paper.css --repo ssmiller25/papercss \
+  --signer-workflow ssmiller25/papercss/.github/workflows/release.yml
+
+# Is the release immutable (signed by GitHub)?
+gh release verify v2.0.0
+
+# Is the tag the maintainer signed? (GitHub also shows it as Verified.)
+git fetch --tags && git verify-tag v2.0.0
+```
+
+Cosign bundles and GPG-signed checksums are deliberately not used; see
+`AGENTS.md`.
+
 ## Customizing
 
 You can customize PaperCSS easily, clone the repo, run `npm install` and make any changes to `.scss` files in `src/`.

@@ -81,6 +81,10 @@ check-release:   ## Verify the release is consistent: tag, package.json, documen
 check-cdn:   ## Post-release: verify the open CDNs serve the released stylesheets (needs network and a published tag; pass TAG=v2.0.0)
 	node scripts/check-cdn.mjs --tag "$(TAG)"
 
+.PHONY: check-signing
+check-signing:   ## Post-release: verify the released artifacts are attested and the release is immutable (needs gh auth and a published tag; pass TAG=v2.0.0)
+	node scripts/check-signing.mjs --tag "$(TAG)"
+
 .PHONY: audit
 audit:   ## Audit the build/dev dependency tree live (the framework has no runtime dependencies; not part of `check` because the advisory database drifts)
 	npm audit

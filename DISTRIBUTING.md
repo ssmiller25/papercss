@@ -45,6 +45,40 @@ with the tag, fails before anything is published.
 - `provenance.json` — the repository, commit and digests the artifacts were
   built from
 
+## Signing a release
+
+Every release is verifiable without a long-lived signing key:
+
+- **Build provenance.** The Release workflow attests every released artifact
+  with `actions/attest`, keyless and bound to this repository and the release
+  workflow through GitHub's OIDC identity. Verify one with:
+
+  ```sh
+  gh attestation verify paper.css --repo ssmiller25/papercss \
+    --signer-workflow ssmiller25/papercss/.github/workflows/release.yml
+  ```
+
+- **Immutable releases.** Enable **Immutable releases** in the repository (or
+  organization) settings. GitHub then signs the published release and prevents
+  its assets and tag from being added to, modified, or deleted afterwards.
+  Verify with `gh release verify v2.0.0`.
+
+- **SSH-signed tags.** The tag is signed with an SSH key already registered on
+  the maintainer's GitHub account as a signing key, so the repository tree the
+  CDNs serve is covered too. Configure git once:
+
+  ```sh
+  git config gpg.format ssh
+  git config user.signingkey ~/.ssh/id_ed25519.pub
+  ```
+
+  Create the tag with `git tag -s v2.0.0 -m v2.0.0` and push it (or create the
+  draft release from the signed tag). GitHub shows it as **Verified**, and
+  `git verify-tag v2.0.0` checks it locally.
+
+Cosign bundles and GPG-signed checksums are deliberately **not** used; see
+`AGENTS.md` for why.
+
 ## Cutover for 2.0 and follow-up releases
 
 The first release of a major line has an order later releases do not:
@@ -91,7 +125,8 @@ that could serve a stale copy.
 Verify a published release with:
 
 ```sh
-make check-cdn TAG=v2.0.0
+make check-cdn TAG=v2.0.0       # both CDNs serve the tagged build
+make check-signing TAG=v2.0.0   # every artifact is attested and the release is immutable
 ```
 
 ## Package registry
