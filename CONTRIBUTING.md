@@ -6,18 +6,52 @@ This project is open source and contributions are very welcomed. It is also as b
 
 Please before sending a PR, make sure you are properly using the `.editorconfig` file with your IDE. If your IDE doesn't natively support `editorconfig` files, you can use an extension/package/module. For example in Atom there is the [editorconfig package](https://atom.io/packages/editorconfig), as well for [Sublime Text](https://github.com/sindresorhus/editorconfig-sublime), [VS Code](https://github.com/editorconfig/editorconfig-vscode), [Vim](https://github.com/editorconfig/editorconfig-vim), ...
 
-Once you are ready to contribute, here the workflow you should follow:
+### Getting set up
 
 - Fork the repo then clone it: `git clone git@github.com:[your_username]/papercss.git`
 - `cd papercss` then install dependencies: `npm install`
-- Change your current branch to `develop`: `git checkout develop`
-- Create your new branch where you will write your code: `git checkout -b feature-thing develop`. Please be sure to prepend your new feature branch with "feature-"
-- Write some code!
-- To build the scss (in `src/`) to css (in `dist/`), run `npm run css:build`. Note: you will need to re-run this command to include the latest changes in `src/`.
-- To preview your changes, you can run `npm start`. This will start a `localhost` server.
-- Check to make sure your code is following style rules with `npm run stylelint`
-- Once done commit and push your changes to your fork. The linter is also run as a pre-commit hook.
-- Open a pull request on the origin papercss repo. Be sure to include any pictures and/or details on what you have done; it will help reviewers **a lot**!
-- When your changes are approved, they will be merged into the `develop` branch, which will finally be merged into the `main` branch when we reach a milestone regarding features and bug fixes. Check out [Vincent Driessen's blog post](http://nvie.com/posts/a-successful-git-branching-model/), [GitFlow](https://datasift.github.io/gitflow/IntroducingGitFlow.html), or [#27](https://github.com/rhyneav/papercss/issues/27) for more details on how this works.
+- Create your branch off `main`: `git checkout -b feature-thing main`
 
-Note: If you have a hotfix (usually typos and minor documentation tweaks), create your hotfix branch off of the main branch instead of develop: `git checkout -b hotfix-thing main`. The changes will be merged into both the main and develop to keep the branches consistent.
+The `.devcontainer/` provides the exact tools the gates use, pinned to the
+versions CI runs: Hugo, `html-validate`, and Playwright's own Chromium. If you
+work outside it, you need those on your `PATH` — Hugo for the documentation,
+`html-validate` for the documentation gate, and `npx playwright install
+chromium` once for the browser gate.
+
+### Building and previewing
+
+- Build the SCSS in `src/` to CSS in `dist/`: `make build-css` (or
+  `npm run css:build`). `dist/` is tracked, so commit the rebuilt stylesheet
+  with your `src/` change.
+- Preview the documentation: `make serve` (or `npm run dev`).
+
+### Verifying your change
+
+`make check` is the single verification entry point, and it runs **the same
+sequence continuous integration runs** (`.github/workflows/verify.yml` invokes
+`make check` in the devcontainer, so the two cannot drift). Run it before
+opening a pull request:
+
+```sh
+make check
+```
+
+It builds the stylesheet and the documentation, lints both, validates the
+documentation against its recorded baseline, checks the generated stylesheet
+against the recorded declaration set, verifies the dark theme and the
+configuration contract, checks the release consistency, and runs the browser
+gate. `make help` lists every target, including the few you should run only
+deliberately:
+
+- `make check-docs-update-baseline` re-records the documentation error budget.
+  Run it only when counts have genuinely dropped, since it also hides a
+  regression you did not fix.
+- `make check-declarations-update` re-records the generated stylesheet's
+  declarations. Run it only when a change to the output is intended.
+- `make test-browser` runs just the Playwright component-contract gate.
+
+### Opening the pull request
+
+- Commit and push your changes to your fork.
+- Open a pull request on the origin repo. Be sure to include any pictures and/or details on what you have done; it will help reviewers **a lot**!
+- A maintainer reviews and merges into `main`.

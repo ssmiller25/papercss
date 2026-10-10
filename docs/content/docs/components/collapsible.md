@@ -5,6 +5,19 @@ description: PaperCSS Collapsibles
 
 Collapsibles are elements that expand when you click on them. You can hide/reveal content back on clicking.
 
+### The identifier contract
+
+Every collapsible rule is conditioned on the control's `id` beginning with
+`collapsible`. The framework's selectors are written as
+`input[id^=collapsible]:checked ~ .collapsible-body`, so a collapsible is a
+collapsible because of that attribute — not because of a class on the input.
+Give the checkbox or radio an `id` that starts with `collapsible` (the examples
+here use `collapsible1`, `collapsible2`, …) inside a `.collapsible` wrapper, and
+the framework's rules apply with no further markup.
+
+This shape is a contract rather than an implementation detail, and it is
+**unchanged in 2.x**: markup written for 1.9 keeps working.
+
 {{< demo >}}
 <div class="row">
   <div class="collapsible">

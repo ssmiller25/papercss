@@ -56,6 +56,10 @@ Every release is published on the [releases page](https://github.com/ssmiller25/
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release.
 - [UPGRADE.md](UPGRADE.md) — for each breaking change, its before and after, why it changed, and the substitution to make.
 
+`UPGRADE.md` is the canonical location for breaking changes. The changelog and
+the documentation point to it rather than restating the before/after, so there
+is only one place to keep correct.
+
 ## Customizing
 
 You can customize PaperCSS easily, clone the repo, run `npm install` and make any changes to `.scss` files in `src/`.

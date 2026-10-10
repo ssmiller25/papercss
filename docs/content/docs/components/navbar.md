@@ -74,6 +74,14 @@ Add ```.fixed``` to ```<nav>``` to fix the nav to the top to have it scroll the 
 </nav>
 ```
 
+### About the toggle bars
+
+The hamburger's three bars are styled by class — `.bar1`, `.bar2`, `.bar3` — so
+any element type works. The examples use `<span>` because the bars sit inside a
+`<label>`, and a `<label>` may only contain phrasing content: a `<div>` there is
+invalid HTML. Put whichever element is valid where you use the bars; the class
+is what the framework matches, not the tag.
+
 ### Not Split Navbar
 
 {{< demo >}}

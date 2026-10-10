@@ -38,3 +38,11 @@ Grab the CSS out of the `/dist` folder created.
 
 You can also go into `src/core/_config.scss` before building to change around the
 global styles of your new CSS.
+
+#### Upgrading
+
+Upgrading across a major version? [UPGRADE.md](https://github.com/ssmiller25/papercss/blob/main/UPGRADE.md)
+states the before, after, reason and substitution for each breaking change, and
+[CHANGELOG.md](https://github.com/ssmiller25/papercss/blob/main/CHANGELOG.md)
+records what shipped in every release. UPGRADE.md is the canonical location for
+the breaking changes; this page does not restate them.

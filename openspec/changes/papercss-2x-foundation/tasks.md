@@ -423,10 +423,10 @@
 
 *Capability: `component-contract`, `docs-markup`.*
 
-- [ ] 16.1 Document the `input[id^=collapsible]` identifier contract explicitly, rather than leaving consumers to infer it from the stylesheet, and record that 2.x does not change it
-- [ ] 16.2 Document which element types are interchangeable for the toggle's bars and why, so the constraint is discoverable before a consumer hits it
-- [ ] 16.3 Document the breaking changes with before-and-after markup for each, pointing at `UPGRADE.md` as the canonical location rather than restating them in a second place that can drift
-- [ ] 16.4 Document the verification workflow for contributors, and verify the documented command runs the same gates as continuous integration
+- [x] 16.1 Document the `input[id^=collapsible]` identifier contract explicitly, rather than leaving consumers to infer it from the stylesheet, and record that 2.x does not change it
+- [x] 16.2 Document which element types are interchangeable for the toggle's bars and why, so the constraint is discoverable before a consumer hits it
+- [x] 16.3 Document the breaking changes with before-and-after markup for each, pointing at `UPGRADE.md` as the canonical location rather than restating them in a second place that can drift
+- [x] 16.4 Document the verification workflow for contributors, and verify the documented command runs the same gates as continuous integration
 
 ## 17. Dependency Audit Classification
 
