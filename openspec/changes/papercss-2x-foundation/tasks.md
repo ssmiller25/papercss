@@ -439,11 +439,11 @@
 
 *Capability: `build-verification`, `release-documentation`. The documentation is this framework's primary teaching surface, so it is published to a repository-owned address rather than left resolving to the upstream project's domain. GitHub Pages hosts it at **https://papercss.r15cookie.com**, built by the same gates that verify every other artifact.*
 
-- [ ] 18.1 Add a GitHub Pages workflow that builds the documentation through the gated build and publishes the generated output, reusing `make check`'s sequence rather than restating it, and verify the published page set is the same set `make check-docs` validates
-- [ ] 18.2 Set `docs/config.toml`'s `baseURL` to `https://papercss.r15cookie.com/` and add `docs/static/CNAME` containing that host, and verify the built pages emit the canonical URL for their assets and links and that the published output contains the `CNAME` file
+- [x] 18.1 Add a GitHub Pages workflow that builds the documentation through the gated build and publishes the generated output, reusing `make check`'s sequence rather than restating it, and verify the published page set is the same set `make check-docs` validates
+- [x] 18.2 Set `docs/config.toml`'s `baseURL` to `https://papercss.r15cookie.com/` and add `docs/static/CNAME` containing that host, and verify the built pages emit the canonical URL for their assets and links and that the published output contains the `CNAME` file
 - [ ] 18.3 **[Manual — owner: ssmiller25]** When the site is ready to be announced, configure the GitHub Pages custom domain in the repository settings, add the DNS record in the `r15cookie.com` zone pointing `papercss.r15cookie.com` at GitHub Pages (a `CNAME` to `<owner>.github.io`), and enable **Enforce HTTPS** once the certificate is issued. Verify `https://papercss.r15cookie.com` serves the published site over HTTPS. This is done at deploy time rather than committed, because the domain and certificate depend on repository settings this change does not control
-- [ ] 18.4 Update `README.md` to name `https://papercss.r15cookie.com` as the canonical documentation URL, replacing the upstream `getpapercss.com` and `develop.getpapercss.com` references, and verify no repository metadata presents another project's domain as this one's
-- [ ] 18.5 Update the documentation templates' hardcoded canonical links — the OpenGraph/Twitter URL in `docs/layouts/partials/head/opengraph.html` and any other absolute reference — to the new address, and verify no built page or metadata still presents `getpapercss.com` as this project's site
+- [x] 18.4 Update `README.md` to name `https://papercss.r15cookie.com` as the canonical documentation URL, replacing the upstream `getpapercss.com` and `develop.getpapercss.com` references, and verify no repository metadata presents another project's domain as this one's
+- [x] 18.5 Update the documentation templates' hardcoded canonical links — the OpenGraph/Twitter URL in `docs/layouts/partials/head/opengraph.html` and any other absolute reference — to the new address, and verify no built page or metadata still presents `getpapercss.com` as this project's site
 
 ## 19. Signed Releases
 
