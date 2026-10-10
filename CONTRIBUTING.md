@@ -50,6 +50,11 @@ deliberately:
   declarations. Run it only when a change to the output is intended.
 - `make test-browser` runs just the Playwright component-contract gate.
 
+Dependency risk is recorded in [DEPENDENCIES.md](DEPENDENCIES.md): the `npm
+audit` count against the pre-toolchain baseline, and each remaining finding
+classified by whether a build or development command reaches it. Update that
+file when the dependency tree changes.
+
 ### Opening the pull request
 
 - Commit and push your changes to your fork.
