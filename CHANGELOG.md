@@ -8,7 +8,7 @@ when the earlier releases shipped, so the history from 1.9.2 down to 0.0.0 is
 entry says so. Where a tag's changes could not be established from the
 repository, the gap is recorded rather than the release omitted.
 
-## 2.0.0 — unreleased
+## 2.0.0 — 2026-10-10
 
 ### Breaking changes
 
