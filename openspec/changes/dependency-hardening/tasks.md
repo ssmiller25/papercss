@@ -17,11 +17,11 @@
 ## 3. Close the Dependabot backlog — after this change is merged to `main`
 
 - [x] 3.1 Add a post-merge verification that fails when any Dependabot pull request, alert, or `dependabot/*` branch is open, and verify it fails while one is (needs `gh` auth and network; not part of `make check`, like `check-signing`)
-- [ ] 3.2 Comment on each open Dependabot update pull request with where the fix landed, close it, and delete its branch
-- [ ] 3.3 Delete the stale branches left by the already-closed Dependabot pull requests
-- [ ] 3.4 Verify the post-merge check reports no open Dependabot pull request, alert, or branch
+- [x] 3.2 Comment on each open Dependabot update pull request with where the fix landed, close it, and delete its branch
+- [x] 3.3 Delete the stale branches left by the already-closed Dependabot pull requests
+- [x] 3.4 Verify the post-merge check reports no open Dependabot pull request, alert, or branch
 
 ## 4. Verify
 
 - [x] 4.1 Run `make check` and `make audit`; verify the audit reports only the `braces` exception and every gate is green
-- [ ] 4.2 Verify every open Dependabot alert is now closed
+- [x] 4.2 Verify every open Dependabot alert is now closed
