@@ -8,6 +8,31 @@ when the earlier releases shipped, so the history from 1.9.2 down to 0.0.0 is
 entry says so. Where a tag's changes could not be established from the
 repository, the gap is recorded rather than the release omitted.
 
+## 2.0.2 — 2026-10-11
+
+### Build
+
+- **The reachable development dependency findings are resolved and the
+  Dependabot backlog is closed.** The unused `chai` dev dependency was removed;
+  `concurrently`, `rimraf`, and `chokidar` were moved to current majors, with
+  `build/build.js` and `build/hot-reload.js` updated for the `rimraf` and
+  `chokidar` API changes; and `ini` is pinned through an `overrides` block. This
+  clears ten of the eighteen `npm audit` findings and closes every open
+  Dependabot alert, update pull request, and branch. Nothing ships: the
+  framework has no runtime dependencies and consumers use the prebuilt
+  stylesheet, so the generated CSS is unchanged. It is a patch for that reason.
+
+- **One finding is retained as a tracked exception.** `braces`
+  (GHSA-vfj7-8cjw-p6xm / CVE-2026-93687) is reached only through
+  `stylelint → globby → fast-glob → micromatch`; every published version is in
+  the advisory's range and no patched release exists, so an `overrides` pin
+  cannot resolve it. It is recorded, with the dependency change that would
+  remove it, in issue #13 rather than suppressed or ignored.
+
+- **Added `make check-dependabot`.** A post-merge check that fails while any
+  Dependabot update pull request, alert, or `dependabot/*` branch is open, so
+  the backlog cannot quietly reappear.
+
 ## 2.0.1 — 2026-10-10
 
 ### Other changes (not breaking)
