@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const sass = require('sass');
 const write = require('write');
-const rimraf = require('rimraf');
+const { rimrafSync } = require('rimraf');
 const postcss = require('postcss');
 const cssnano = require('cssnano');
 const autoprefixer = require('autoprefixer');
@@ -32,7 +32,7 @@ async function build() {
   log('Starting PaperCSS build...');
   log('Cleaning "dist/, docs/static/assets/paper.css" folder...');
 
-  rimraf.sync('dist', { disableGlob: true });
+  rimrafSync('dist');
 
   if (fs.existsSync(constants.PAPER_DOCS_PATH)) {
     fs.unlinkSync(constants.PAPER_DOCS_PATH);
@@ -40,7 +40,7 @@ async function build() {
 
   // Remove the copied fonts too, so a file dropped from src/fonts/ cannot linger
   // in the documentation assets after a build.
-  rimraf.sync(constants.FONT_DOCS_DIR, { disableGlob: true });
+  rimrafSync(constants.FONT_DOCS_DIR);
 
   log('Compiling SCSS to CSS, entrypoint:', constants.ENTRYPOINT_PATH);
 

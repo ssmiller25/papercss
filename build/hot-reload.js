@@ -19,7 +19,10 @@ function compile() {
     .then(() => log('Compiled CSS in docs/ folder.'));
 }
 
-chokidar.watch('./src/**/*.scss').on('change', (event) => {
+// chokidar 4 and later dropped glob support, so the directory is watched and
+// the handler filters to stylesheet changes rather than passing a glob.
+chokidar.watch('./src').on('change', (event) => {
+  if (!event.endsWith('.scss')) return;
   log(`Detected file change (${event}), compiling SCSS to CSS...`);
   compile();
 });
