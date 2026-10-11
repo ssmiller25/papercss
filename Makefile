@@ -85,6 +85,10 @@ check-cdn:   ## Post-release: verify the open CDNs serve the released stylesheet
 check-signing:   ## Post-release: verify the released artifacts are attested and the release is immutable (needs gh auth and a published tag; pass TAG=v2.0.0)
 	node scripts/check-signing.mjs --tag "$(TAG)"
 
+.PHONY: check-dependabot
+check-dependabot:   ## Post-merge: verify no Dependabot pull request, alert, or branch is open (needs gh auth and network; not part of `check`)
+	node scripts/check-dependabot.mjs
+
 .PHONY: audit
 audit:   ## Audit the build/dev dependency tree live (the framework has no runtime dependencies; not part of `check` because the advisory database drifts)
 	npm audit
